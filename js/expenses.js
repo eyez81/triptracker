@@ -267,44 +267,117 @@ const Expenses = {
   },
 
   // ===== VIEW =====
+  _paymentStateKey(expenseId) { return `expense_paid_rows_${expenseId}`; },
+
+  _getExpensePaymentRows(exp) {
+    const total = Number(exp.amount_ils) || 0;
+    const rows = [];
+    if (exp.payment_type === 'מקדמה+יתרה') {
+      const adv = Math.max(0, Number(exp.advance_amount) || 0);
+      const remain = Math.max(0, total - adv);
+      rows.push({ idx: 1, type: 'מקדמה', amount: adv, date: exp.advance_date || exp.payment_date || null });
+      rows.push({ idx: 2, type: 'יתרה', amount: remain, date: exp.balance_date || null });
+    } else if (exp.payment_type === 'תשלומים') {
+      const count = Math.max(1, Number(exp.installments_count) || 1);
+      const baseDate = exp.first_payment_date || exp.payment_date || null;
+      const each = total / count;
+      for (let i = 0; i < count; i++) {
+        let due = null;
+        if (baseDate) {
+          const d = new Date(baseDate);
+          d.setMonth(d.getMonth() + i);
+          due = d.toISOString().slice(0,10);
+        }
+        rows.push({ idx: i + 1, type: 'תשלום חודשי', amount: each, date: due });
+      }
+    } else {
+      rows.push({ idx: 1, type: exp.payment_type === 'עתידי' ? 'צפוי' : 'תשלום מלא', amount: total, date: exp.payment_date || null });
+    }
+    return rows;
+  },
+
+  _getPaidRowsSet(expenseId) {
+    try { return new Set(JSON.parse(localStorage.getItem(this._paymentStateKey(expenseId)) || '[]')); }
+    catch { return new Set(); }
+  },
+
+  _setPaidRowsSet(expenseId, set) {
+    localStorage.setItem(this._paymentStateKey(expenseId), JSON.stringify([...set]));
+  },
+
+  _getExpensePaymentSummary(exp) {
+    const rows = this._getExpensePaymentRows(exp);
+    const paidSet = this._getPaidRowsSet(exp.id);
+    const total = rows.reduce((s, r) => s + (Number(r.amount) || 0), 0);
+    const paid = rows.reduce((s, r) => s + (paidSet.has(r.idx) ? (Number(r.amount) || 0) : 0), 0);
+    const remaining = Math.max(0, total - paid);
+    const status = paid <= 0 ? 'טרם שולם' : remaining <= 0.01 ? 'שולם במלואו' : 'שולם חלקית';
+    return { rows, paidSet, total, paid, remaining, status };
+  },
+
+  async markPaymentAsPaid(expenseId, paymentIdx) {
+    const set = this._getPaidRowsSet(expenseId);
+    set.add(paymentIdx);
+    this._setPaidRowsSet(expenseId, set);
+    const fresh = this._list.find(e => e.id === expenseId) || this._viewing;
+    if (fresh) this.openView(fresh);
+  },
+
   openView(exp) {
     this._viewing = exp;
     document.getElementById('view-exp-name').textContent = exp.name;
-    const cat = CATEGORIES[exp.category] || { icon:'📦' };
-    const row = (label, val, isLink) => val ? `
-      <div class="flex justify-between py-3 border-b border-white/5 text-sm">
-        <span class="text-on-surface-variant">${label}</span>
-        <span class="font-medium text-on-surface text-left">${isLink ? `<a href="${val}" target="_blank" class="text-primary underline">${esc(val)}</a>` : esc(val)}</span>
-      </div>` : '';
+    const cat = CATEGORIES[exp.category] || { icon:'📦', color:'#9e9e9e' };
+    const sum = this._getExpensePaymentSummary(exp);
+    const statusClass = sum.status === 'שולם במלואו' ? 'bg-secondary/15 text-secondary' : sum.status === 'שולם חלקית' ? 'bg-tertiary/15 text-tertiary' : 'bg-error/15 text-error';
 
-    let html = row('סכום (₪)', Currency.fmtILS(exp.amount_ils));
-    if (exp.currency !== 'ILS') html += row('סכום מקורי', `${Currency.fmt(exp.amount, exp.currency, 2)} (שער: ${exp.exchange_rate})`);
-    html += row('קטגוריה', `${cat.icon} ${exp.category}`);
-    html += row('סוג תשלום', exp.payment_type);
-    html += row('אמצעי תשלום', exp.payment_method);
-    html += row('תאריך', exp.payment_date ? fmtDate(exp.payment_date) : null);
-    html += row('מיקום', exp.location);
-    html += row('קישור', exp.link, true);
-    html += row('הערות', exp.notes);
-    if (exp.contact_name || exp.contact_phone) {
-      html += row('איש קשר', exp.contact_name);
-      if (exp.contact_phone) {
-        const p = exp.contact_phone.replace(/\s/g,'');
-        html += `<div class="flex gap-2 py-3 border-b border-white/5">
-          <a href="tel:${p}" class="flex-1 py-2 glass-card rounded-full text-center text-sm text-on-surface flex items-center justify-center gap-1">
-            <span class="material-symbols-outlined text-base">call</span> חייג
-          </a>
-          <a href="https://wa.me/${p.replace('+','')}" target="_blank" class="flex-1 py-2 glass-card rounded-full text-center text-sm text-[#25D366] flex items-center justify-center gap-1">
-            💬 WhatsApp
-          </a>
-        </div>`;
-      }
-    }
-    if (exp.receipt) {
-      html += `<img src="${pb.fileUrl(exp, exp.receipt)}" class="w-full rounded-xl max-h-48 object-contain mt-3" alt="קבלה"/>`;
-    }
+    let html = `
+      <div class="glass-card rounded-xl p-4 space-y-3">
+        <div class="flex items-start justify-between gap-3">
+          <div>
+            <p class="font-bold text-lg text-on-surface">${esc(exp.name)}</p>
+            <p class="text-sm text-on-surface-variant">${cat.icon} ${esc(exp.category || 'אחר')}</p>
+          </div>
+          <span class="text-xs px-3 py-1 rounded-full font-semibold ${statusClass}">${sum.status}</span>
+        </div>
+        <div class="grid grid-cols-3 gap-2 text-sm">
+          <div class="bg-surface-container/50 rounded-lg p-2"><div class="text-on-surface-variant text-xs">עלות כוללת</div><div class="font-semibold text-on-surface">${Currency.fmtILS(sum.total)}</div></div>
+          <div class="bg-surface-container/50 rounded-lg p-2"><div class="text-on-surface-variant text-xs">שולם</div><div class="font-semibold text-secondary">${Currency.fmtILS(sum.paid)}</div></div>
+          <div class="bg-surface-container/50 rounded-lg p-2"><div class="text-on-surface-variant text-xs">נותר</div><div class="font-semibold text-error">${Currency.fmtILS(sum.remaining)}</div></div>
+        </div>
+      </div>
 
-    document.getElementById('view-expense-body').innerHTML = html;
+      <div class="pt-2">
+        <h4 class="font-bold text-on-surface mb-2">לוח תשלומים</h4>
+        <div class="space-y-2">
+          ${sum.rows.map(r => {
+            const paid = sum.paidSet.has(r.idx);
+            return `<div class="glass-card rounded-xl p-3 space-y-2">
+              <div class="flex items-center justify-between gap-2">
+                <div>
+                  <p class="font-semibold text-on-surface">תשלום ${r.idx} — ${r.type}</p>
+                  <p class="text-xs text-on-surface-variant">${r.date ? fmtDate(r.date) : 'ללא תאריך'}</p>
+                </div>
+                <span class="font-semibold text-on-surface">${Currency.fmtILS(r.amount)}</span>
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="text-xs px-2.5 py-1 rounded-full font-medium ${paid ? 'bg-secondary/15 text-secondary' : 'bg-error/15 text-error'}">${paid ? 'שולם' : 'לא שולם'}</span>
+                <button class="pay-row-btn px-3 py-1.5 rounded-full text-sm font-semibold ${paid ? 'bg-surface-container-high text-on-surface-variant cursor-default' : 'bg-primary-container text-on-primary-container active:scale-95 transition'}" data-exp-id="${exp.id}" data-row-idx="${r.idx}" ${paid ? 'disabled' : ''}>${paid ? 'שולם' : 'סמן כשולם'}</button>
+              </div>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>
+    `;
+
+    if (exp.location) html += `<div class="pt-2"><h4 class="font-bold text-on-surface mb-1">מיקום</h4><div class="glass-card rounded-xl p-3 text-sm text-on-surface">${esc(exp.location)}</div></div>`;
+    if (exp.notes) html += `<div class="pt-2"><h4 class="font-bold text-on-surface mb-1">הערות</h4><div class="glass-card rounded-xl p-3 text-sm text-on-surface whitespace-pre-wrap">${esc(exp.notes)}</div></div>`;
+    if (exp.receipt) html += `<img src="${pb.fileUrl(exp, exp.receipt)}" class="w-full rounded-xl max-h-48 object-contain mt-3" alt="קבלה"/>`;
+
+    const body = document.getElementById('view-expense-body');
+    body.innerHTML = html;
+    body.querySelectorAll('.pay-row-btn').forEach(btn => {
+      btn.addEventListener('click', () => this.markPaymentAsPaid(btn.dataset.expId, Number(btn.dataset.rowIdx)));
+    });
     App.openModal('modal-view-expense');
   },
 
