@@ -1,21 +1,37 @@
 const App = {
   _prevScreen: 'trips',
+  _theme: localStorage.getItem('theme') || 'dark',
 
   async init() {
-    // Auto-detect: נסה כתובת פנימית קודם, אם לא עובד — חיצונית
+    this._applyTheme(this._theme);
     try {
-      const r = await fetch('http://192.168.0.176:8090/api/health', {
-        signal: AbortSignal.timeout(1500)
-      });
+      const r = await fetch('http://192.168.0.176:8090/api/health', { signal: AbortSignal.timeout(1500) });
       if (r.ok) CONFIG.PB_URL = 'http://192.168.0.176:8090';
     } catch {}
-
     this._bind();
-    if (pb.isAuth) {
-      await this.goToTrips();
+    if (pb.isAuth) await this.goToTrips();
+    else this.showScreen('auth');
+  },
+
+  _applyTheme(theme) {
+    const html = document.documentElement;
+    if (theme === 'system') {
+      const dark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      html.classList.toggle('dark', dark);
+      html.classList.toggle('light', !dark);
     } else {
-      this.showScreen('auth');
+      html.classList.toggle('dark', theme === 'dark');
+      html.classList.toggle('light', theme === 'light');
     }
+    this._theme = theme;
+    localStorage.setItem('theme', theme);
+    // Update UI
+    document.querySelectorAll('.theme-btn').forEach(b => {
+      b.classList.toggle('bg-primary-container', b.dataset.theme === theme);
+      b.classList.toggle('text-on-primary-container', b.dataset.theme === theme);
+      b.classList.toggle('bg-surface-container-highest', b.dataset.theme !== theme);
+      b.classList.toggle('text-on-surface-variant', b.dataset.theme !== theme);
+    });
   },
 
   showScreen(name) {
@@ -36,9 +52,7 @@ const App = {
     await Expenses.loadForTrip(trip.id);
   },
 
-  openSettings() {
-    this.showScreen('settings');
-  },
+  openSettings() { this.showScreen('settings'); },
 
   openModal(id) {
     document.getElementById(id).classList.remove('hidden');
@@ -51,39 +65,35 @@ const App = {
   },
 
   _bind() {
-    // Auth
     document.getElementById('btn-login').addEventListener('click', () => this._login());
     document.getElementById('auth-password').addEventListener('keydown', e => { if (e.key === 'Enter') this._login(); });
     document.getElementById('btn-logout').addEventListener('click', () => this._logout());
-
-    // Trips
     document.getElementById('btn-add-trip').addEventListener('click', () => Trips.openModal());
     document.getElementById('btn-save-trip').addEventListener('click', () => Trips.save());
     document.getElementById('btn-delete-trip').addEventListener('click', () => Trips.deleteTrip());
-
-    // Trip detail
     document.getElementById('btn-back-trips').addEventListener('click', () => this.goToTrips());
     document.getElementById('btn-add-expense').addEventListener('click', () => Expenses.openModal());
     document.getElementById('btn-save-expense').addEventListener('click', () => Expenses.save());
     document.getElementById('btn-export-excel').addEventListener('click', () => ExcelExport.export(Trips.current, Expenses._list));
     document.getElementById('btn-edit-trip').addEventListener('click', () => Trips.openModal(Trips.current));
-
-    // View expense
+    document.getElementById('btn-show-categories').addEventListener('click', () => Expenses.openCategories());
+    document.getElementById('btn-show-forecast').addEventListener('click', () => Expenses.openForecast());
     document.getElementById('btn-delete-expense').addEventListener('click', () => Expenses.delete());
     document.getElementById('btn-edit-expense').addEventListener('click', () => Expenses.editCurrent());
-
-    // Settings nav
+    document.getElementById('btn-mark-paid').addEventListener('click', () => Expenses.markPaid());
     document.getElementById('nav-settings-trips').addEventListener('click', e => { e.preventDefault(); this.openSettings(); });
     document.getElementById('nav-settings-trip').addEventListener('click', e => { e.preventDefault(); this.openSettings(); });
     document.getElementById('nav-trips-from-settings').addEventListener('click', e => { e.preventDefault(); this.goToTrips(); });
     document.getElementById('nav-trips-from-trip').addEventListener('click', e => { e.preventDefault(); this.goToTrips(); });
     document.getElementById('btn-back-from-settings').addEventListener('click', () => this.showScreen(this._prevScreen));
+    document.getElementById('btn-export-all').addEventListener('click', () => showToast('ייצוא כל הטיולים בקרוב...'));
 
-    // Settings actions
-    document.getElementById('btn-export-all').addEventListener('click', async () => { showToast('ייצוא כל הטיולים בקרוב...'); });
-    document.getElementById('btn-change-password').addEventListener('click', () => { showToast('שינוי סיסמה — פנה ל-PocketBase Admin'); });
+    // Theme buttons
+    document.querySelectorAll('.theme-btn').forEach(btn => {
+      btn.addEventListener('click', () => this._applyTheme(btn.dataset.theme));
+    });
 
-    // Currency buttons in settings
+    // Currency buttons
     document.querySelectorAll('.currency-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         document.querySelectorAll('.currency-btn').forEach(b => {
@@ -95,36 +105,25 @@ const App = {
       });
     });
 
-    // Close modal via data-close
     document.querySelectorAll('[data-close]').forEach(btn => {
       btn.addEventListener('click', () => this.closeModal(btn.dataset.close));
     });
-
-    // Close modal on overlay click
     document.querySelectorAll('[id^="modal-"]').forEach(overlay => {
-      overlay.addEventListener('click', e => {
-        if (e.target === overlay) this.closeModal(overlay.id);
-      });
+      overlay.addEventListener('click', e => { if (e.target === overlay) this.closeModal(overlay.id); });
     });
 
-    // Currency change in expense form
     document.getElementById('exp-currency').addEventListener('change', e => { Expenses._updateCurrencyUI(e.target.value); });
     document.getElementById('btn-fetch-rate').addEventListener('click', () => Expenses.fetchRate());
     document.getElementById('exp-amount').addEventListener('input', () => Expenses._updateILSPreview());
     document.getElementById('exp-rate').addEventListener('input', () => Expenses._updateILSPreview());
-
-    // Payment type change
     document.querySelectorAll('input[name="payment_type"]').forEach(r => {
       r.addEventListener('change', () => Expenses._updatePaymentTypeUI(r.value));
     });
-
-    // Search + filter
     document.getElementById('expense-search').addEventListener('input', () => Expenses._applyFilters());
     document.getElementById('btn-filter').addEventListener('click', () => {
       document.getElementById('filter-panel').classList.toggle('hidden');
     });
 
-    // Receipt — מצלמה וגלריה
     document.getElementById('btn-camera').addEventListener('click', () => {
       const fi = document.getElementById('exp-receipt');
       fi.setAttribute('capture', 'environment');
@@ -149,13 +148,17 @@ const App = {
       reader.readAsDataURL(file);
     });
 
-    // ESC
     document.addEventListener('keydown', e => {
       if (e.key === 'Escape') {
         document.querySelectorAll('[id^="modal-"]').forEach(m => {
           if (!m.classList.contains('hidden')) this.closeModal(m.id);
         });
       }
+    });
+
+    // System theme change
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+      if (this._theme === 'system') this._applyTheme('system');
     });
   },
 
