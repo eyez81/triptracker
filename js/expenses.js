@@ -166,7 +166,7 @@ const Expenses = {
     document.getElementById('exp-balance-date').value = expense?.balance_date?.slice(0,10) || '';
 
     // Category
-    document.getElementById('exp-cat').value = expense?.category || '';
+    this._setCategoryValue(expense?.category || '');
 
     // Payment type
     document.querySelectorAll('input[name="payment_type"]').forEach(r => {
@@ -406,7 +406,7 @@ const Expenses = {
     `;
     if (exp.location) {
       const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(exp.location)}`;
-      html += `<div class="pt-2"><h4 class="font-bold text-on-surface mb-1">מיקום</h4><div class="glass-card rounded-xl p-3 text-sm text-on-surface space-y-2"><p>${esc(exp.location)}</p><a href="${mapsUrl}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:text-secondary transition-colors"><span class="material-symbols-outlined text-base">map</span><span>Open in Google Maps</span></a></div></div>`;
+      html += `<div class="pt-2"><h4 class="font-bold text-on-surface mb-1">מיקום</h4><a href="${mapsUrl}" target="_blank" rel="noopener noreferrer" class="glass-card rounded-xl p-3 text-sm text-on-surface flex items-center justify-between gap-3 hover:bg-surface-variant/30 active:scale-[0.99] transition cursor-pointer"><span class="inline-flex items-center gap-2 min-w-0"><span class="material-symbols-outlined text-primary text-base">location_on</span><span class="truncate">${esc(exp.location)}</span></span><span class="material-symbols-outlined text-on-surface-variant text-base">open_in_new</span></a></div>`;
     }
     if (exp.notes) html += `<div class="pt-2"><h4 class="font-bold text-on-surface mb-1">הערות</h4><div class="glass-card rounded-xl p-3 text-sm text-on-surface whitespace-pre-wrap">${esc(exp.notes)}</div></div>`;
     if (exp.contact_name || exp.contact_phone) {
@@ -539,15 +539,57 @@ const Expenses = {
     }).join('');
     App.openModal('modal-forecast');
   },
+
+  _setCategoryValue(value) {
+    const input = document.getElementById('exp-cat');
+    const label = document.getElementById('exp-cat-label');
+    const safeValue = value || '';
+    if (input) input.value = safeValue;
+    if (label) {
+      if (!safeValue) {
+        label.textContent = 'בחר קטגוריה';
+        label.classList.add('text-on-surface-variant');
+      } else {
+        label.textContent = `${CATEGORIES[safeValue]?.icon || '📦'} ${safeValue}`;
+        label.classList.remove('text-on-surface-variant');
+      }
+    }
+  },
+
   _rebuildCategoryPills() {
     const container = document.getElementById('category-pills');
-    const select = document.getElementById('exp-cat');
-    if (!container || !select) return;
-    const current = select.value;
-    select.innerHTML = ['<option value="">בחר קטגוריה</option>']
-      .concat(Object.entries(CATEGORIES).map(([name, def]) => `<option value="${name}">${def.icon} ${name}</option>`))
-      .join('');
-    select.value = current || '';
+    const input = document.getElementById('exp-cat');
+    const trigger = document.getElementById('exp-cat-trigger');
+    const menu = document.getElementById('exp-cat-menu');
+    if (!container || !input || !trigger || !menu) return;
+
+    const current = input.value;
+    menu.innerHTML = Object.entries(CATEGORIES).map(([name, def]) => `
+      <button type="button" class="cat-option w-full px-4 py-2.5 text-sm text-right text-on-surface hover:bg-surface-variant/40 transition-colors" data-value="${name}">
+        <span class="inline-flex items-center gap-2"><span>${def.icon}</span><span>${name}</span></span>
+      </button>`).join('');
+
+    menu.querySelectorAll('.cat-option').forEach(btn => {
+      btn.addEventListener('click', () => {
+        this._setCategoryValue(btn.dataset.value || '');
+        menu.classList.add('hidden');
+        trigger.setAttribute('aria-expanded', 'false');
+      });
+    });
+
+    trigger.onclick = () => {
+      const isHidden = menu.classList.toggle('hidden');
+      trigger.setAttribute('aria-expanded', String(!isHidden));
+    };
+
+    document.addEventListener('click', (e) => {
+      if (!container.contains(e.target)) {
+        menu.classList.add('hidden');
+        trigger.setAttribute('aria-expanded', 'false');
+      }
+    });
+
+    this._setCategoryValue(current || '');
   },
 
 };
