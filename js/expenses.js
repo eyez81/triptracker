@@ -145,6 +145,8 @@ const Expenses = {
     this._editing = expense;
     document.getElementById('modal-expense-title').textContent = expense ? 'עריכת הוצאה' : 'הוצאה חדשה';
 
+    this._receiptFile = null;
+
     // Reset
     document.getElementById('exp-name').value = expense?.name || '';
     document.getElementById('exp-amount').value = expense?.amount || '';
@@ -164,9 +166,7 @@ const Expenses = {
     document.getElementById('exp-balance-date').value = expense?.balance_date?.slice(0,10) || '';
 
     // Category
-    document.querySelectorAll('input[name="exp-cat"]').forEach(r => {
-      r.checked = r.value === (expense?.category || '');
-    });
+    document.getElementById('exp-cat').value = expense?.category || '';
 
     // Payment type
     document.querySelectorAll('input[name="payment_type"]').forEach(r => {
@@ -180,7 +180,10 @@ const Expenses = {
     });
 
     // Receipt
+    document.getElementById('exp-receipt-camera').value = '';
+    document.getElementById('exp-receipt-gallery').value = '';
     document.getElementById('receipt-preview').classList.add('hidden');
+    document.getElementById('receipt-pdf-badge')?.classList.add('hidden');
     if (expense?.receipt) {
       const img = document.getElementById('receipt-preview');
       img.src = pb.fileUrl(expense, expense.receipt);
@@ -224,7 +227,7 @@ const Expenses = {
   async save() {
     const name = document.getElementById('exp-name').value.trim();
     const amount = parseFloat(document.getElementById('exp-amount').value);
-    const category = document.querySelector('input[name="exp-cat"]:checked')?.value;
+    const category = document.getElementById('exp-cat').value;
     const paymentType = document.querySelector('input[name="payment_type"]:checked')?.value || 'חד פעמי';
     const paymentMethod = document.querySelector('input[name="payment_method"]:checked')?.value || 'אשראי';
 
@@ -259,7 +262,7 @@ const Expenses = {
     };
 
     try {
-      const file = document.getElementById('exp-receipt').files[0];
+      const file = this._receiptFile || document.getElementById('exp-receipt-camera')?.files?.[0] || document.getElementById('exp-receipt-gallery')?.files?.[0];
       if (file) {
         const fd = new FormData();
         Object.entries(data).forEach(([k,v]) => { if (v != null) fd.append(k, v); });
@@ -535,12 +538,13 @@ const Expenses = {
   },
   _rebuildCategoryPills() {
     const container = document.getElementById('category-pills');
-    if (!container) return;
-    container.innerHTML = Object.entries(CATEGORIES).map(([name, def]) => `
-      <label class="cursor-pointer">
-        <input class="peer sr-only" name="exp-cat" type="radio" value="${name}"/>
-        <div class="px-3 py-1.5 rounded-full border border-outline/30 bg-surface-variant/20 text-on-surface-variant text-sm peer-checked:bg-primary-container peer-checked:text-on-primary-container peer-checked:border-primary transition-all">${def.icon} ${name}</div>
-      </label>`).join('');
+    const select = document.getElementById('exp-cat');
+    if (!container || !select) return;
+    const current = select.value;
+    select.innerHTML = ['<option value="">בחר קטגוריה</option>']
+      .concat(Object.entries(CATEGORIES).map(([name, def]) => `<option value="${name}">${def.icon} ${name}</option>`))
+      .join('');
+    select.value = current || '';
   },
 
 };
