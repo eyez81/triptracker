@@ -1,3 +1,72 @@
+const Lightbox = {
+  _zoomed: false,
+  _hintTimer: null,
+
+  open(url) {
+    const lb = document.getElementById('lightbox');
+    const img = document.getElementById('lightbox-img');
+    this._zoomed = false;
+    img.style.transform = 'scale(1)';
+    img.classList.replace('cursor-zoom-out', 'cursor-zoom-in');
+    img.src = url;
+    lb.classList.remove('hidden');
+    lb.style.opacity = '0';
+    document.body.style.overflow = 'hidden';
+    requestAnimationFrame(() => {
+      lb.style.transition = 'opacity 0.2s ease';
+      lb.style.opacity = '1';
+    });
+    this._showHint();
+  },
+
+  close() {
+    const lb = document.getElementById('lightbox');
+    lb.style.opacity = '0';
+    setTimeout(() => {
+      lb.classList.add('hidden');
+      document.getElementById('lightbox-img').src = '';
+      document.body.style.overflow = '';
+    }, 200);
+  },
+
+  toggleZoom(e) {
+    const img = document.getElementById('lightbox-img');
+    this._zoomed = !this._zoomed;
+    if (this._zoomed) {
+      const rect = img.getBoundingClientRect();
+      const ox = ((e.clientX - rect.left) / rect.width * 100).toFixed(1);
+      const oy = ((e.clientY - rect.top) / rect.height * 100).toFixed(1);
+      img.style.transformOrigin = `${ox}% ${oy}%`;
+      img.style.transform = 'scale(2.5)';
+      img.classList.replace('cursor-zoom-in', 'cursor-zoom-out');
+    } else {
+      img.style.transform = 'scale(1)';
+      img.style.transformOrigin = 'center center';
+      img.classList.replace('cursor-zoom-out', 'cursor-zoom-in');
+    }
+  },
+
+  _showHint() {
+    const hint = document.getElementById('lightbox-zoom-hint');
+    if (!hint) return;
+    hint.style.opacity = '1';
+    clearTimeout(this._hintTimer);
+    this._hintTimer = setTimeout(() => { hint.style.opacity = '0'; }, 2500);
+  },
+
+  _bind() {
+    document.getElementById('lightbox-backdrop').addEventListener('click', () => this.close());
+    document.getElementById('lightbox-close').addEventListener('click', () => this.close());
+    document.getElementById('lightbox-img').addEventListener('click', e => { e.stopPropagation(); this.toggleZoom(e); });
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape' && !document.getElementById('lightbox').classList.contains('hidden')) {
+        e.stopImmediatePropagation();
+        this.close();
+      }
+    }, true);
+  },
+};
+
 const App = {
   _prevScreen: 'trips',
   _theme: localStorage.getItem('theme') || 'dark',
@@ -8,6 +77,7 @@ const App = {
       const r = await fetch('http://192.168.0.176:8090/api/health', { signal: AbortSignal.timeout(1500) });
       if (r.ok) CONFIG.PB_URL = 'http://192.168.0.176:8090';
     } catch {}
+    Lightbox._bind();
     this._bind();
     this._syncCurrencyUI();
     if (pb.isAuth) await this.goToTrips();
