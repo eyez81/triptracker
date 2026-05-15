@@ -385,16 +385,30 @@ const Expenses = {
         </div>`;
     } else if (exp.payment_type === 'תשלומים' && exp.installments_count) {
       const per = (exp.amount_ils||0) / exp.installments_count;
+      // בנה פריסת תשלומים
+      let installRows = '';
+      for (let i = 0; i < exp.installments_count; i++) {
+        let installDate = '';
+        if (exp.first_payment_date) {
+          const d = new Date(exp.first_payment_date);
+          d.setMonth(d.getMonth() + i);
+          installDate = fmtDate(d.toISOString());
+        }
+        installRows += `<div class="flex justify-between items-center py-2 border-b border-white/5 text-sm">
+          <span class="text-on-surface-variant">תשלום ${i+1} מתוך ${exp.installments_count}</span>
+          <div class="text-left">
+            <span class="font-semibold text-on-surface">${Currency.fmtILS(per)}</span>
+            ${installDate ? `<span class="text-xs text-on-surface-variant mr-2">${installDate}</span>` : ''}
+          </div>
+        </div>`;
+      }
       paymentDetailsHTML = `
-        <div class="grid grid-cols-2 gap-3 mb-4">
-          <div class="bg-surface-container rounded-xl p-3 text-center">
-            <p class="text-xs text-on-surface-variant mb-1">סכום כולל</p>
-            <p class="font-bold text-on-surface text-lg">${Currency.fmtILS(exp.amount_ils)}</p>
+        <div class="bg-surface-container rounded-xl p-4 mb-4">
+          <div class="flex justify-between mb-3">
+            <span class="text-sm font-semibold text-on-surface">פריסת תשלומים</span>
+            <span class="text-sm text-on-surface-variant">סה"כ: ${Currency.fmtILS(exp.amount_ils)}</span>
           </div>
-          <div class="bg-surface-container rounded-xl p-3 text-center">
-            <p class="text-xs text-on-surface-variant mb-1">לתשלום (${exp.installments_count}×)</p>
-            <p class="font-bold text-primary text-lg">${Currency.fmtILS(per)}</p>
-          </div>
+          ${installRows}
         </div>`;
     } else {
       paymentDetailsHTML = `
@@ -449,15 +463,14 @@ const Expenses = {
       receiptHTML = `<img src="${pb.fileUrl(exp, exp.receipt)}" class="w-full rounded-xl max-h-48 object-contain mt-3" alt="קבלה"/>`;
     }
 
-    // כפתור סמן כשולם
+    // כפתור סמן כשולם — רק לעתידי ומקדמה+יתרה
     const markPaidBtn = document.getElementById('btn-mark-paid');
     if (markPaidBtn) {
-      if (exp.payment_type !== 'חד פעמי' || exp.payment_type === 'עתידי' || exp.payment_type === 'מקדמה+יתרה' || exp.payment_type === 'תשלומים') {
-        markPaidBtn.classList.remove('hidden');
-        markPaidBtn.textContent = exp.is_paid ? '↩ בטל סימון שולם' : '✓ סמן כשולם';
-        markPaidBtn.className = `w-full py-3 rounded-full font-semibold text-sm transition active:scale-95 ${exp.is_paid ? 'bg-surface-container text-on-surface-variant border border-white/10' : 'bg-secondary/15 text-secondary border border-secondary/30'}`;
-      } else {
-        markPaidBtn.classList.add('hidden');
+      const showMark = exp.payment_type === 'עתידי' || exp.payment_type === 'מקדמה+יתרה';
+      markPaidBtn.classList.toggle('hidden', !showMark);
+      if (showMark) {
+        markPaidBtn.textContent = exp.is_paid ? '↩ בטל סימון שולם' : '✓ סמן כשולם במלואו';
+        markPaidBtn.className = 'w-full py-3 rounded-full font-semibold text-sm transition active:scale-95 ' + (exp.is_paid ? 'bg-surface-container text-on-surface-variant border border-white/10' : 'bg-secondary/15 text-secondary border border-secondary/30');
       }
     }
 
