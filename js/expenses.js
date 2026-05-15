@@ -1,0 +1,325 @@
+const Expenses = {
+  _list: [],
+  _filtered: [],
+  _editing: null,
+  _viewing: null,
+  _activeFilter: null,
+
+  async loadForTrip(tripId) {
+    document.getElementById('expenses-list').innerHTML = `
+      <div class="text-center py-10 text-on-surface-variant">
+        <div class="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
+        <p>טוען...</p>
+      </div>`;
+    try {
+      const res = await pb.list(CONFIG.COLLECTIONS.EXPENSES, {
+        filter: `trip="${tripId}"`, sort: '-payment_date,-created', perPage: 500
+      });
+      this._list = res.items || [];
+      this._filtered = [...this._list];
+      this._activeFilter = null;
+      this._render();
+      this._renderSummary();
+      this._renderFilterPills();
+    } catch (e) {
+      document.getElementById('expenses-list').innerHTML = `<p class="text-center text-on-surface-variant py-8">שגיאה: ${e.message}</p>`;
+    }
+  },
+
+  _render() {
+    const el = document.getElementById('expenses-list');
+    if (!this._filtered.length) {
+      el.innerHTML = `<div class="text-center py-12 text-on-surface-variant">
+        <span class="material-symbols-outlined text-5xl block mb-3">receipt_long</span>
+        <p>אין הוצאות להצגה</p></div>`;
+      return;
+    }
+    el.innerHTML = this._filtered.map(e => this._itemHTML(e)).join('');
+    el.querySelectorAll('.expense-item').forEach(item => {
+      item.addEventListener('click', () => {
+        const exp = this._list.find(e => e.id === item.dataset.id);
+        if (exp) this.openView(exp);
+      });
+    });
+  },
+
+  _itemHTML(e) {
+    const cat = CATEGORIES[e.category] || { icon:'📦', color:'#9e9e9e' };
+    const typeTag = e.payment_type === 'עתידי'
+      ? `<span class="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">עתידי</span>`
+      : e.payment_type === 'מקדמה+יתרה'
+      ? `<span class="text-xs bg-tertiary/10 text-tertiary px-2 py-0.5 rounded-full">מקדמה</span>`
+      : e.payment_type === 'תשלומים'
+      ? `<span class="text-xs bg-secondary/10 text-secondary px-2 py-0.5 rounded-full">תשלומים</span>` : '';
+    const origStr = e.currency !== 'ILS' ? `<span class="text-xs text-on-surface-variant">${Currency.fmt(e.amount, e.currency, 2)}</span>` : '';
+    return `
+      <div class="glass-card p-4 rounded-xl flex items-center justify-between active:scale-[0.98] transition-transform cursor-pointer expense-item" data-id="${e.id}">
+        <div class="flex items-center gap-3">
+          <div class="w-12 h-12 rounded-lg flex items-center justify-center text-2xl" style="background:${cat.color}22">${cat.icon}</div>
+          <div>
+            <p class="font-semibold text-on-surface">${esc(e.name)}</p>
+            <div class="flex items-center gap-2 mt-0.5">
+              <span class="text-xs text-on-surface-variant">${esc(e.category)}</span>
+              ${e.payment_date ? `<span class="text-xs text-on-surface-variant">• ${fmtDate(e.payment_date)}</span>` : ''}
+              ${typeTag}
+            </div>
+          </div>
+        </div>
+        <div class="text-left flex-shrink-0">
+          <p class="font-bold text-error">${Currency.fmtILS(e.amount_ils)}-</p>
+          ${origStr}
+        </div>
+        <span class="material-symbols-outlined text-on-surface-variant mr-1">chevron_left</span>
+      </div>`;
+  },
+
+  _renderSummary() {
+    const trip = Trips.current;
+    const budget = Number(trip?.budget) || 0;
+    const actual = this._list.filter(e => e.payment_type !== 'עתידי');
+    const spent = actual.reduce((s,e) => s + (Number(e.amount_ils)||0), 0);
+    const remaining = budget - spent;
+    const pct = budget > 0 ? Math.round((spent/budget)*100) : 0;
+
+    document.getElementById('sum-spent').textContent = Currency.fmtILS(spent);
+    document.getElementById('sum-budget').textContent = budget ? `מתוך ${Currency.fmtILS(budget)}` : '';
+    document.getElementById('sum-used').textContent = Currency.fmtILS(spent);
+    document.getElementById('sum-remaining').textContent = budget ? Currency.fmtILS(Math.max(remaining,0)) : '—';
+
+    const fill = document.getElementById('budget-bar-fill');
+    fill.style.width = `${Math.min(pct,100)}%`;
+    fill.className = `absolute inset-y-0 right-0 h-full rounded-full transition-all duration-500 ${
+      pct >= 100 ? 'bg-error' : pct >= 80 ? 'bg-tertiary' : 'bg-secondary-container'
+    }`;
+    const pctEl = document.getElementById('budget-pct');
+    pctEl.textContent = budget ? `${pct}%` : '';
+    pctEl.className = `font-semibold text-sm whitespace-nowrap ${pct >= 100 ? 'text-error' : pct >= 80 ? 'text-tertiary' : 'text-secondary'}`;
+
+    const s = trip?.start_date ? fmtDate(trip.start_date) : '';
+    const en = trip?.end_date ? fmtDate(trip.end_date) : '';
+    document.getElementById('sum-dates').textContent = s && en ? `${s} – ${en}` : s;
+  },
+
+  _renderFilterPills() {
+    const cats = [...new Set(this._list.map(e => e.category))];
+    const el = document.getElementById('filter-pills');
+    el.innerHTML = `
+      <button class="filter-pill px-3 py-1.5 rounded-full text-xs font-medium transition-all border ${!this._activeFilter ? 'bg-primary-container text-on-primary-container border-primary' : 'border-outline/30 bg-surface-variant/20 text-on-surface-variant'}" data-cat="">הכל</button>
+      ${cats.map(c => {
+        const active = this._activeFilter === c;
+        return `<button class="filter-pill px-3 py-1.5 rounded-full text-xs font-medium transition-all border ${active ? 'bg-primary-container text-on-primary-container border-primary' : 'border-outline/30 bg-surface-variant/20 text-on-surface-variant'}" data-cat="${esc(c)}">${CATEGORIES[c]?.icon||''} ${esc(c)}</button>`;
+      }).join('')}`;
+    el.querySelectorAll('.filter-pill').forEach(btn => {
+      btn.addEventListener('click', () => {
+        this._activeFilter = btn.dataset.cat || null;
+        this._applyFilters();
+        this._renderFilterPills();
+      });
+    });
+  },
+
+  _applyFilters() {
+    const q = document.getElementById('expense-search').value.trim().toLowerCase();
+    this._filtered = this._list.filter(e => {
+      const matchCat = !this._activeFilter || e.category === this._activeFilter;
+      const matchQ = !q || e.name.toLowerCase().includes(q) || (e.category||'').toLowerCase().includes(q);
+      return matchCat && matchQ;
+    });
+    this._render();
+  },
+
+  // ===== MODAL ADD/EDIT =====
+  openModal(expense = null) {
+    this._editing = expense;
+    document.getElementById('modal-expense-title').textContent = expense ? 'עריכת הוצאה' : 'הוצאה חדשה';
+
+    // Reset
+    document.getElementById('exp-name').value = expense?.name || '';
+    document.getElementById('exp-amount').value = expense?.amount || '';
+    document.getElementById('exp-currency').value = expense?.currency || 'ILS';
+    document.getElementById('exp-rate').value = expense?.exchange_rate || '';
+    document.getElementById('exp-date').value = expense?.payment_date?.slice(0,10) || todayStr();
+    document.getElementById('exp-location').value = expense?.location || '';
+    document.getElementById('exp-link').value = expense?.link || '';
+    document.getElementById('exp-contact-name').value = expense?.contact_name || '';
+    document.getElementById('exp-contact-phone').value = expense?.contact_phone || '';
+    document.getElementById('exp-notes').value = expense?.notes || '';
+    document.getElementById('exp-installments').value = expense?.installments_count || '';
+    document.getElementById('exp-first-payment').value = expense?.first_payment_date?.slice(0,10) || '';
+    document.getElementById('exp-advance').value = expense?.advance_amount || '';
+    document.getElementById('exp-advance-date').value = expense?.advance_date?.slice(0,10) || '';
+    document.getElementById('exp-balance-date').value = expense?.balance_date?.slice(0,10) || '';
+
+    // Category
+    document.querySelectorAll('input[name="exp-cat"]').forEach(r => {
+      r.checked = r.value === (expense?.category || '');
+    });
+
+    // Payment type
+    document.querySelectorAll('input[name="payment_type"]').forEach(r => {
+      r.checked = r.value === (expense?.payment_type || 'חד פעמי');
+    });
+    this._updatePaymentTypeUI(expense?.payment_type || 'חד פעמי');
+
+    // Payment method
+    document.querySelectorAll('input[name="payment_method"]').forEach(r => {
+      r.checked = r.value === (expense?.payment_method || 'אשראי');
+    });
+
+    // Receipt
+    document.getElementById('receipt-preview').classList.add('hidden');
+    if (expense?.receipt) {
+      const img = document.getElementById('receipt-preview');
+      img.src = pb.fileUrl(expense, expense.receipt);
+      img.classList.remove('hidden');
+    }
+
+    this._updateCurrencyUI(expense?.currency || 'ILS');
+    App.openModal('modal-expense');
+  },
+
+  _updatePaymentTypeUI(type) {
+    document.getElementById('installments-extra').classList.toggle('hidden', type !== 'תשלומים');
+    document.getElementById('advance-extra').classList.toggle('hidden', type !== 'מקדמה+יתרה');
+  },
+
+  _updateCurrencyUI(currency) {
+    const show = currency !== 'ILS';
+    document.getElementById('exchange-rate-container').classList.toggle('hidden', !show);
+    if (show) this._updateILSPreview();
+  },
+
+  _updateILSPreview() {
+    const amt = parseFloat(document.getElementById('exp-amount').value) || 0;
+    const rate = parseFloat(document.getElementById('exp-rate').value) || 0;
+    const el = document.getElementById('amount-ils-preview');
+    el.textContent = amt && rate ? `= ${Currency.fmtILS(amt * rate)}` : '';
+  },
+
+  async fetchRate() {
+    const currency = document.getElementById('exp-currency').value;
+    if (currency === 'ILS') return;
+    showToast('מעדכן שער...');
+    try {
+      const rate = await Currency.getRate(currency);
+      document.getElementById('exp-rate').value = rate.toFixed(4);
+      this._updateILSPreview();
+      showToast(`שער: 1 ${currency} = ₪${rate.toFixed(4)}`);
+    } catch { showToast('לא ניתן לעדכן שער'); }
+  },
+
+  async save() {
+    const name = document.getElementById('exp-name').value.trim();
+    const amount = parseFloat(document.getElementById('exp-amount').value);
+    const category = document.querySelector('input[name="exp-cat"]:checked')?.value;
+    const paymentType = document.querySelector('input[name="payment_type"]:checked')?.value || 'חד פעמי';
+    const paymentMethod = document.querySelector('input[name="payment_method"]:checked')?.value || 'אשראי';
+
+    if (!name) { showToast('נא להזין שם הוצאה'); return; }
+    if (!amount || isNaN(amount)) { showToast('נא להזין סכום'); return; }
+    if (!category) { showToast('נא לבחור קטגוריה'); return; }
+
+    const currency = document.getElementById('exp-currency').value;
+    const rate = currency === 'ILS' ? 1 : (parseFloat(document.getElementById('exp-rate').value) || 1);
+    const amountILS = amount * rate;
+
+    const data = {
+      trip: Trips.current.id,
+      name, amount, currency,
+      exchange_rate: rate,
+      amount_ils: amountILS,
+      category,
+      payment_type: paymentType,
+      payment_method: paymentMethod,
+      payment_date: document.getElementById('exp-date').value || null,
+      location: document.getElementById('exp-location').value.trim() || null,
+      link: document.getElementById('exp-link').value.trim() || null,
+      contact_name: document.getElementById('exp-contact-name').value.trim() || null,
+      contact_phone: document.getElementById('exp-contact-phone').value.trim() || null,
+      notes: document.getElementById('exp-notes').value.trim() || null,
+      installments_count: parseInt(document.getElementById('exp-installments').value) || null,
+      first_payment_date: document.getElementById('exp-first-payment').value || null,
+      advance_amount: parseFloat(document.getElementById('exp-advance').value) || null,
+      advance_date: document.getElementById('exp-advance-date').value || null,
+      balance_date: document.getElementById('exp-balance-date').value || null,
+      user: pb.userId,
+    };
+
+    try {
+      const file = document.getElementById('exp-receipt').files[0];
+      if (file) {
+        const fd = new FormData();
+        Object.entries(data).forEach(([k,v]) => { if (v != null) fd.append(k, v); });
+        fd.append('receipt', file);
+        if (this._editing) await pb.updateForm(CONFIG.COLLECTIONS.EXPENSES, this._editing.id, fd);
+        else await pb.createForm(CONFIG.COLLECTIONS.EXPENSES, fd);
+      } else {
+        if (this._editing) await pb.update(CONFIG.COLLECTIONS.EXPENSES, this._editing.id, data);
+        else await pb.create(CONFIG.COLLECTIONS.EXPENSES, data);
+      }
+      showToast(this._editing ? 'הוצאה עודכנה ✓' : 'הוצאה נוספה ✓');
+      App.closeModal('modal-expense');
+      await this.loadForTrip(Trips.current.id);
+    } catch (e) { showToast(`שגיאה: ${e.message}`); }
+  },
+
+  // ===== VIEW =====
+  openView(exp) {
+    this._viewing = exp;
+    document.getElementById('view-exp-name').textContent = exp.name;
+    const cat = CATEGORIES[exp.category] || { icon:'📦' };
+    const row = (label, val, isLink) => val ? `
+      <div class="flex justify-between py-3 border-b border-white/5 text-sm">
+        <span class="text-on-surface-variant">${label}</span>
+        <span class="font-medium text-on-surface text-left">${isLink ? `<a href="${val}" target="_blank" class="text-primary underline">${esc(val)}</a>` : esc(val)}</span>
+      </div>` : '';
+
+    let html = row('סכום (₪)', Currency.fmtILS(exp.amount_ils));
+    if (exp.currency !== 'ILS') html += row('סכום מקורי', `${Currency.fmt(exp.amount, exp.currency, 2)} (שער: ${exp.exchange_rate})`);
+    html += row('קטגוריה', `${cat.icon} ${exp.category}`);
+    html += row('סוג תשלום', exp.payment_type);
+    html += row('אמצעי תשלום', exp.payment_method);
+    html += row('תאריך', exp.payment_date ? fmtDate(exp.payment_date) : null);
+    html += row('מיקום', exp.location);
+    html += row('קישור', exp.link, true);
+    html += row('הערות', exp.notes);
+    if (exp.contact_name || exp.contact_phone) {
+      html += row('איש קשר', exp.contact_name);
+      if (exp.contact_phone) {
+        const p = exp.contact_phone.replace(/\s/g,'');
+        html += `<div class="flex gap-2 py-3 border-b border-white/5">
+          <a href="tel:${p}" class="flex-1 py-2 glass-card rounded-full text-center text-sm text-on-surface flex items-center justify-center gap-1">
+            <span class="material-symbols-outlined text-base">call</span> חייג
+          </a>
+          <a href="https://wa.me/${p.replace('+','')}" target="_blank" class="flex-1 py-2 glass-card rounded-full text-center text-sm text-[#25D366] flex items-center justify-center gap-1">
+            💬 WhatsApp
+          </a>
+        </div>`;
+      }
+    }
+    if (exp.receipt) {
+      html += `<img src="${pb.fileUrl(exp, exp.receipt)}" class="w-full rounded-xl max-h-48 object-contain mt-3" alt="קבלה"/>`;
+    }
+
+    document.getElementById('view-expense-body').innerHTML = html;
+    App.openModal('modal-view-expense');
+  },
+
+  async delete() {
+    if (!this._viewing) return;
+    if (!confirm(`למחוק את "${this._viewing.name}"?`)) return;
+    try {
+      await pb.delete(CONFIG.COLLECTIONS.EXPENSES, this._viewing.id);
+      showToast('הוצאה נמחקה');
+      App.closeModal('modal-view-expense');
+      await this.loadForTrip(Trips.current.id);
+    } catch (e) { showToast(`שגיאה: ${e.message}`); }
+  },
+
+  editCurrent() {
+    App.closeModal('modal-view-expense');
+    this.openModal(this._viewing);
+  },
+};
+
+function todayStr() { return new Date().toISOString().slice(0,10); }

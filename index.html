@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html class="dark" dir="rtl" lang="he">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <title>מעקב הוצאות</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "background": "#0b1326",
+            "surface": "#0b1326",
+            "surface-container": "#171f33",
+            "surface-container-low": "#131b2e",
+            "surface-container-high": "#222a3d",
+            "surface-container-highest": "#2d3449",
+            "surface-bright": "#31394d",
+            "surface-variant": "#2d3449",
+            "on-surface": "#dae2fd",
+            "on-surface-variant": "#c3c6d7",
+            "primary": "#b4c5ff",
+            "primary-container": "#2563eb",
+            "on-primary": "#002a78",
+            "on-primary-container": "#eeefff",
+            "secondary": "#4edea3",
+            "secondary-container": "#00a572",
+            "on-secondary": "#003824",
+            "on-secondary-container": "#00311f",
+            "tertiary": "#ffb2b9",
+            "tertiary-container": "#bd4257",
+            "error": "#ffb4ab",
+            "error-container": "#93000a",
+            "outline": "#8d90a0",
+            "outline-variant": "#434655",
+            "on-background": "#dae2fd",
+            "inverse-surface": "#dae2fd",
+            "inverse-on-surface": "#283044",
+          },
+          borderRadius: {
+            "DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"
+          },
+          fontFamily: {
+            sans: ["Plus Jakarta Sans", "sans-serif"],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #0b1326; min-height: 100dvh; }
+    .glass-card { background: rgba(45,52,73,0.4); backdrop-filter: blur(24px); border: 1px solid rgba(255,255,255,0.08); }
+    .glass-container { background: rgba(23,31,51,0.6); backdrop-filter: blur(24px); border: 1px solid rgba(255,255,255,0.1); }
+    .inner-glow { box-shadow: inset 0 1px 0 rgba(255,255,255,0.1); }
+    .material-symbols-outlined { font-variation-settings: 'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24; }
+    .screen { display: none; min-height: 100dvh; flex-direction: column; }
+    .screen.active { display: flex; }
+    select { appearance: none; }
+    [dir="rtl"] select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23b4c5ff'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: left 0.75rem center; background-size: 1.25rem; padding-left: 2.5rem; }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  </style>
+</head>
+<body class="bg-background text-on-background pb-safe">
+
+<!-- ==================== AUTH SCREEN ==================== -->
+<div id="screen-auth" class="screen active items-center justify-center p-5 relative overflow-hidden">
+  <div class="absolute inset-0 z-0">
+    <div class="absolute top-[-10%] left-[-10%] w-[60%] h-[60%] rounded-full bg-primary/10 blur-[120px]"></div>
+    <div class="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-secondary-container/10 blur-[100px]"></div>
+    <div class="absolute inset-0 opacity-20" style="background-image:radial-gradient(#ffffff 1px,transparent 1px);background-size:40px 40px;"></div>
+  </div>
+  <main class="relative z-10 w-full max-w-[440px]">
+    <div class="flex flex-col items-center mb-8 text-center">
+      <div class="w-16 h-16 rounded-xl bg-primary-container flex items-center justify-center mb-4 shadow-lg">
+        <span class="material-symbols-outlined text-on-primary-container text-[32px]">flight_takeoff</span>
+      </div>
+      <h1 class="text-4xl font-bold text-primary mb-1">מעקב הוצאות</h1>
+      <p class="text-on-surface-variant">ניהול פיננסי חכם לטיול המשפחתי</p>
+    </div>
+    <div class="glass-container p-8 rounded-lg shadow-2xl">
+      <div class="space-y-4">
+        <div class="space-y-2">
+          <label class="font-semibold text-on-surface block pr-1">אימייל</label>
+          <div class="relative group">
+            <span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-outline group-focus-within:text-primary transition-colors">mail</span>
+            <input id="auth-email" type="email" placeholder="yourname@email.com" autocomplete="email"
+              class="w-full h-14 pr-12 pl-4 bg-surface-container-high border-2 border-transparent rounded-DEFAULT text-on-surface placeholder:text-outline focus:border-primary-container focus:outline-none transition-all"/>
+          </div>
+        </div>
+        <div class="space-y-2">
+          <label class="font-semibold text-on-surface block pr-1">סיסמה</label>
+          <div class="relative group">
+            <span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-outline group-focus-within:text-primary transition-colors">lock</span>
+            <input id="auth-password" type="password" placeholder="••••••••" autocomplete="current-password"
+              class="w-full h-14 pr-12 pl-4 bg-surface-container-high border-2 border-transparent rounded-DEFAULT text-on-surface placeholder:text-outline focus:border-primary-container focus:outline-none transition-all"/>
+          </div>
+        </div>
+        <div id="auth-error" class="hidden text-error text-sm bg-error-container/20 border border-error/30 rounded-DEFAULT px-4 py-3"></div>
+        <button id="btn-login"
+          class="w-full h-14 bg-primary-container text-on-primary-container font-bold text-lg rounded-DEFAULT shadow-md hover:brightness-110 active:scale-[0.98] transition-all mt-2">
+          התחברות
+        </button>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- ==================== TRIPS SCREEN ==================== -->
+<div id="screen-trips" class="screen flex-col pb-24">
+  <header class="w-full top-0 sticky z-50 bg-surface/80 backdrop-blur-xl border-b border-white/10 flex flex-row-reverse justify-between items-center px-5 h-16">
+    <span class="font-bold text-xl text-primary">מעקב הוצאות</span>
+    <div class="flex items-center gap-2">
+      <button id="btn-logout" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-variant/50 transition active:scale-95">
+        <span class="material-symbols-outlined text-on-surface-variant">logout</span>
+      </button>
+    </div>
+  </header>
+  <main class="flex-1 px-5 pt-6 max-w-2xl mx-auto w-full space-y-6">
+    <div>
+      <h1 class="text-3xl font-bold text-on-surface">הטיולים שלי</h1>
+      <p class="text-on-surface-variant mt-1">נהלו את תקציב המשפחה בדרכים</p>
+    </div>
+    <div id="trips-upcoming-section">
+      <h2 class="text-secondary font-semibold text-sm mb-3">טיולים קרובים</h2>
+      <div id="trips-upcoming" class="space-y-3"></div>
+    </div>
+    <div id="trips-past-section">
+      <h2 class="text-on-surface-variant font-semibold text-sm mb-3 flex items-center gap-2">
+        <span class="material-symbols-outlined text-base">history</span> טיולי עבר
+      </h2>
+      <div id="trips-past" class="space-y-3 opacity-80"></div>
+    </div>
+    <div id="trips-empty" class="hidden text-center py-16 text-on-surface-variant">
+      <span class="material-symbols-outlined text-5xl mb-3 block">flight_takeoff</span>
+      <p>אין עדיין טיולים<br/>לחץ + כדי להוסיף טיול חדש</p>
+    </div>
+    <div id="trips-loading" class="text-center py-16 text-on-surface-variant">
+      <div class="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
+      <p>טוען...</p>
+    </div>
+  </main>
+  <button id="btn-add-trip"
+    class="fixed bottom-24 left-5 z-50 bg-primary-container text-on-primary-container px-6 py-4 rounded-xl shadow-xl flex items-center gap-3 active:scale-95 transition-transform font-semibold">
+    <span class="material-symbols-outlined">add</span> טיול חדש
+  </button>
+  <nav class="fixed bottom-0 w-full z-50 bg-surface/80 backdrop-blur-xl border-t border-white/10 rounded-t-lg flex flex-row-reverse justify-around items-center h-20 px-4">
+    <a class="flex flex-col items-center bg-primary-container text-on-primary-container rounded-xl px-8 py-1 active:scale-90 transition">
+      <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1">flight_takeoff</span>
+      <span class="text-xs mt-1 font-medium">טיולים</span>
+    </a>
+    <a id="nav-settings-trips" href="#" class="flex flex-col items-center text-on-surface-variant hover:text-primary transition active:scale-90">
+      <span class="material-symbols-outlined">settings</span>
+      <span class="text-xs mt-1 font-medium">הגדרות</span>
+    </a>
+  </nav>
+</div>
+
+<!-- ==================== TRIP DETAIL SCREEN ==================== -->
+<div id="screen-trip" class="screen flex-col pb-24">
+  <header class="w-full top-0 sticky z-50 bg-surface/80 backdrop-blur-xl border-b border-white/10 flex flex-row-reverse justify-between items-center px-5 h-16">
+    <div class="flex items-center gap-2">
+      <button id="btn-back-trips" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-variant/50 transition active:scale-95">
+        <span class="material-symbols-outlined text-on-surface-variant">arrow_forward</span>
+      </button>
+      <span id="trip-header-title" class="font-bold text-lg text-primary"></span>
+    </div>
+    <div class="flex items-center gap-1">
+      <button id="btn-export-excel" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-variant/50 transition active:scale-95" title="ייצוא Excel">
+        <span class="material-symbols-outlined text-on-surface-variant">download</span>
+      </button>
+      <button id="btn-edit-trip" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-variant/50 transition active:scale-95" title="עריכת טיול">
+        <span class="material-symbols-outlined text-on-surface-variant">edit</span>
+      </button>
+    </div>
+  </header>
+  <main class="flex-1 px-5 pt-6 max-w-2xl mx-auto w-full space-y-5">
+    <!-- Budget card -->
+    <div class="glass-card rounded-lg p-6 space-y-4">
+      <div class="flex justify-between items-end">
+        <div>
+          <span class="text-on-surface-variant text-sm font-medium">מעקב תקציב</span>
+          <h2 id="sum-spent" class="text-secondary text-3xl font-bold">₪0</h2>
+        </div>
+        <span id="sum-budget" class="text-on-surface-variant text-sm">מתוך ₪0</span>
+      </div>
+      <div class="flex items-center gap-3">
+        <div class="relative h-3 flex-grow bg-surface-container rounded-full overflow-hidden">
+          <div id="budget-bar-fill" class="absolute inset-y-0 right-0 h-full rounded-full transition-all duration-500" style="width:0%"></div>
+        </div>
+        <span id="budget-pct" class="text-secondary font-semibold text-sm whitespace-nowrap">0%</span>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div class="bg-surface-container/50 p-3 rounded-xl">
+          <span class="text-on-surface-variant text-xs">נוצל</span>
+          <p id="sum-used" class="text-on-surface font-semibold mt-1">₪0</p>
+        </div>
+        <div class="bg-surface-container/50 p-3 rounded-xl">
+          <span class="text-on-surface-variant text-xs">נותר</span>
+          <p id="sum-remaining" class="text-on-surface font-semibold mt-1">₪0</p>
+        </div>
+      </div>
+      <div id="sum-dates" class="text-on-surface-variant text-xs"></div>
+    </div>
+
+    <!-- Search + Filter -->
+    <div class="flex gap-3">
+      <div class="relative flex-grow">
+        <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-xl">search</span>
+        <input id="expense-search" type="text" placeholder="חיפוש הוצאה..."
+          class="w-full bg-surface-container-high border-none rounded-xl pr-10 pl-4 py-3 text-on-surface placeholder:text-on-surface-variant focus:ring-2 focus:ring-primary outline-none"/>
+      </div>
+      <button id="btn-filter" class="w-12 h-12 flex items-center justify-center bg-surface-container-high rounded-xl text-on-surface-variant hover:text-primary transition">
+        <span class="material-symbols-outlined">filter_list</span>
+      </button>
+    </div>
+
+    <!-- Filter dropdown (hidden by default) -->
+    <div id="filter-panel" class="hidden glass-card rounded-xl p-4 space-y-3">
+      <p class="text-sm font-semibold text-on-surface-variant">סינון לפי קטגוריה</p>
+      <div id="filter-pills" class="flex flex-wrap gap-2"></div>
+    </div>
+
+    <!-- Expenses list -->
+    <div>
+      <div class="flex justify-between items-center mb-3">
+        <h3 class="font-bold text-lg text-on-surface">הוצאות</h3>
+      </div>
+      <div id="expenses-list" class="space-y-3">
+        <div class="text-center py-10 text-on-surface-variant">
+          <div class="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
+          <p>טוען...</p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <button id="btn-add-expense"
+    class="fixed bottom-24 left-5 z-50 bg-primary-container text-on-primary-container px-6 py-4 rounded-xl shadow-xl flex items-center gap-3 active:scale-95 transition-transform font-semibold">
+    <span class="material-symbols-outlined">add</span> הוצאה חדשה
+  </button>
+
+  <nav class="fixed bottom-0 w-full z-50 bg-surface/80 backdrop-blur-xl border-t border-white/10 rounded-t-lg flex flex-row-reverse justify-around items-center h-20 px-4">
+    <a id="nav-trips-from-trip" href="#" class="flex flex-col items-center bg-primary-container text-on-primary-container rounded-xl px-8 py-1 active:scale-90 transition">
+      <span class="material-symbols-outlined">flight_takeoff</span>
+      <span class="text-xs mt-1 font-medium">טיולים</span>
+    </a>
+    <a id="nav-settings-trip" href="#" class="flex flex-col items-center text-on-surface-variant hover:text-primary transition active:scale-90">
+      <span class="material-symbols-outlined">settings</span>
+      <span class="text-xs mt-1 font-medium">הגדרות</span>
+    </a>
+  </nav>
+</div>
+
+<!-- ==================== SETTINGS SCREEN ==================== -->
+<div id="screen-settings" class="screen flex-col pb-24">
+  <header class="w-full top-0 sticky z-50 bg-surface/80 backdrop-blur-xl border-b border-white/10 flex flex-row-reverse justify-between items-center px-5 h-16">
+    <div class="flex items-center gap-2">
+      <span class="material-symbols-outlined text-primary">settings</span>
+      <span class="font-bold text-xl text-primary">הגדרות</span>
+    </div>
+    <button id="btn-back-from-settings" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-variant/50 transition active:scale-95">
+      <span class="material-symbols-outlined text-on-surface-variant">arrow_forward</span>
+    </button>
+  </header>
+  <main class="flex-1 px-5 pt-6 max-w-2xl mx-auto w-full space-y-8">
+    <!-- Profile -->
+    <section class="space-y-3">
+      <h2 class="flex items-center gap-2 text-lg font-semibold text-on-surface">
+        <span class="material-symbols-outlined text-secondary">person</span> פרופיל
+      </h2>
+      <div class="glass-card rounded-lg p-4 space-y-3 inner-glow">
+        <div>
+          <label class="text-xs text-primary font-medium block mb-1 pr-1">שם תצוגה</label>
+          <input id="settings-display-name" type="text" placeholder="הכנס שם"
+            class="w-full bg-surface-container-highest border-none rounded-full px-5 py-3 text-on-surface focus:ring-2 focus:ring-primary-container outline-none"/>
+        </div>
+        <button id="btn-change-password"
+          class="w-full py-3 px-5 bg-secondary-container text-on-secondary-container rounded-full font-semibold flex items-center justify-center gap-2 hover:opacity-90 active:scale-95 transition">
+          <span class="material-symbols-outlined">lock_reset</span> שינוי סיסמה
+        </button>
+      </div>
+    </section>
+    <!-- Default currency -->
+    <section class="space-y-3">
+      <h2 class="flex items-center gap-2 text-lg font-semibold text-on-surface">
+        <span class="material-symbols-outlined text-secondary">payments</span> מטבע ברירת מחדל
+      </h2>
+      <div class="glass-card rounded-lg p-4 inner-glow">
+        <div class="grid grid-cols-4 gap-2">
+          <button class="currency-btn p-3 rounded-lg bg-primary-container text-on-primary-container border-2 border-primary-container flex flex-col items-center" data-currency="ILS">
+            <span class="text-xl font-bold">₪</span><span class="text-xs">ILS</span>
+          </button>
+          <button class="currency-btn p-3 rounded-lg bg-surface-container-highest text-on-surface-variant border-2 border-transparent flex flex-col items-center" data-currency="USD">
+            <span class="text-xl font-bold">$</span><span class="text-xs">USD</span>
+          </button>
+          <button class="currency-btn p-3 rounded-lg bg-surface-container-highest text-on-surface-variant border-2 border-transparent flex flex-col items-center" data-currency="EUR">
+            <span class="text-xl font-bold">€</span><span class="text-xs">EUR</span>
+          </button>
+          <button class="currency-btn p-3 rounded-lg bg-surface-container-highest text-on-surface-variant border-2 border-transparent flex flex-col items-center" data-currency="GBP">
+            <span class="text-xl font-bold">£</span><span class="text-xs">GBP</span>
+          </button>
+          <button class="currency-btn p-3 rounded-lg bg-surface-container-highest text-on-surface-variant border-2 border-transparent flex flex-col items-center" data-currency="JPY">
+            <span class="text-xl font-bold">¥</span><span class="text-xs">JPY</span>
+          </button>
+          <button class="currency-btn p-3 rounded-lg bg-surface-container-highest text-on-surface-variant border-2 border-transparent flex flex-col items-center" data-currency="THB">
+            <span class="text-xl font-bold">฿</span><span class="text-xs">THB</span>
+          </button>
+          <button class="currency-btn p-3 rounded-lg bg-surface-container-highest text-on-surface-variant border-2 border-transparent flex flex-col items-center" data-currency="TRY">
+            <span class="text-xl font-bold">₺</span><span class="text-xs">TRY</span>
+          </button>
+          <button class="currency-btn p-3 rounded-lg bg-surface-container-highest text-on-surface-variant border-2 border-transparent flex flex-col items-center" data-currency="AED">
+            <span class="text-xs font-bold">د.إ</span><span class="text-xs">AED</span>
+          </button>
+        </div>
+      </div>
+    </section>
+    <!-- Data -->
+    <section class="space-y-3">
+      <h2 class="flex items-center gap-2 text-lg font-semibold text-on-surface">
+        <span class="material-symbols-outlined text-secondary">database</span> נתונים
+      </h2>
+      <div class="grid grid-cols-1 gap-3">
+        <button id="btn-export-all"
+          class="glass-card p-4 rounded-lg flex items-center gap-4 hover:bg-white/10 active:scale-95 transition inner-glow group">
+          <div class="w-12 h-12 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-400 group-hover:scale-110 transition">
+            <span class="material-symbols-outlined">table_chart</span>
+          </div>
+          <span class="font-semibold text-on-surface">ייצוא כל הטיולים ל-Excel</span>
+        </button>
+      </div>
+    </section>
+    <!-- About -->
+    <section class="pt-4 border-t border-white/5 text-center space-y-2">
+      <div class="w-14 h-14 rounded-xl bg-surface-container-highest flex items-center justify-center mx-auto mb-2">
+        <span class="material-symbols-outlined text-primary text-3xl">wallet</span>
+      </div>
+      <p class="font-semibold text-on-surface">מעקב הוצאות משפחתי</p>
+      <p class="text-xs text-on-surface-variant">גרסה 1.0.0</p>
+    </section>
+  </main>
+  <nav class="fixed bottom-0 w-full z-50 bg-surface/80 backdrop-blur-xl border-t border-white/10 rounded-t-lg flex flex-row-reverse justify-around items-center h-20 px-4">
+    <a id="nav-trips-from-settings" href="#" class="flex flex-col items-center text-on-surface-variant hover:text-primary transition active:scale-90">
+      <span class="material-symbols-outlined">flight_takeoff</span>
+      <span class="text-xs mt-1 font-medium">טיולים</span>
+    </a>
+    <a class="flex flex-col items-center bg-secondary-container text-on-secondary-container rounded-full px-6 py-2 active:scale-90 transition">
+      <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1">settings</span>
+      <span class="text-xs mt-1 font-medium">הגדרות</span>
+    </a>
+  </nav>
+</div>
+
+<!-- ==================== MODAL: ADD/EDIT TRIP ==================== -->
+<div id="modal-trip" class="hidden fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-end justify-center">
+  <div class="glass-container w-full max-w-lg rounded-t-2xl p-6 space-y-4 max-h-[90dvh] overflow-y-auto">
+    <div class="flex justify-between items-center">
+      <h3 id="modal-trip-title" class="text-xl font-bold text-on-surface">טיול חדש</h3>
+      <button data-close="modal-trip" class="text-on-surface-variant hover:text-on-surface">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+    <div class="space-y-3">
+      <div>
+        <label class="text-xs text-primary font-medium block mb-1 pr-1">שם הטיול *</label>
+        <input id="trip-name" type="text" placeholder="חופשת קיץ 2025"
+          class="w-full bg-surface-container-highest border-none rounded-full px-5 py-3 text-on-surface focus:ring-2 focus:ring-primary-container outline-none"/>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="text-xs text-primary font-medium block mb-1 pr-1">תאריך התחלה</label>
+          <input id="trip-start" type="date" class="w-full bg-surface-container-highest border-none rounded-full px-5 py-3 text-on-surface focus:ring-2 focus:ring-primary-container outline-none [color-scheme:dark]"/>
+        </div>
+        <div>
+          <label class="text-xs text-primary font-medium block mb-1 pr-1">תאריך סיום</label>
+          <input id="trip-end" type="date" class="w-full bg-surface-container-highest border-none rounded-full px-5 py-3 text-on-surface focus:ring-2 focus:ring-primary-container outline-none [color-scheme:dark]"/>
+        </div>
+      </div>
+      <div>
+        <label class="text-xs text-primary font-medium block mb-1 pr-1">תקציב (₪)</label>
+        <input id="trip-budget" type="number" placeholder="10000" min="0"
+          class="w-full bg-surface-container-highest border-none rounded-full px-5 py-3 text-on-surface focus:ring-2 focus:ring-primary-container outline-none"/>
+      </div>
+      <div>
+        <label class="text-xs text-primary font-medium block mb-1 pr-1">יעד</label>
+        <input id="trip-destination" type="text" placeholder="פריז, יפן..."
+          class="w-full bg-surface-container-highest border-none rounded-full px-5 py-3 text-on-surface focus:ring-2 focus:ring-primary-container outline-none"/>
+      </div>
+    </div>
+    <div class="flex gap-3 pt-2">
+      <button data-close="modal-trip" class="flex-1 py-3 bg-surface-container-high text-on-surface-variant rounded-full font-semibold">ביטול</button>
+      <button id="btn-save-trip" class="flex-1 py-3 bg-primary-container text-on-primary-container rounded-full font-bold">שמור</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== MODAL: ADD/EDIT EXPENSE ==================== -->
+<div id="modal-expense" class="hidden fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-end justify-center">
+  <div class="glass-container w-full max-w-lg rounded-t-2xl max-h-[96dvh] flex flex-col">
+    <div class="flex justify-between items-center p-6 pb-4 flex-shrink-0">
+      <h3 id="modal-expense-title" class="text-xl font-bold text-on-surface">הוצאה חדשה</h3>
+      <button data-close="modal-expense" class="text-on-surface-variant hover:text-on-surface">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+    <div class="overflow-y-auto flex-1 px-6 space-y-4 pb-4">
+      <!-- Name -->
+      <div>
+        <label class="text-xs text-primary font-medium block mb-1 pr-1">שם ההוצאה *</label>
+        <div class="glass-card rounded-full px-4 py-3 flex items-center gap-3 inner-glow">
+          <span class="material-symbols-outlined text-outline">description</span>
+          <input id="exp-name" type="text" placeholder="לדוגמה: ארוחת צהריים"
+            class="bg-transparent border-none p-0 w-full text-on-surface focus:ring-0 placeholder:text-on-surface-variant/50 outline-none"/>
+        </div>
+      </div>
+      <!-- Amount + Currency -->
+      <div>
+        <label class="text-xs text-primary font-medium block mb-1 pr-1">סכום ומטבע *</label>
+        <div class="flex gap-3">
+          <div class="glass-card rounded-full px-4 py-3 flex items-center gap-2 flex-grow inner-glow">
+            <span class="material-symbols-outlined text-outline">payments</span>
+            <input id="exp-amount" type="number" placeholder="0.00" step="0.01" min="0"
+              class="bg-transparent border-none p-0 w-full text-on-surface focus:ring-0 placeholder:text-on-surface-variant/50 outline-none"/>
+          </div>
+          <div class="glass-card rounded-full px-4 py-3 flex items-center min-w-[100px] inner-glow">
+            <select id="exp-currency" class="bg-transparent border-none p-0 w-full text-on-surface focus:ring-0 cursor-pointer outline-none">
+              <option value="ILS">₪ ILS</option>
+              <option value="USD">$ USD</option>
+              <option value="EUR">€ EUR</option>
+              <option value="GBP">£ GBP</option>
+              <option value="JPY">¥ JPY</option>
+              <option value="THB">฿ THB</option>
+              <option value="TRY">₺ TRY</option>
+              <option value="AED">د.إ AED</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <!-- Exchange rate (conditional) -->
+      <div id="exchange-rate-container" class="hidden">
+        <label class="text-xs text-primary font-medium block mb-1 pr-1">שער המרה לשקל</label>
+        <div class="flex gap-3">
+          <div class="glass-card rounded-full px-4 py-3 flex items-center gap-3 flex-grow inner-glow">
+            <span class="material-symbols-outlined text-outline">currency_exchange</span>
+            <input id="exp-rate" type="number" placeholder="3.75" step="0.0001"
+              class="bg-transparent border-none p-0 w-full text-on-surface focus:ring-0 placeholder:text-on-surface-variant/50 outline-none"/>
+          </div>
+          <button id="btn-fetch-rate" type="button"
+            class="bg-surface-container-high text-primary px-4 py-2 rounded-full font-semibold text-sm whitespace-nowrap active:scale-95 transition border border-white/5">
+            עדכן שער
+          </button>
+        </div>
+        <p id="amount-ils-preview" class="text-secondary text-sm pr-2 mt-2 font-medium"></p>
+      </div>
+      <!-- Category -->
+      <div>
+        <label class="text-xs text-primary font-medium block mb-1 pr-1">קטגוריה *</label>
+        <div class="flex flex-wrap gap-2" id="category-pills">
+          <label class="cursor-pointer"><input class="peer sr-only" name="exp-cat" type="radio" value="לינה"/>
+            <div class="px-3 py-1.5 rounded-full border border-outline/30 bg-surface-variant/20 text-on-surface-variant text-sm peer-checked:bg-primary-container peer-checked:text-on-primary-container peer-checked:border-primary transition-all">🏨 לינה</div></label>
+          <label class="cursor-pointer"><input class="peer sr-only" name="exp-cat" type="radio" value="אוכל ושתייה"/>
+            <div class="px-3 py-1.5 rounded-full border border-outline/30 bg-surface-variant/20 text-on-surface-variant text-sm peer-checked:bg-primary-container peer-checked:text-on-primary-container peer-checked:border-primary transition-all">🍽 אוכל ושתייה</div></label>
+          <label class="cursor-pointer"><input class="peer sr-only" name="exp-cat" type="radio" value="קניות"/>
+            <div class="px-3 py-1.5 rounded-full border border-outline/30 bg-surface-variant/20 text-on-surface-variant text-sm peer-checked:bg-primary-container peer-checked:text-on-primary-container peer-checked:border-primary transition-all">🛍 קניות</div></label>
+          <label class="cursor-pointer"><input class="peer sr-only" name="exp-cat" type="radio" value="אטרקציות"/>
+            <div class="px-3 py-1.5 rounded-full border border-outline/30 bg-surface-variant/20 text-on-surface-variant text-sm peer-checked:bg-primary-container peer-checked:text-on-primary-container peer-checked:border-primary transition-all">🎡 אטרקציות</div></label>
+          <label class="cursor-pointer"><input class="peer sr-only" name="exp-cat" type="radio" value="רכב שכור"/>
+            <div class="px-3 py-1.5 rounded-full border border-outline/30 bg-surface-variant/20 text-on-surface-variant text-sm peer-checked:bg-primary-container peer-checked:text-on-primary-container peer-checked:border-primary transition-all">🚗 רכב שכור</div></label>
+          <label class="cursor-pointer"><input class="peer sr-only" name="exp-cat" type="radio" value="תחבורה"/>
+            <div class="px-3 py-1.5 rounded-full border border-outline/30 bg-surface-variant/20 text-on-surface-variant text-sm peer-checked:bg-primary-container peer-checked:text-on-primary-container peer-checked:border-primary transition-all">🚌 תחבורה</div></label>
+          <label class="cursor-pointer"><input class="peer sr-only" name="exp-cat" type="radio" value="טיסות"/>
+            <div class="px-3 py-1.5 rounded-full border border-outline/30 bg-surface-variant/20 text-on-surface-variant text-sm peer-checked:bg-primary-container peer-checked:text-on-primary-container peer-checked:border-primary transition-all">✈ טיסות</div></label>
+          <label class="cursor-pointer"><input class="peer sr-only" name="exp-cat" type="radio" value="ביטוח"/>
+            <div class="px-3 py-1.5 rounded-full border border-outline/30 bg-surface-variant/20 text-on-surface-variant text-sm peer-checked:bg-primary-container peer-checked:text-on-primary-container peer-checked:border-primary transition-all">🛡 ביטוח</div></label>
+          <label class="cursor-pointer"><input class="peer sr-only" name="exp-cat" type="radio" value="אחר"/>
+            <div class="px-3 py-1.5 rounded-full border border-outline/30 bg-surface-variant/20 text-on-surface-variant text-sm peer-checked:bg-primary-container peer-checked:text-on-primary-container peer-checked:border-primary transition-all">📦 אחר</div></label>
+        </div>
+      </div>
+      <!-- Payment type -->
+      <div>
+        <label class="text-xs text-primary font-medium block mb-1 pr-1">סוג תשלום</label>
+        <div class="flex bg-surface-container-low rounded-full p-1 gap-1 overflow-x-auto no-scrollbar" id="payment-type-group">
+          <label class="flex-1 min-w-[72px] cursor-pointer"><input checked class="peer sr-only" name="payment_type" type="radio" value="חד פעמי"/>
+            <div class="py-2 text-center rounded-full text-xs transition-all peer-checked:bg-surface-bright peer-checked:text-primary peer-checked:shadow-sm text-on-surface-variant">חד פעמי</div></label>
+          <label class="flex-1 min-w-[72px] cursor-pointer"><input class="peer sr-only" name="payment_type" type="radio" value="תשלומים"/>
+            <div class="py-2 text-center rounded-full text-xs transition-all peer-checked:bg-surface-bright peer-checked:text-primary peer-checked:shadow-sm text-on-surface-variant">תשלומים</div></label>
+          <label class="flex-1 min-w-[90px] cursor-pointer"><input class="peer sr-only" name="payment_type" type="radio" value="מקדמה+יתרה"/>
+            <div class="py-2 text-center rounded-full text-xs transition-all peer-checked:bg-surface-bright peer-checked:text-primary peer-checked:shadow-sm text-on-surface-variant">מקדמה+יתרה</div></label>
+          <label class="flex-1 min-w-[60px] cursor-pointer"><input class="peer sr-only" name="payment_type" type="radio" value="עתידי"/>
+            <div class="py-2 text-center rounded-full text-xs transition-all peer-checked:bg-surface-bright peer-checked:text-primary peer-checked:shadow-sm text-on-surface-variant">עתידי</div></label>
+        </div>
+      </div>
+      <!-- Installments extra -->
+      <div id="installments-extra" class="hidden grid grid-cols-2 gap-3">
+        <div>
+          <label class="text-xs text-primary font-medium block mb-1 pr-1">מס׳ תשלומים</label>
+          <div class="glass-card rounded-full px-4 py-3 inner-glow">
+            <input id="exp-installments" type="number" placeholder="3" min="2" class="bg-transparent border-none p-0 w-full text-on-surface focus:ring-0 outline-none"/>
+          </div>
+        </div>
+        <div>
+          <label class="text-xs text-primary font-medium block mb-1 pr-1">תאריך ראשון</label>
+          <div class="glass-card rounded-full px-4 py-3 inner-glow">
+            <input id="exp-first-payment" type="date" class="bg-transparent border-none p-0 w-full text-on-surface focus:ring-0 outline-none [color-scheme:dark]"/>
+          </div>
+        </div>
+      </div>
+      <!-- Advance extra -->
+      <div id="advance-extra" class="hidden space-y-3">
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="text-xs text-primary font-medium block mb-1 pr-1">סכום מקדמה</label>
+            <div class="glass-card rounded-full px-4 py-3 inner-glow">
+              <input id="exp-advance" type="number" placeholder="500" min="0" class="bg-transparent border-none p-0 w-full text-on-surface focus:ring-0 outline-none"/>
+            </div>
+          </div>
+          <div>
+            <label class="text-xs text-primary font-medium block mb-1 pr-1">תאריך מקדמה</label>
+            <div class="glass-card rounded-full px-4 py-3 inner-glow">
+              <input id="exp-advance-date" type="date" class="bg-transparent border-none p-0 w-full text-on-surface focus:ring-0 outline-none [color-scheme:dark]"/>
+            </div>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="text-xs text-primary font-medium block mb-1 pr-1">אמצעי תשלום מקדמה</label>
+            <div class="glass-card rounded-full px-4 py-3 inner-glow">
+              <select id="exp-advance-method" class="bg-transparent border-none p-0 w-full text-on-surface focus:ring-0 outline-none cursor-pointer">
+                <option>אשראי</option><option>מזומן</option><option>העברה</option><option>ביט</option>
+              </select>
+            </div>
+          </div>
+          <div>
+            <label class="text-xs text-primary font-medium block mb-1 pr-1">אמצעי תשלום יתרה</label>
+            <div class="glass-card rounded-full px-4 py-3 inner-glow">
+              <select id="exp-balance-method" class="bg-transparent border-none p-0 w-full text-on-surface focus:ring-0 outline-none cursor-pointer">
+                <option>אשראי</option><option>מזומן</option><option>העברה</option><option>ביט</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div>
+          <label class="text-xs text-primary font-medium block mb-1 pr-1">תאריך תשלום יתרה</label>
+          <div class="glass-card rounded-full px-4 py-3 inner-glow">
+            <input id="exp-balance-date" type="date" class="bg-transparent border-none p-0 w-full text-on-surface focus:ring-0 outline-none [color-scheme:dark]"/>
+          </div>
+        </div>
+      </div>
+      <!-- Payment method -->
+      <div>
+        <label class="text-xs text-primary font-medium block mb-1 pr-1">אמצעי תשלום</label>
+        <div class="flex bg-surface-container-low rounded-full p-1 gap-1">
+          <label class="flex-1 cursor-pointer"><input checked class="peer sr-only" name="payment_method" type="radio" value="אשראי"/>
+            <div class="py-2 text-center rounded-full text-xs transition-all peer-checked:bg-surface-bright peer-checked:text-secondary peer-checked:shadow-sm text-on-surface-variant">אשראי</div></label>
+          <label class="flex-1 cursor-pointer"><input class="peer sr-only" name="payment_method" type="radio" value="מזומן"/>
+            <div class="py-2 text-center rounded-full text-xs transition-all peer-checked:bg-surface-bright peer-checked:text-secondary peer-checked:shadow-sm text-on-surface-variant">מזומן</div></label>
+          <label class="flex-1 cursor-pointer"><input class="peer sr-only" name="payment_method" type="radio" value="העברה"/>
+            <div class="py-2 text-center rounded-full text-xs transition-all peer-checked:bg-surface-bright peer-checked:text-secondary peer-checked:shadow-sm text-on-surface-variant">העברה</div></label>
+          <label class="flex-1 cursor-pointer"><input class="peer sr-only" name="payment_method" type="radio" value="ביט"/>
+            <div class="py-2 text-center rounded-full text-xs transition-all peer-checked:bg-surface-bright peer-checked:text-secondary peer-checked:shadow-sm text-on-surface-variant">ביט</div></label>
+        </div>
+      </div>
+      <!-- Date -->
+      <div>
+        <label class="text-xs text-primary font-medium block mb-1 pr-1">תאריך *</label>
+        <div class="glass-card rounded-full px-4 py-3 flex items-center gap-3 inner-glow">
+          <span class="material-symbols-outlined text-outline">calendar_today</span>
+          <input id="exp-date" type="date" class="bg-transparent border-none p-0 w-full text-on-surface focus:ring-0 outline-none [color-scheme:dark]"/>
+        </div>
+      </div>
+      <!-- Location -->
+      <div>
+        <label class="text-xs text-primary font-medium block mb-1 pr-1">מיקום (אופציונלי)</label>
+        <div class="glass-card rounded-full px-4 py-3 flex items-center gap-3 inner-glow">
+          <span class="material-symbols-outlined text-outline">location_on</span>
+          <input id="exp-location" type="text" placeholder="איפה זה קרה?" class="bg-transparent border-none p-0 w-full text-on-surface focus:ring-0 placeholder:text-on-surface-variant/50 outline-none"/>
+        </div>
+      </div>
+      <!-- Business link -->
+      <div>
+        <label class="text-xs text-primary font-medium block mb-1 pr-1">קישור לעסק (אופציונלי)</label>
+        <div class="glass-card rounded-full px-4 py-3 flex items-center gap-3 inner-glow">
+          <span class="material-symbols-outlined text-outline">link</span>
+          <input id="exp-link" type="url" placeholder="https://..." class="bg-transparent border-none p-0 w-full text-on-surface focus:ring-0 placeholder:text-on-surface-variant/50 outline-none"/>
+        </div>
+      </div>
+      <!-- Contact -->
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="text-xs text-primary font-medium block mb-1 pr-1">שם איש קשר</label>
+          <div class="glass-card rounded-full px-4 py-3 flex items-center gap-2 inner-glow">
+            <span class="material-symbols-outlined text-outline text-base">person</span>
+            <input id="exp-contact-name" type="text" placeholder="שם" class="bg-transparent border-none p-0 w-full text-on-surface focus:ring-0 placeholder:text-on-surface-variant/50 outline-none text-sm"/>
+          </div>
+        </div>
+        <div>
+          <label class="text-xs text-primary font-medium block mb-1 pr-1">טלפון</label>
+          <div class="glass-card rounded-full px-4 py-3 flex items-center gap-2 inner-glow">
+            <span class="material-symbols-outlined text-outline text-base">call</span>
+            <input id="exp-contact-phone" type="tel" placeholder="050-..." class="bg-transparent border-none p-0 w-full text-on-surface focus:ring-0 placeholder:text-on-surface-variant/50 outline-none text-sm"/>
+          </div>
+        </div>
+      </div>
+      <!-- Notes -->
+      <div>
+        <label class="text-xs text-primary font-medium block mb-1 pr-1">הערות (אופציונלי)</label>
+        <div class="glass-card rounded-xl px-4 py-3 flex items-start gap-3 inner-glow">
+          <span class="material-symbols-outlined text-outline mt-1">notes</span>
+          <textarea id="exp-notes" rows="2" placeholder="פרטים נוספים שכדאי לזכור..." class="bg-transparent border-none p-0 w-full text-on-surface focus:ring-0 placeholder:text-on-surface-variant/50 resize-none outline-none"></textarea>
+        </div>
+      </div>
+      <!-- Receipt -->
+      <div>
+        <label class="text-xs text-primary font-medium block mb-1 pr-1">העלאת קבלה (אופציונלי)</label>
+        <div class="grid grid-cols-2 gap-3">
+          <button type="button" id="btn-camera" class="glass-card rounded-xl p-4 flex flex-col items-center gap-2 hover:bg-surface-variant/40 active:scale-95 transition">
+            <span class="material-symbols-outlined text-primary text-3xl">photo_camera</span>
+            <span class="text-xs text-on-surface-variant">צלם קבלה</span>
+          </button>
+          <button type="button" id="btn-gallery" class="glass-card rounded-xl p-4 flex flex-col items-center gap-2 hover:bg-surface-variant/40 active:scale-95 transition">
+            <span class="material-symbols-outlined text-primary text-3xl">gallery_thumbnail</span>
+            <span class="text-xs text-on-surface-variant">מהגלריה</span>
+          </button>
+        </div>
+        <input type="file" id="exp-receipt" accept="image/*,application/pdf" class="hidden"/>
+        <img id="receipt-preview" class="hidden mt-3 w-full rounded-xl max-h-48 object-contain" alt="קבלה"/>
+      </div>
+    </div>
+    <div class="flex-shrink-0 p-6 pt-4 space-y-3">
+      <button id="btn-save-expense"
+        class="w-full h-14 bg-primary-container text-on-primary-container rounded-full font-bold text-lg shadow-lg active:scale-95 transition flex items-center justify-center gap-2">
+        <span class="material-symbols-outlined">save</span> שמור הוצאה
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== MODAL: VIEW EXPENSE ==================== -->
+<div id="modal-view-expense" class="hidden fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-end justify-center">
+  <div class="glass-container w-full max-w-lg rounded-t-2xl max-h-[90dvh] flex flex-col">
+    <div class="flex justify-between items-center p-6 pb-4 flex-shrink-0">
+      <h3 id="view-exp-name" class="text-xl font-bold text-on-surface">פרטי הוצאה</h3>
+      <button data-close="modal-view-expense" class="text-on-surface-variant hover:text-on-surface">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+    <div id="view-expense-body" class="overflow-y-auto flex-1 px-6 space-y-1 pb-4"></div>
+    <div class="flex-shrink-0 p-6 pt-4 space-y-3">
+      <div class="flex gap-3">
+        <button id="btn-delete-expense" class="flex-1 py-3 border border-error/30 text-error rounded-full font-semibold flex items-center justify-center gap-2 hover:bg-error/10 active:scale-95 transition">
+          <span class="material-symbols-outlined text-base">delete</span> מחק
+        </button>
+        <button id="btn-edit-expense" class="flex-1 py-3 bg-primary-container text-on-primary-container rounded-full font-semibold flex items-center justify-center gap-2 active:scale-95 transition">
+          <span class="material-symbols-outlined text-base">edit</span> ערוך
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== TOAST ==================== -->
+<div id="toast" class="hidden fixed bottom-24 left-1/2 -translate-x-1/2 z-[200] bg-surface-container-highest border border-white/10 text-on-surface px-5 py-3 rounded-full text-sm font-medium shadow-xl whitespace-nowrap max-w-[90vw] overflow-hidden text-ellipsis"></div>
+
+<script src="js/config.js"></script>
+<script src="js/api.js"></script>
+<script src="js/currency.js"></script>
+<script src="js/export.js"></script>
+<script src="js/trips.js"></script>
+<script src="js/expenses.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
