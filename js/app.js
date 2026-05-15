@@ -249,10 +249,14 @@ const App = {
     const name = document.getElementById('cat-name-input').value.trim();
     const icon = document.getElementById('cat-icon-value').value || '📦';
     if (!name) { showToast('נא להזין שם קטגוריה'); return; }
-    if (this._editingCatName && this._editingCatName !== name) {
-      delete CATEGORIES[this._editingCatName];
+
+    const previousName = this._editingCatName;
+    const existingColor = previousName ? CATEGORIES[previousName]?.color : null;
+
+    if (previousName && previousName !== name) {
+      delete CATEGORIES[previousName];
     }
-    const existingColor = this._editingCatName ? CATEGORIES[this._editingCatName]?.color : null;
+
     CATEGORIES[name] = { icon, color: existingColor || '#9e9e9e' };
     saveCategories(CATEGORIES);
     this.closeModal('modal-category');
