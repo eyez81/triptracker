@@ -324,14 +324,12 @@
       <h2 class="flex items-center gap-2 text-lg font-semibold text-on-surface">
         <span class="material-symbols-outlined text-secondary">category</span> קטגוריות
       </h2>
-      <div class="glass-card rounded-lg p-4 inner-glow space-y-2">
-        <div id="categories-list" class="space-y-1"></div>
-        <button id="btn-add-category"
-          class="w-full mt-3 py-3 bg-secondary-container text-on-secondary-container rounded-full font-semibold flex items-center justify-center gap-2 active:scale-95 transition">
+      <div class="glass-card rounded-lg p-4 inner-glow space-y-1">
+        <div id="categories-list"></div>
+        <button id="btn-add-category" class="w-full mt-3 py-3 bg-secondary-container text-on-secondary-container rounded-full font-semibold flex items-center justify-center gap-2 active:scale-95 transition">
           <span class="material-symbols-outlined">add</span> הוסף קטגוריה
         </button>
-        <button id="btn-reset-categories"
-          class="w-full py-2 text-on-surface-variant text-xs rounded-full active:scale-95 transition hover:text-error">
+        <button id="btn-reset-categories" class="w-full py-2 text-on-surface-variant text-xs rounded-full active:scale-95 transition hover:text-error">
           אפס לברירת מחדל
         </button>
       </div>
@@ -628,14 +626,14 @@
             <span class="text-xs text-on-surface-variant">קובץ / גלריה</span>
           </button>
         </div>
-        <!-- input נפרד למצלמה (iOS) -->
+        <!-- iOS: input נפרד עם capture למצלמה -->
         <input type="file" id="exp-receipt-camera" accept="image/*" capture="environment" class="hidden"/>
-        <!-- input נפרד לגלריה + PDF -->
+        <!-- גלריה + PDF -->
         <input type="file" id="exp-receipt-gallery" accept="image/*,application/pdf" class="hidden"/>
         <img id="receipt-preview" class="hidden mt-3 w-full rounded-xl max-h-48 object-contain" alt="קבלה"/>
-        <div id="receipt-pdf-icon" class="hidden mt-3 glass-card rounded-xl p-3 flex items-center gap-3">
+        <div id="receipt-pdf-badge" class="hidden mt-3 glass-card rounded-xl p-3 flex items-center gap-3">
           <span class="material-symbols-outlined text-error text-2xl">picture_as_pdf</span>
-          <span class="text-sm text-on-surface truncate"></span>
+          <span class="pdf-name text-sm text-on-surface truncate"></span>
         </div>
       </div>
     </div>
@@ -690,7 +688,7 @@
         <label class="text-xs text-primary font-medium block mb-1 pr-1">אייקון</label>
         <div class="flex items-center gap-3 mb-3">
           <span id="cat-selected-icon" class="text-4xl">📦</span>
-          <span class="text-on-surface-variant text-sm">לחץ על אמוג'י לבחירה</span>
+          <span class="text-on-surface-variant text-sm">לחץ על אמוג׳י לבחירה</span>
         </div>
         <input type="hidden" id="cat-icon-value" value="📦"/>
         <div id="cat-emoji-grid" class="grid grid-cols-8 gap-1 bg-surface-container rounded-xl p-3 max-h-48 overflow-y-auto"></div>
