@@ -246,7 +246,7 @@ const Expenses = {
     };
 
     try {
-      const file = (document.getElementById('exp-receipt-camera')?.files[0]) || (document.getElementById('exp-receipt-gallery')?.files[0]);
+      const file = document.getElementById('exp-receipt').files[0];
       if (file) {
         const fd = new FormData();
         Object.entries(data).forEach(([k,v]) => { if (v != null) fd.append(k, v); });
@@ -320,9 +320,6 @@ const Expenses = {
     App.closeModal('modal-view-expense');
     this.openModal(this._viewing);
   },
-};
-
-
   _rebuildCategoryPills() {
     const container = document.getElementById('category-pills');
     if (!container) return;
@@ -332,5 +329,7 @@ const Expenses = {
         <div class="px-3 py-1.5 rounded-full border border-outline/30 bg-surface-variant/20 text-on-surface-variant text-sm peer-checked:bg-primary-container peer-checked:text-on-primary-container peer-checked:border-primary transition-all">${def.icon} ${name}</div>
       </label>`).join('');
   },
+
+};
 
 function todayStr() { return new Date().toISOString().slice(0,10); }
