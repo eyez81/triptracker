@@ -347,7 +347,7 @@ const Expenses = {
       </div>
 
       <div class="pt-2">
-        <h4 class="font-bold text-on-surface mb-2">לוח תשלומים</h4>
+        <h4 class="font-bold text-on-surface mb-2 text-base">לוח תשלומים</h4>
         <div class="space-y-2">
           ${sum.rows.map(r => {
             const paid = sum.paidSet.has(r.idx);
@@ -355,12 +355,12 @@ const Expenses = {
               <div class="flex items-center justify-between gap-2">
                 <div>
                   <p class="font-semibold text-on-surface">תשלום ${r.idx} — ${r.type}</p>
-                  <p class="text-xs text-on-surface-variant">${r.date ? fmtDate(r.date) : 'ללא תאריך'}</p>
+                  <p class="text-xs text-on-surface-variant">תאריך: ${r.date ? fmtDate(r.date) : 'ללא תאריך'}</p>
                 </div>
                 <span class="font-semibold text-on-surface">${Currency.fmtILS(r.amount)}</span>
               </div>
               <div class="flex items-center justify-between">
-                <span class="text-xs px-2.5 py-1 rounded-full font-medium ${paid ? 'bg-secondary/15 text-secondary' : 'bg-error/15 text-error'}">${paid ? 'שולם' : 'לא שולם'}</span>
+                <span class="text-xs px-2.5 py-1 rounded-full font-medium ${paid ? 'bg-secondary/15 text-secondary' : 'bg-error/15 text-error'}">סטטוס: ${paid ? 'שולם' : 'לא שולם'}</span>
                 <button class="pay-row-btn px-3 py-1.5 rounded-full text-sm font-semibold ${paid ? 'bg-surface-container-high text-on-surface-variant cursor-default' : 'bg-primary-container text-on-primary-container active:scale-95 transition'}" data-exp-id="${exp.id}" data-row-idx="${r.idx}" ${paid ? 'disabled' : ''}>${paid ? 'שולם' : 'סמן כשולם'}</button>
               </div>
             </div>`;
@@ -371,7 +371,10 @@ const Expenses = {
 
     if (exp.location) html += `<div class="pt-2"><h4 class="font-bold text-on-surface mb-1">מיקום</h4><div class="glass-card rounded-xl p-3 text-sm text-on-surface">${esc(exp.location)}</div></div>`;
     if (exp.notes) html += `<div class="pt-2"><h4 class="font-bold text-on-surface mb-1">הערות</h4><div class="glass-card rounded-xl p-3 text-sm text-on-surface whitespace-pre-wrap">${esc(exp.notes)}</div></div>`;
-    if (exp.receipt) html += `<img src="${pb.fileUrl(exp, exp.receipt)}" class="w-full rounded-xl max-h-48 object-contain mt-3" alt="קבלה"/>`;
+    if (exp.contact_name || exp.contact_phone) {
+      html += `<div class="pt-2"><h4 class="font-bold text-on-surface mb-1">איש קשר</h4><div class="glass-card rounded-xl p-3 text-sm text-on-surface space-y-1">${exp.contact_name ? `<p>${esc(exp.contact_name)}</p>` : ''}${exp.contact_phone ? `<p dir=\"ltr\" class=\"text-on-surface-variant\">${esc(exp.contact_phone)}</p>` : ''}</div></div>`;
+    }
+    if (exp.receipt) html += `<div class="pt-2"><h4 class="font-bold text-on-surface mb-1">קבלה</h4><img src="${pb.fileUrl(exp, exp.receipt)}" class="w-full rounded-xl max-h-48 object-contain mt-1 glass-card p-2" alt="קבלה"/></div>`;
 
     const body = document.getElementById('view-expense-body');
     body.innerHTML = html;
