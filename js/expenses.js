@@ -48,30 +48,40 @@ const Expenses = {
   _itemHTML(e) {
     const cat = CATEGORIES[e.category] || { icon:'📦', color:'#9e9e9e' };
     const typeTag = e.payment_type === 'עתידי'
-      ? `<span class="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">עתידי</span>`
+      ? `<span class="text-[11px] bg-primary/15 text-primary px-2 py-0.5 rounded-full">צפוי</span>`
       : e.payment_type === 'מקדמה+יתרה'
-      ? `<span class="text-xs bg-tertiary/10 text-tertiary px-2 py-0.5 rounded-full">מקדמה</span>`
+      ? `<span class="text-[11px] bg-tertiary/15 text-tertiary px-2 py-0.5 rounded-full">מקדמה/יתרה</span>`
       : e.payment_type === 'תשלומים'
-      ? `<span class="text-xs bg-secondary/10 text-secondary px-2 py-0.5 rounded-full">תשלומים</span>` : '';
+      ? `<span class="text-[11px] bg-secondary/15 text-secondary px-2 py-0.5 rounded-full">תשלומים</span>` : '';
     const origStr = e.currency !== 'ILS' ? `<span class="text-xs text-on-surface-variant">${Currency.fmt(e.amount, e.currency, 2)}</span>` : '';
+    const hasReceipt = !!e.receipt;
+    const linkBadge = e.link ? '<span class="material-symbols-outlined text-[14px]">link</span>' : '';
     return `
-      <div class="glass-card p-4 rounded-xl flex items-center justify-between active:scale-[0.98] transition-transform cursor-pointer expense-item" data-id="${e.id}">
-        <div class="flex items-center gap-3">
-          <div class="w-12 h-12 rounded-lg flex items-center justify-center text-2xl" style="background:${cat.color}22">${cat.icon}</div>
-          <div>
-            <p class="font-semibold text-on-surface">${esc(e.name)}</p>
-            <div class="flex items-center gap-2 mt-0.5">
-              <span class="text-xs text-on-surface-variant">${esc(e.category)}</span>
-              ${e.payment_date ? `<span class="text-xs text-on-surface-variant">• ${fmtDate(e.payment_date)}</span>` : ''}
-              ${typeTag}
+      <div class="glass-card p-4 rounded-2xl active:scale-[0.99] transition-transform cursor-pointer expense-item space-y-3" data-id="${e.id}">
+        <div class="flex items-start justify-between gap-3">
+          <div class="flex items-start gap-3 min-w-0">
+            <div class="w-11 h-11 rounded-xl flex items-center justify-center text-2xl flex-shrink-0" style="background:${cat.color}22">${cat.icon}</div>
+            <div class="min-w-0">
+              <p class="font-semibold text-on-surface truncate">${esc(e.name)}</p>
+              <div class="flex items-center gap-2 mt-1 flex-wrap">
+                <span class="text-xs text-on-surface-variant">${esc(e.category || 'אחר')}</span>
+                ${e.payment_date ? `<span class="text-xs text-on-surface-variant">• ${fmtDate(e.payment_date)}</span>` : ''}
+                ${typeTag}
+              </div>
             </div>
           </div>
+          <div class="text-left flex-shrink-0">
+            <p class="font-extrabold text-error text-lg leading-none">${Currency.fmtILS(e.amount_ils)}-</p>
+            ${origStr}
+          </div>
         </div>
-        <div class="text-left flex-shrink-0">
-          <p class="font-bold text-error">${Currency.fmtILS(e.amount_ils)}-</p>
-          ${origStr}
+        <div class="flex items-center justify-between text-on-surface-variant">
+          <div class="flex items-center gap-2 text-xs">
+            ${hasReceipt ? '<span class="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-surface-container-high">🧾 קבלה</span>' : ''}
+            ${linkBadge ? `<span class="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-surface-container-high">${linkBadge} קישור</span>` : ''}
+          </div>
+          <span class="material-symbols-outlined text-base">chevron_left</span>
         </div>
-        <span class="material-symbols-outlined text-on-surface-variant mr-1">chevron_left</span>
       </div>`;
   },
 
