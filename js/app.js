@@ -154,6 +154,13 @@ const App = {
     this._bindEl('btn-filter', 'click', () => {
       document.getElementById('filter-panel').classList.toggle('hidden');
     });
+    this._bindEl('btn-toggle-advanced', 'click', () => {
+      const panel = document.getElementById('exp-advanced');
+      const label = document.getElementById('advanced-toggle-label');
+      if (!panel || !label) return;
+      panel.classList.toggle('hidden');
+      label.textContent = panel.classList.contains('hidden') ? 'אפשרויות נוספות' : 'הסתר אפשרויות נוספות';
+    });
 
     // מצלמה — iOS: input נפרד עם capture, גלריה בלי capture + תמיכה ב-PDF
     this._bindEl('btn-camera', 'click', () => {
@@ -249,10 +256,14 @@ const App = {
     const name = document.getElementById('cat-name-input').value.trim();
     const icon = document.getElementById('cat-icon-value').value || '📦';
     if (!name) { showToast('נא להזין שם קטגוריה'); return; }
-    if (this._editingCatName && this._editingCatName !== name) {
-      delete CATEGORIES[this._editingCatName];
+
+    const previousName = this._editingCatName;
+    const existingColor = previousName ? CATEGORIES[previousName]?.color : null;
+
+    if (previousName && previousName !== name) {
+      delete CATEGORIES[previousName];
     }
-    const existingColor = this._editingCatName ? CATEGORIES[this._editingCatName]?.color : null;
+
     CATEGORIES[name] = { icon, color: existingColor || '#9e9e9e' };
     saveCategories(CATEGORIES);
     this.closeModal('modal-category');
