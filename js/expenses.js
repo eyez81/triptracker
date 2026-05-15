@@ -191,6 +191,7 @@ const Expenses = {
     }
 
     this._updateCurrencyUI(expense?.currency || defaultCurrency);
+    this._rebuildCategoryPills();
     App.openModal('modal-expense');
   },
 
@@ -418,9 +419,9 @@ const Expenses = {
       if (isImage) {
         html += `<div class="pt-2">
           <h4 class="font-bold text-on-surface mb-2">קבלה</h4>
-          <div class="relative group cursor-zoom-in rounded-2xl overflow-hidden glass-card p-2" onclick="Lightbox.open('${fileUrl.replace(/'/g, "\\'")}')">
+          <div class="relative group cursor-zoom-in rounded-2xl overflow-hidden glass-card p-2 js-open-lightbox" data-lightbox-url="${esc(fileUrl)}">
             <img src="${fileUrl}" class="w-full rounded-xl object-contain max-h-56 transition-transform duration-300 group-hover:scale-[1.02]" alt="קבלה" loading="lazy"/>
-            <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-black/20 rounded-xl">
+            <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-black/20 rounded-xl pointer-events-none">
               <div class="bg-black/50 rounded-full p-2.5 backdrop-blur-sm">
                 <span class="material-symbols-outlined text-white text-3xl">zoom_in</span>
               </div>
@@ -446,6 +447,9 @@ const Expenses = {
     body.innerHTML = html;
     body.querySelectorAll('.pay-row-btn').forEach(btn => {
       btn.addEventListener('click', () => this.markPaymentAsPaid(btn.dataset.expId, Number(btn.dataset.rowIdx)));
+    });
+    body.querySelectorAll('.js-open-lightbox').forEach(el => {
+      el.addEventListener('click', () => Lightbox.open(el.dataset.lightboxUrl));
     });
     App.openModal('modal-view-expense');
   },
