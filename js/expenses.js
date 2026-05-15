@@ -188,13 +188,6 @@ const Expenses = {
     }
 
     this._updateCurrencyUI(expense?.currency || defaultCurrency);
-    const advanced = document.getElementById('exp-advanced');
-    const advancedLabel = document.getElementById('advanced-toggle-label');
-    if (advanced && advancedLabel) {
-      const showAdvanced = !!expense;
-      advanced.classList.toggle('hidden', !showAdvanced);
-      advancedLabel.textContent = showAdvanced ? 'הסתר אפשרויות נוספות' : 'אפשרויות נוספות';
-    }
     App.openModal('modal-expense');
   },
 
