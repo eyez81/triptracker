@@ -404,7 +404,10 @@ const Expenses = {
         </div>
       </div>
     `;
-    if (exp.location) html += `<div class="pt-2"><h4 class="font-bold text-on-surface mb-1">מיקום</h4><div class="glass-card rounded-xl p-3 text-sm text-on-surface">${esc(exp.location)}</div></div>`;
+    if (exp.location) {
+      const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(exp.location)}`;
+      html += `<div class="pt-2"><h4 class="font-bold text-on-surface mb-1">מיקום</h4><div class="glass-card rounded-xl p-3 text-sm text-on-surface space-y-2"><p>${esc(exp.location)}</p><a href="${mapsUrl}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:text-secondary transition-colors"><span class="material-symbols-outlined text-base">map</span><span>Open in Google Maps</span></a></div></div>`;
+    }
     if (exp.notes) html += `<div class="pt-2"><h4 class="font-bold text-on-surface mb-1">הערות</h4><div class="glass-card rounded-xl p-3 text-sm text-on-surface whitespace-pre-wrap">${esc(exp.notes)}</div></div>`;
     if (exp.contact_name || exp.contact_phone) {
       html += `<div class="pt-2"><h4 class="font-bold text-on-surface mb-1">איש קשר</h4><div class="glass-card rounded-xl p-3 text-sm text-on-surface space-y-1">${exp.contact_name ? `<p>${esc(exp.contact_name)}</p>` : ''}${exp.contact_phone ? `<p dir=\"ltr\" class=\"text-on-surface-variant\">${esc(exp.contact_phone)}</p>` : ''}</div></div>`;
