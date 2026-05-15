@@ -595,6 +595,12 @@ const Expenses = {
     const menu = document.getElementById('exp-cat-menu');
     if (!container || !input || !trigger || !menu) return;
 
+    // Move menu to body so it escapes overflow-y-auto clipping and
+    // backdrop-filter containing-block that break position:fixed inside the modal
+    if (menu.parentElement !== document.body) {
+      document.body.appendChild(menu);
+    }
+
     const current = input.value;
     menu.innerHTML = Object.entries(CATEGORIES).map(([name, def]) => `
       <button type="button" class="cat-option w-full px-4 py-2.5 text-sm text-right text-on-surface hover:bg-surface-variant/40 transition-colors" data-value="${name}">
@@ -602,7 +608,8 @@ const Expenses = {
       </button>`).join('');
 
     menu.querySelectorAll('.cat-option').forEach(btn => {
-      btn.addEventListener('click', () => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
         this._setCategoryValue(btn.dataset.value || '');
         menu.classList.add('hidden');
         trigger.setAttribute('aria-expanded', 'false');
@@ -616,20 +623,24 @@ const Expenses = {
       menu.style.width = r.width + 'px';
     };
 
-    trigger.onclick = () => {
+    trigger.onclick = (e) => {
+      e.stopPropagation();
       const willOpen = menu.classList.contains('hidden');
-      menu.classList.toggle('hidden');
-      if (willOpen) _positionMenu();
-      trigger.setAttribute('aria-expanded', String(willOpen));
+      if (willOpen) {
+        _positionMenu();
+        menu.classList.remove('hidden');
+        trigger.setAttribute('aria-expanded', 'true');
+      } else {
+        menu.classList.add('hidden');
+        trigger.setAttribute('aria-expanded', 'false');
+      }
     };
 
     if (!container._catClickBound) {
       container._catClickBound = true;
-      document.addEventListener('click', (e) => {
-        if (!container.contains(e.target) && !menu.contains(e.target)) {
-          menu.classList.add('hidden');
-          trigger.setAttribute('aria-expanded', 'false');
-        }
+      document.addEventListener('click', () => {
+        menu.classList.add('hidden');
+        trigger.setAttribute('aria-expanded', 'false');
       });
     }
 
