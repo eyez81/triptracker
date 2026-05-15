@@ -164,17 +164,22 @@ const App = {
     });
 
     const handleFile = (e) => {
-      const file = e.target.files[0];
+      const file = e.target.files?.[0];
       if (!file) return;
+      Expenses._receiptFile = file;
       const preview = document.getElementById('receipt-preview');
       const pdfBadge = document.getElementById('receipt-pdf-badge');
       if (file.type === 'application/pdf') {
         preview.classList.add('hidden');
-        if (pdfBadge) { pdfBadge.classList.remove('hidden'); pdfBadge.querySelector('span.pdf-name').textContent = file.name; }
+        if (pdfBadge) {
+          pdfBadge.classList.remove('hidden');
+          const nameEl = pdfBadge.querySelector('span.pdf-name');
+          if (nameEl) nameEl.textContent = file.name;
+        }
       } else {
         if (pdfBadge) pdfBadge.classList.add('hidden');
         const reader = new FileReader();
-        reader.onload = ev => { preview.src = ev.target.result; preview.classList.remove('hidden'); };
+        reader.onload = ev => { preview.src = ev.target?.result || ''; preview.classList.remove('hidden'); };
         reader.readAsDataURL(file);
       }
     };
