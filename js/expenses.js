@@ -573,61 +573,19 @@ const Expenses = {
   },
 
   _setCategoryValue(value) {
-    const input = document.getElementById('exp-cat');
-    const label = document.getElementById('exp-cat-label');
-    const safeValue = value || '';
-    if (input) input.value = safeValue;
-    if (label) {
-      if (!safeValue) {
-        label.textContent = 'בחר קטגוריה';
-        label.classList.add('text-on-surface-variant');
-      } else {
-        label.textContent = `${CATEGORIES[safeValue]?.icon || '📦'} ${safeValue}`;
-        label.classList.remove('text-on-surface-variant');
-      }
-    }
+    const sel = document.getElementById('exp-cat');
+    if (sel) sel.value = value || '';
   },
 
   _rebuildCategoryPills() {
-    const input = document.getElementById('exp-cat');
-    const trigger = document.getElementById('exp-cat-trigger');
-    const sheet = document.getElementById('cat-picker-sheet');
-    const list = document.getElementById('cat-picker-list');
-    const backdrop = document.getElementById('cat-picker-backdrop');
-    const closeBtn = document.getElementById('cat-picker-close');
-    if (!input || !trigger || !sheet || !list) return;
-
-    const closeSheet = () => {
-      sheet.classList.add('hidden');
-      trigger.setAttribute('aria-expanded', 'false');
-    };
-
-    const populateList = () => {
-      list.innerHTML = Object.entries(CATEGORIES).map(([name, def]) => `
-        <button type="button" class="cat-option w-full px-5 py-3 text-sm text-right text-on-surface hover:bg-surface-variant/40 active:bg-surface-variant/60 transition-colors flex items-center gap-3" data-value="${name}">
-          <span class="text-xl">${def.icon}</span><span>${name}</span>
-        </button>`).join('');
-      list.querySelectorAll('.cat-option').forEach(btn => {
-        btn.addEventListener('click', () => {
-          this._setCategoryValue(btn.dataset.value || '');
-          closeSheet();
-        });
-      });
-    };
-
-    trigger.onclick = () => {
-      populateList();
-      sheet.classList.remove('hidden');
-      trigger.setAttribute('aria-expanded', 'true');
-    };
-
-    if (!sheet._bound) {
-      sheet._bound = true;
-      backdrop?.addEventListener('click', closeSheet);
-      closeBtn?.addEventListener('click', closeSheet);
-    }
-
-    this._setCategoryValue(input.value || '');
+    const sel = document.getElementById('exp-cat');
+    if (!sel) return;
+    const current = sel.value;
+    sel.innerHTML = '<option value="">בחר קטגוריה</option>' +
+      Object.entries(CATEGORIES).map(([name, def]) =>
+        `<option value="${name}" class="bg-surface">${def.icon} ${name}</option>`
+      ).join('');
+    sel.value = current || '';
   },
 
 };
