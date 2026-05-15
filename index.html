@@ -531,26 +531,21 @@
       </div>
       <!-- Category -->
       <div>
-        <label class="text-xs text-primary font-medium block mb-1 pr-1">קטגוריה *</label>
-        <div class="flex flex-wrap gap-2" id="category-pills">
-          <label class="cursor-pointer"><input class="peer sr-only" name="exp-cat" type="radio" value="לינה"/>
-            <div class="px-3 py-1.5 rounded-full border border-outline/30 bg-surface-variant/20 text-on-surface-variant text-sm peer-checked:bg-primary-container peer-checked:text-on-primary-container peer-checked:border-primary transition-all">🏨 לינה</div></label>
-          <label class="cursor-pointer"><input class="peer sr-only" name="exp-cat" type="radio" value="אוכל ושתייה"/>
-            <div class="px-3 py-1.5 rounded-full border border-outline/30 bg-surface-variant/20 text-on-surface-variant text-sm peer-checked:bg-primary-container peer-checked:text-on-primary-container peer-checked:border-primary transition-all">🍽 אוכל ושתייה</div></label>
-          <label class="cursor-pointer"><input class="peer sr-only" name="exp-cat" type="radio" value="קניות"/>
-            <div class="px-3 py-1.5 rounded-full border border-outline/30 bg-surface-variant/20 text-on-surface-variant text-sm peer-checked:bg-primary-container peer-checked:text-on-primary-container peer-checked:border-primary transition-all">🛍 קניות</div></label>
-          <label class="cursor-pointer"><input class="peer sr-only" name="exp-cat" type="radio" value="אטרקציות"/>
-            <div class="px-3 py-1.5 rounded-full border border-outline/30 bg-surface-variant/20 text-on-surface-variant text-sm peer-checked:bg-primary-container peer-checked:text-on-primary-container peer-checked:border-primary transition-all">🎡 אטרקציות</div></label>
-          <label class="cursor-pointer"><input class="peer sr-only" name="exp-cat" type="radio" value="רכב שכור"/>
-            <div class="px-3 py-1.5 rounded-full border border-outline/30 bg-surface-variant/20 text-on-surface-variant text-sm peer-checked:bg-primary-container peer-checked:text-on-primary-container peer-checked:border-primary transition-all">🚗 רכב שכור</div></label>
-          <label class="cursor-pointer"><input class="peer sr-only" name="exp-cat" type="radio" value="תחבורה"/>
-            <div class="px-3 py-1.5 rounded-full border border-outline/30 bg-surface-variant/20 text-on-surface-variant text-sm peer-checked:bg-primary-container peer-checked:text-on-primary-container peer-checked:border-primary transition-all">🚌 תחבורה</div></label>
-          <label class="cursor-pointer"><input class="peer sr-only" name="exp-cat" type="radio" value="טיסות"/>
-            <div class="px-3 py-1.5 rounded-full border border-outline/30 bg-surface-variant/20 text-on-surface-variant text-sm peer-checked:bg-primary-container peer-checked:text-on-primary-container peer-checked:border-primary transition-all">✈ טיסות</div></label>
-          <label class="cursor-pointer"><input class="peer sr-only" name="exp-cat" type="radio" value="ביטוח"/>
-            <div class="px-3 py-1.5 rounded-full border border-outline/30 bg-surface-variant/20 text-on-surface-variant text-sm peer-checked:bg-primary-container peer-checked:text-on-primary-container peer-checked:border-primary transition-all">🛡 ביטוח</div></label>
-          <label class="cursor-pointer"><input class="peer sr-only" name="exp-cat" type="radio" value="אחר"/>
-            <div class="px-3 py-1.5 rounded-full border border-outline/30 bg-surface-variant/20 text-on-surface-variant text-sm peer-checked:bg-primary-container peer-checked:text-on-primary-container peer-checked:border-primary transition-all">📦 אחר</div></label>
+        <label class="text-xs text-primary font-medium block mb-1 pr-1" for="exp-cat">קטגוריה *</label>
+        <div class="relative glass-card rounded-2xl inner-glow" id="category-pills">
+          <span class="material-symbols-outlined pointer-events-none absolute top-1/2 -translate-y-1/2 left-3 text-on-surface-variant text-[20px]">expand_more</span>
+          <select id="exp-cat" name="exp-cat" class="w-full appearance-none rounded-2xl border border-outline/30 bg-surface-container/80 text-on-surface px-4 py-3 pl-10 text-sm leading-6 tracking-tight focus:outline-none focus:border-primary/70 focus:ring-2 focus:ring-primary/30 hover:border-outline/60 transition-all [color-scheme:dark]" dir="rtl">
+            <option value="" class="bg-surface text-on-surface-variant">בחר קטגוריה</option>
+            <option value="לינה" class="bg-surface">🏨 לינה</option>
+            <option value="אוכל ושתייה" class="bg-surface">🍽 אוכל ושתייה</option>
+            <option value="קניות" class="bg-surface">🛍 קניות</option>
+            <option value="אטרקציות" class="bg-surface">🎡 אטרקציות</option>
+            <option value="רכב שכור" class="bg-surface">🚗 רכב שכור</option>
+            <option value="תחבורה" class="bg-surface">🚌 תחבורה</option>
+            <option value="טיסות" class="bg-surface">✈ טיסות</option>
+            <option value="ביטוח" class="bg-surface">🛡 ביטוח</option>
+            <option value="אחר" class="bg-surface">📦 אחר</option>
+          </select>
         </div>
       </div>
       <!-- Payment type -->
