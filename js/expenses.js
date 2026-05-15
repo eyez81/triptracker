@@ -412,7 +412,29 @@ const Expenses = {
     }
     if (exp.notes) html += `<div class="pt-2"><h4 class="font-bold text-on-surface mb-1">הערות</h4><div class="glass-card rounded-xl p-3 text-sm text-on-surface whitespace-pre-wrap">${esc(exp.notes)}</div></div>`;
     if (exp.contact_name || exp.contact_phone) {
-      html += `<div class="pt-2"><h4 class="font-bold text-on-surface mb-1">איש קשר</h4><div class="glass-card rounded-xl p-3 text-sm text-on-surface space-y-1">${exp.contact_name ? `<p>${esc(exp.contact_name)}</p>` : ''}${exp.contact_phone ? `<p dir=\"ltr\" class=\"text-on-surface-variant\">${esc(exp.contact_phone)}</p>` : ''}</div></div>`;
+      const rawPhone = (exp.contact_phone || '').trim();
+      const sanitizedPhone = rawPhone.replace(/[^\d+]/g, '');
+      const digitsOnly = sanitizedPhone.replace(/\D/g, '');
+      let waPhone = digitsOnly;
+      if (waPhone.startsWith('0')) waPhone = `972${waPhone.slice(1)}`;
+      if (sanitizedPhone.startsWith('+972')) waPhone = digitsOnly;
+      const callHref = sanitizedPhone ? `tel:${sanitizedPhone}` : '';
+      const waHref = waPhone ? `https://wa.me/${waPhone}` : '';
+
+      html += `<div class="pt-2"><h4 class="font-bold text-on-surface mb-2">איש קשר</h4>
+        <div class="glass-card rounded-xl p-3.5 space-y-3 text-sm text-on-surface">
+          ${exp.contact_name ? `<div><p class="text-xs text-on-surface-variant mb-1">שם</p><p class="font-semibold">${esc(exp.contact_name)}</p></div>` : ''}
+          ${rawPhone ? `<div><p class="text-xs text-on-surface-variant mb-1">טלפון</p><p dir="ltr" class="font-medium">${esc(rawPhone)}</p></div>` : ''}
+          ${rawPhone ? `<div class="grid grid-cols-2 gap-2 pt-1">
+            <a href="${callHref}" class="inline-flex items-center justify-center gap-1.5 rounded-full px-3 py-2 bg-primary-container text-on-primary-container font-semibold hover:opacity-90 active:scale-95 transition">
+              <span class="material-symbols-outlined text-base">call</span><span>התקשר</span>
+            </a>
+            <a href="${waHref}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center gap-1.5 rounded-full px-3 py-2 bg-secondary-container text-on-secondary-container font-semibold hover:opacity-90 active:scale-95 transition">
+              <span class="material-symbols-outlined text-base">chat</span><span>WhatsApp</span>
+            </a>
+          </div>` : ''}
+        </div>
+      </div>`;
     }
     if (exp.receipt) {
       const fileUrl = pb.fileUrl(exp, exp.receipt);
