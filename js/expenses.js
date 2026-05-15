@@ -609,17 +609,29 @@ const Expenses = {
       });
     });
 
-    trigger.onclick = () => {
-      const isHidden = menu.classList.toggle('hidden');
-      trigger.setAttribute('aria-expanded', String(!isHidden));
+    const _positionMenu = () => {
+      const r = trigger.getBoundingClientRect();
+      menu.style.top = (r.bottom + 6) + 'px';
+      menu.style.left = r.left + 'px';
+      menu.style.width = r.width + 'px';
     };
 
-    document.addEventListener('click', (e) => {
-      if (!container.contains(e.target)) {
-        menu.classList.add('hidden');
-        trigger.setAttribute('aria-expanded', 'false');
-      }
-    });
+    trigger.onclick = () => {
+      const willOpen = menu.classList.contains('hidden');
+      menu.classList.toggle('hidden');
+      if (willOpen) _positionMenu();
+      trigger.setAttribute('aria-expanded', String(willOpen));
+    };
+
+    if (!container._catClickBound) {
+      container._catClickBound = true;
+      document.addEventListener('click', (e) => {
+        if (!container.contains(e.target) && !menu.contains(e.target)) {
+          menu.classList.add('hidden');
+          trigger.setAttribute('aria-expanded', 'false');
+        }
+      });
+    }
 
     this._setCategoryValue(current || '');
   },
