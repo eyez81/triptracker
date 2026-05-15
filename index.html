@@ -538,7 +538,6 @@
             <span id="exp-cat-label" class="truncate text-on-surface-variant">בחר קטגוריה</span>
             <span class="material-symbols-outlined text-on-surface-variant text-[20px]">expand_more</span>
           </button>
-          <div id="exp-cat-menu" class="hidden fixed z-[150] overflow-y-auto max-h-64 rounded-2xl border border-white/10 bg-surface-container-high/95 backdrop-blur-xl shadow-2xl" dir="rtl" role="listbox"></div>
         </div>
       </div>
       <!-- Payment type -->
@@ -784,6 +783,20 @@
       <button data-close="modal-forecast" class="text-on-surface-variant hover:text-on-surface"><span class="material-symbols-outlined">close</span></button>
     </div>
     <div id="forecast-body" class="overflow-y-auto flex-1 px-6 pb-6 space-y-4"></div>
+  </div>
+</div>
+
+<!-- ==================== CATEGORY PICKER SHEET ==================== -->
+<div id="cat-picker-sheet" class="hidden fixed inset-0 z-[250] flex items-end justify-center" role="dialog" aria-modal="true">
+  <div id="cat-picker-backdrop" class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+  <div class="relative z-10 w-full max-w-lg bg-surface-container-high rounded-t-2xl pb-safe shadow-2xl border-t border-white/10">
+    <div class="flex items-center justify-between px-5 pt-4 pb-3 border-b border-white/10">
+      <span class="font-bold text-on-surface text-base">בחר קטגוריה</span>
+      <button id="cat-picker-close" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-surface-variant/40 text-on-surface-variant">
+        <span class="material-symbols-outlined text-xl">close</span>
+      </button>
+    </div>
+    <div id="cat-picker-list" class="overflow-y-auto max-h-72 py-2"></div>
   </div>
 </div>
 

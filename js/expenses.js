@@ -589,51 +589,45 @@ const Expenses = {
   },
 
   _rebuildCategoryPills() {
-    const container = document.getElementById('category-pills');
     const input = document.getElementById('exp-cat');
     const trigger = document.getElementById('exp-cat-trigger');
-    const menu = document.getElementById('exp-cat-menu');
-    if (!container || !input || !trigger || !menu) return;
+    const sheet = document.getElementById('cat-picker-sheet');
+    const list = document.getElementById('cat-picker-list');
+    const backdrop = document.getElementById('cat-picker-backdrop');
+    const closeBtn = document.getElementById('cat-picker-close');
+    if (!input || !trigger || !sheet || !list) return;
 
-    const current = input.value;
-    menu.innerHTML = Object.entries(CATEGORIES).map(([name, def]) => `
-      <button type="button" class="cat-option w-full px-4 py-2.5 text-sm text-right text-on-surface hover:bg-surface-variant/40 transition-colors" data-value="${name}">
-        <span class="inline-flex items-center gap-2"><span>${def.icon}</span><span>${name}</span></span>
-      </button>`).join('');
+    const closeSheet = () => {
+      sheet.classList.add('hidden');
+      trigger.setAttribute('aria-expanded', 'false');
+    };
 
-    menu.querySelectorAll('.cat-option').forEach(btn => {
-      btn.addEventListener('click', () => {
-        this._setCategoryValue(btn.dataset.value || '');
-        menu.classList.add('hidden');
-        trigger.setAttribute('aria-expanded', 'false');
+    const populateList = () => {
+      list.innerHTML = Object.entries(CATEGORIES).map(([name, def]) => `
+        <button type="button" class="cat-option w-full px-5 py-3 text-sm text-right text-on-surface hover:bg-surface-variant/40 active:bg-surface-variant/60 transition-colors flex items-center gap-3" data-value="${name}">
+          <span class="text-xl">${def.icon}</span><span>${name}</span>
+        </button>`).join('');
+      list.querySelectorAll('.cat-option').forEach(btn => {
+        btn.addEventListener('click', () => {
+          this._setCategoryValue(btn.dataset.value || '');
+          closeSheet();
+        });
       });
-    });
-
-    const _positionMenu = () => {
-      const r = trigger.getBoundingClientRect();
-      menu.style.top = (r.bottom + 6) + 'px';
-      menu.style.left = r.left + 'px';
-      menu.style.width = r.width + 'px';
     };
 
     trigger.onclick = () => {
-      const willOpen = menu.classList.contains('hidden');
-      menu.classList.toggle('hidden');
-      if (willOpen) _positionMenu();
-      trigger.setAttribute('aria-expanded', String(willOpen));
+      populateList();
+      sheet.classList.remove('hidden');
+      trigger.setAttribute('aria-expanded', 'true');
     };
 
-    if (!container._catClickBound) {
-      container._catClickBound = true;
-      document.addEventListener('click', (e) => {
-        if (!container.contains(e.target) && !menu.contains(e.target)) {
-          menu.classList.add('hidden');
-          trigger.setAttribute('aria-expanded', 'false');
-        }
-      });
+    if (!sheet._bound) {
+      sheet._bound = true;
+      backdrop?.addEventListener('click', closeSheet);
+      closeBtn?.addEventListener('click', closeSheet);
     }
 
-    this._setCategoryValue(current || '');
+    this._setCategoryValue(input.value || '');
   },
 
 };
