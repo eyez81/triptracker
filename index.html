@@ -268,21 +268,23 @@
     </button>
   </header>
   <main class="flex-1 px-5 pt-6 max-w-2xl mx-auto w-full space-y-8">
-    <!-- Profile -->
+    <!-- Theme -->
     <section class="space-y-3">
       <h2 class="flex items-center gap-2 text-lg font-semibold text-on-surface">
-        <span class="material-symbols-outlined text-secondary">person</span> פרופיל
+        <span class="material-symbols-outlined text-secondary">dark_mode</span> תצוגה
       </h2>
-      <div class="glass-card rounded-lg p-4 space-y-3 inner-glow">
-        <div>
-          <label class="text-xs text-primary font-medium block mb-1 pr-1">שם תצוגה</label>
-          <input id="settings-display-name" type="text" placeholder="הכנס שם"
-            class="w-full bg-surface-container-highest border-none rounded-full px-5 py-3 text-on-surface focus:ring-2 focus:ring-primary-container outline-none"/>
+      <div class="glass-card rounded-lg p-4 inner-glow">
+        <div class="grid grid-cols-3 gap-2">
+          <button class="theme-btn p-3 rounded-lg bg-surface-container-highest text-on-surface-variant border-2 border-transparent flex flex-col items-center" data-theme="dark">
+            <span class="material-symbols-outlined">dark_mode</span><span class="text-xs">כהה</span>
+          </button>
+          <button class="theme-btn p-3 rounded-lg bg-surface-container-highest text-on-surface-variant border-2 border-transparent flex flex-col items-center" data-theme="light">
+            <span class="material-symbols-outlined">light_mode</span><span class="text-xs">בהיר</span>
+          </button>
+          <button class="theme-btn p-3 rounded-lg bg-surface-container-highest text-on-surface-variant border-2 border-transparent flex flex-col items-center" data-theme="system">
+            <span class="material-symbols-outlined">settings_suggest</span><span class="text-xs">מערכת</span>
+          </button>
         </div>
-        <button id="btn-change-password"
-          class="w-full py-3 px-5 bg-secondary-container text-on-secondary-container rounded-full font-semibold flex items-center justify-center gap-2 hover:opacity-90 active:scale-95 transition">
-          <span class="material-symbols-outlined">lock_reset</span> שינוי סיסמה
-        </button>
       </div>
     </section>
     <!-- Default currency -->
