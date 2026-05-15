@@ -154,13 +154,6 @@ const App = {
     this._bindEl('btn-filter', 'click', () => {
       document.getElementById('filter-panel').classList.toggle('hidden');
     });
-    this._bindEl('btn-toggle-advanced', 'click', () => {
-      const panel = document.getElementById('exp-advanced');
-      const label = document.getElementById('advanced-toggle-label');
-      if (!panel || !label) return;
-      panel.classList.toggle('hidden');
-      label.textContent = panel.classList.contains('hidden') ? 'אפשרויות נוספות' : 'הסתר אפשרויות נוספות';
-    });
 
     // מצלמה — iOS: input נפרד עם capture, גלריה בלי capture + תמיכה ב-PDF
     this._bindEl('btn-camera', 'click', () => {
