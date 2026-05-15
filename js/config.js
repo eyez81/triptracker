@@ -27,7 +27,7 @@ function saveCategories(cats) {
   localStorage.setItem('custom_categories', JSON.stringify(cats));
 }
 
-const CATEGORIES = loadCategories();
+let CATEGORIES = loadCategories();
 
 const CURRENCY_SYMBOLS = {
   ILS:'₪', USD:'$', EUR:'€', GBP:'£', JPY:'¥', THB:'฿', TRY:'₺', AED:'د.إ',

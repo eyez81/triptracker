@@ -192,6 +192,7 @@ const Expenses = {
     }
 
     this._updateCurrencyUI(expense?.currency || defaultCurrency);
+    this._rebuildCategoryPills();
     App.openModal('modal-expense');
   },
 
@@ -413,12 +414,43 @@ const Expenses = {
     if (exp.contact_name || exp.contact_phone) {
       html += `<div class="pt-2"><h4 class="font-bold text-on-surface mb-1">איש קשר</h4><div class="glass-card rounded-xl p-3 text-sm text-on-surface space-y-1">${exp.contact_name ? `<p>${esc(exp.contact_name)}</p>` : ''}${exp.contact_phone ? `<p dir=\"ltr\" class=\"text-on-surface-variant\">${esc(exp.contact_phone)}</p>` : ''}</div></div>`;
     }
-    if (exp.receipt) html += `<div class="pt-2"><h4 class="font-bold text-on-surface mb-1">קבלה</h4><img src="${pb.fileUrl(exp, exp.receipt)}" class="w-full rounded-xl max-h-48 object-contain mt-1 glass-card p-2" alt="קבלה"/></div>`;
+    if (exp.receipt) {
+      const fileUrl = pb.fileUrl(exp, exp.receipt);
+      const isImage = /\.(jpe?g|png|gif|webp|heic|heif|bmp|svg)$/i.test(exp.receipt.split('?')[0]);
+      if (isImage) {
+        html += `<div class="pt-2">
+          <h4 class="font-bold text-on-surface mb-2">קבלה</h4>
+          <div class="relative group cursor-zoom-in rounded-2xl overflow-hidden glass-card p-2 js-open-lightbox" data-lightbox-url="${esc(fileUrl)}">
+            <img src="${fileUrl}" class="w-full rounded-xl object-contain max-h-56 transition-transform duration-300 group-hover:scale-[1.02]" alt="קבלה" loading="lazy"/>
+            <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-black/20 rounded-xl pointer-events-none">
+              <div class="bg-black/50 rounded-full p-2.5 backdrop-blur-sm">
+                <span class="material-symbols-outlined text-white text-3xl">zoom_in</span>
+              </div>
+            </div>
+          </div>
+        </div>`;
+      } else {
+        html += `<div class="pt-2">
+          <h4 class="font-bold text-on-surface mb-2">קבלה</h4>
+          <a href="${fileUrl}" target="_blank" rel="noopener noreferrer"
+            class="glass-card rounded-xl p-3 text-sm text-on-surface flex items-center justify-between gap-3 hover:bg-surface-variant/30 active:scale-[0.99] transition cursor-pointer">
+            <span class="inline-flex items-center gap-2 min-w-0">
+              <span class="material-symbols-outlined text-primary text-base">description</span>
+              <span class="truncate">${esc(exp.receipt.split('?')[0].split('/').pop())}</span>
+            </span>
+            <span class="material-symbols-outlined text-on-surface-variant text-base flex-shrink-0">open_in_new</span>
+          </a>
+        </div>`;
+      }
+    }
 
     const body = document.getElementById('view-expense-body');
     body.innerHTML = html;
     body.querySelectorAll('.pay-row-btn').forEach(btn => {
       btn.addEventListener('click', () => this.markPaymentAsPaid(btn.dataset.expId, Number(btn.dataset.rowIdx)));
+    });
+    body.querySelectorAll('.js-open-lightbox').forEach(el => {
+      el.addEventListener('click', () => Lightbox.open(el.dataset.lightboxUrl));
     });
     App.openModal('modal-view-expense');
   },
