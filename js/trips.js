@@ -98,6 +98,9 @@ const Trips = {
     document.getElementById('trip-end').value = trip?.end_date?.slice(0,10) || '';
     document.getElementById('trip-budget').value = trip?.budget || '';
     document.getElementById('trip-destination').value = trip?.destination || '';
+    // הצג/הסתר כפתור מחיקה
+    const delBtn = document.getElementById('btn-delete-trip');
+    if (delBtn) delBtn.classList.toggle('hidden', !trip);
     App.openModal('modal-trip');
   },
 
@@ -115,7 +118,6 @@ const Trips = {
     try {
       if (this._editing) {
         await pb.update(CONFIG.COLLECTIONS.TRIPS, this._editing.id, data);
-        // update current if we're editing the open trip
         if (this._current?.id === this._editing.id) {
           this._current = { ...this._current, ...data };
           document.getElementById('trip-header-title').textContent = data.name;
@@ -127,6 +129,24 @@ const Trips = {
       }
       App.closeModal('modal-trip');
       await this.load();
+    } catch (e) { showToast(`שגיאה: ${e.message}`); }
+  },
+
+  async deleteTrip() {
+    if (!this._editing) return;
+    if (!confirm(`למחוק את הטיול "${this._editing.name}"?\nכל ההוצאות ימחקו גם כן.`)) return;
+    try {
+      // מחק קודם את כל ההוצאות של הטיול
+      const res = await pb.list(CONFIG.COLLECTIONS.EXPENSES, {
+        filter: `trip="${this._editing.id}"`, perPage: 500
+      });
+      for (const exp of (res.items || [])) {
+        await pb.delete(CONFIG.COLLECTIONS.EXPENSES, exp.id);
+      }
+      await pb.delete(CONFIG.COLLECTIONS.TRIPS, this._editing.id);
+      showToast('הטיול נמחק');
+      App.closeModal('modal-trip');
+      await App.goToTrips();
     } catch (e) { showToast(`שגיאה: ${e.message}`); }
   },
 
