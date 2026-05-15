@@ -9,27 +9,23 @@ const App = {
       if (r.ok) CONFIG.PB_URL = 'http://192.168.0.176:8090';
     } catch {}
     this._bind();
-    this._initCurrencyUI();
+    this._syncCurrencyUI();
     if (pb.isAuth) await this.goToTrips();
     else this.showScreen('auth');
   },
 
+  // ===== תמה =====
   _applyTheme(theme) {
     const html = document.documentElement;
-    // הסר קלאסים קיימים
     html.classList.remove('dark', 'light');
     if (theme === 'system') {
-      const dark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      html.classList.add(dark ? 'dark' : 'light');
-      // עדכן body background בהתאם
-      document.body.style.backgroundColor = dark ? '#0b1326' : '#f0f4ff';
+      html.classList.add(window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
     } else {
       html.classList.add(theme);
-      document.body.style.backgroundColor = theme === 'light' ? '#f0f4ff' : '#0b1326';
     }
     this._theme = theme;
     localStorage.setItem('theme', theme);
-    // Update UI buttons
+    // עדכן כפתורי תמה
     document.querySelectorAll('.theme-btn').forEach(b => {
       const active = b.dataset.theme === theme;
       b.classList.toggle('bg-primary-container', active);
@@ -41,7 +37,8 @@ const App = {
     });
   },
 
-  _initCurrencyUI() {
+  // ===== מטבע — סנכרון UI עם localStorage =====
+  _syncCurrencyUI() {
     const saved = localStorage.getItem('default_currency') || 'ILS';
     document.querySelectorAll('.currency-btn').forEach(b => {
       const active = b.dataset.currency === saved;
@@ -118,12 +115,12 @@ const App = {
     this._bindEl('btn-save-category', 'click', () => this._saveCategory());
     this._bindEl('btn-reset-categories', 'click', () => this._resetCategories());
 
-    // Theme buttons
+    // תמה
     document.querySelectorAll('.theme-btn').forEach(btn => {
       btn.addEventListener('click', () => this._applyTheme(btn.dataset.theme));
     });
 
-    // Currency buttons
+    // מטבע — תיקון: שימוש ב-classList.toggle במקום className.replace
     document.querySelectorAll('.currency-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         document.querySelectorAll('.currency-btn').forEach(b => {
@@ -133,9 +130,6 @@ const App = {
         btn.classList.remove('bg-surface-container-highest', 'text-on-surface-variant', 'border-transparent');
         btn.classList.add('bg-primary-container', 'text-on-primary-container', 'border-primary-container');
         localStorage.setItem('default_currency', btn.dataset.currency);
-        // עדכן ב-select של הוצאה
-        const sel = document.getElementById('exp-currency');
-        if (sel) sel.value = btn.dataset.currency;
         showToast(`מטבע ברירת מחדל: ${btn.dataset.currency}`);
       });
     });
@@ -161,7 +155,7 @@ const App = {
       document.getElementById('filter-panel').classList.toggle('hidden');
     });
 
-    // מצלמה — iOS צריך input נפרד עם capture
+    // מצלמה — iOS: input נפרד עם capture, גלריה בלי capture + תמיכה ב-PDF
     this._bindEl('btn-camera', 'click', () => {
       document.getElementById('exp-receipt-camera').click();
     });
@@ -169,29 +163,23 @@ const App = {
       document.getElementById('exp-receipt-gallery').click();
     });
 
-    const handleReceiptFile = (e) => {
+    const handleFile = (e) => {
       const file = e.target.files[0];
       if (!file) return;
       const preview = document.getElementById('receipt-preview');
-      const pdfIcon = document.getElementById('receipt-pdf-icon');
+      const pdfBadge = document.getElementById('receipt-pdf-badge');
       if (file.type === 'application/pdf') {
         preview.classList.add('hidden');
-        if (pdfIcon) {
-          pdfIcon.classList.remove('hidden');
-          pdfIcon.querySelector('span').textContent = file.name;
-        }
+        if (pdfBadge) { pdfBadge.classList.remove('hidden'); pdfBadge.querySelector('span.pdf-name').textContent = file.name; }
       } else {
-        if (pdfIcon) pdfIcon.classList.add('hidden');
+        if (pdfBadge) pdfBadge.classList.add('hidden');
         const reader = new FileReader();
-        reader.onload = ev => {
-          preview.src = ev.target.result;
-          preview.classList.remove('hidden');
-        };
+        reader.onload = ev => { preview.src = ev.target.result; preview.classList.remove('hidden'); };
         reader.readAsDataURL(file);
       }
     };
-    this._bindEl('exp-receipt-camera', 'change', handleReceiptFile);
-    this._bindEl('exp-receipt-gallery', 'change', handleReceiptFile);
+    this._bindEl('exp-receipt-camera', 'change', handleFile);
+    this._bindEl('exp-receipt-gallery', 'change', handleFile);
 
     document.addEventListener('keydown', e => {
       if (e.key === 'Escape') {
@@ -217,51 +205,43 @@ const App = {
           <span class="font-medium text-on-surface">${esc(name)}</span>
         </div>
         <div class="flex gap-2">
-          <button class="text-primary text-sm px-3 py-1 glass-card rounded-full active:scale-95 transition cat-edit-btn" data-name="${esc(name)}">ערוך</button>
+          <button class="text-primary text-sm px-3 py-1.5 glass-card rounded-full active:scale-95 transition cat-edit-btn" data-name="${esc(name)}">ערוך</button>
           ${Object.keys(DEFAULT_CATEGORIES).includes(name) ? '' :
-            `<button class="text-error text-sm px-3 py-1 glass-card rounded-full active:scale-95 transition cat-del-btn" data-name="${esc(name)}">מחק</button>`
+            `<button class="text-error text-sm px-3 py-1.5 glass-card rounded-full active:scale-95 transition cat-del-btn" data-name="${esc(name)}">מחק</button>`
           }
         </div>
       </div>`).join('');
-
-    el.querySelectorAll('.cat-edit-btn').forEach(btn => {
-      btn.addEventListener('click', () => this._openCategoryModal(btn.dataset.name));
-    });
-    el.querySelectorAll('.cat-del-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        if (!confirm(`למחוק את הקטגוריה "${btn.dataset.name}"?`)) return;
-        delete CATEGORIES[btn.dataset.name];
-        saveCategories(CATEGORIES);
-        this._renderCategoriesSettings();
-        showToast('קטגוריה נמחקה');
-      });
-    });
+    el.querySelectorAll('.cat-edit-btn').forEach(b => b.addEventListener('click', () => this._openCategoryModal(b.dataset.name)));
+    el.querySelectorAll('.cat-del-btn').forEach(b => b.addEventListener('click', () => {
+      if (!confirm(`למחוק "${b.dataset.name}"?`)) return;
+      delete CATEGORIES[b.dataset.name];
+      saveCategories(CATEGORIES);
+      this._renderCategoriesSettings();
+      Expenses._rebuildCategoryPills?.();
+      showToast('קטגוריה נמחקה');
+    }));
   },
 
-  _editingCategory: null,
-
-  _openCategoryModal(existingName = null) {
-    this._editingCategory = existingName;
-    document.getElementById('cat-modal-title').textContent = existingName ? 'עריכת קטגוריה' : 'קטגוריה חדשה';
-    document.getElementById('cat-name-input').value = existingName || '';
-    const currentIcon = existingName ? CATEGORIES[existingName]?.icon : '📦';
+  _editingCatName: null,
+  _openCategoryModal(existing = null) {
+    this._editingCatName = existing;
+    document.getElementById('cat-modal-title').textContent = existing ? 'עריכת קטגוריה' : 'קטגוריה חדשה';
+    document.getElementById('cat-name-input').value = existing || '';
+    const currentIcon = existing ? (CATEGORIES[existing]?.icon || '📦') : '📦';
     document.getElementById('cat-selected-icon').textContent = currentIcon;
     document.getElementById('cat-icon-value').value = currentIcon;
-
-    // בנה רשת אמוג'י
     const grid = document.getElementById('cat-emoji-grid');
-    grid.innerHTML = EMOJI_LIST.map(e => `
-      <button class="emoji-pick text-2xl p-2 rounded-xl hover:bg-surface-container active:scale-95 transition ${e === currentIcon ? 'bg-primary-container' : ''}" data-emoji="${e}">${e}</button>
+    grid.innerHTML = EMOJI_LIST.map(em => `
+      <button class="emoji-pick text-2xl p-2 rounded-xl hover:bg-surface-container active:scale-95 transition ${em === currentIcon ? 'bg-primary-container/50' : ''}" data-emoji="${em}">${em}</button>
     `).join('');
-    grid.querySelectorAll('.emoji-pick').forEach(btn => {
-      btn.addEventListener('click', () => {
-        grid.querySelectorAll('.emoji-pick').forEach(b => b.classList.remove('bg-primary-container'));
-        btn.classList.add('bg-primary-container');
-        document.getElementById('cat-selected-icon').textContent = btn.dataset.emoji;
-        document.getElementById('cat-icon-value').value = btn.dataset.emoji;
+    grid.querySelectorAll('.emoji-pick').forEach(b => {
+      b.addEventListener('click', () => {
+        grid.querySelectorAll('.emoji-pick').forEach(x => x.classList.remove('bg-primary-container/50'));
+        b.classList.add('bg-primary-container/50');
+        document.getElementById('cat-selected-icon').textContent = b.dataset.emoji;
+        document.getElementById('cat-icon-value').value = b.dataset.emoji;
       });
     });
-
     this.openModal('modal-category');
   },
 
@@ -269,26 +249,25 @@ const App = {
     const name = document.getElementById('cat-name-input').value.trim();
     const icon = document.getElementById('cat-icon-value').value || '📦';
     if (!name) { showToast('נא להזין שם קטגוריה'); return; }
-
-    if (this._editingCategory && this._editingCategory !== name) {
-      // שינוי שם — מחק ישן
-      delete CATEGORIES[this._editingCategory];
+    if (this._editingCatName && this._editingCatName !== name) {
+      delete CATEGORIES[this._editingCatName];
     }
-    CATEGORIES[name] = { icon, color: CATEGORIES[name]?.color || '#9e9e9e' };
+    const existingColor = this._editingCatName ? CATEGORIES[this._editingCatName]?.color : null;
+    CATEGORIES[name] = { icon, color: existingColor || '#9e9e9e' };
     saveCategories(CATEGORIES);
     this.closeModal('modal-category');
     this._renderCategoriesSettings();
-    // עדכן pills בטופס הוצאה
-    Expenses._rebuildCategoryPills();
+    Expenses._rebuildCategoryPills?.();
     showToast('קטגוריה נשמרה ✓');
   },
 
   _resetCategories() {
     if (!confirm('לאפס לקטגוריות ברירת מחדל?')) return;
-    CATEGORIES = { ...DEFAULT_CATEGORIES };
+    Object.keys(CATEGORIES).forEach(k => delete CATEGORIES[k]);
+    Object.assign(CATEGORIES, DEFAULT_CATEGORIES);
     saveCategories(CATEGORIES);
     this._renderCategoriesSettings();
-    Expenses._rebuildCategoryPills();
+    Expenses._rebuildCategoryPills?.();
     showToast('קטגוריות אופסו');
   },
 
