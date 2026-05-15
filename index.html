@@ -13,33 +13,33 @@
       theme: {
         extend: {
           colors: {
-            "background": "#0b1326",
-            "surface": "#0b1326",
-            "surface-container": "#171f33",
-            "surface-container-low": "#131b2e",
-            "surface-container-high": "#222a3d",
-            "surface-container-highest": "#2d3449",
-            "surface-bright": "#31394d",
-            "surface-variant": "#2d3449",
-            "on-surface": "#dae2fd",
-            "on-surface-variant": "#c3c6d7",
-            "primary": "#b4c5ff",
-            "primary-container": "#2563eb",
-            "on-primary": "#002a78",
-            "on-primary-container": "#eeefff",
-            "secondary": "#4edea3",
-            "secondary-container": "#00a572",
-            "on-secondary": "#003824",
-            "on-secondary-container": "#00311f",
-            "tertiary": "#ffb2b9",
-            "tertiary-container": "#bd4257",
-            "error": "#ffb4ab",
-            "error-container": "#93000a",
-            "outline": "#8d90a0",
-            "outline-variant": "#434655",
-            "on-background": "#dae2fd",
-            "inverse-surface": "#dae2fd",
-            "inverse-on-surface": "#283044",
+            "background": "var(--c-background)",
+            "surface": "var(--c-surface)",
+            "surface-container": "var(--c-surface-container)",
+            "surface-container-low": "var(--c-surface-container-low)",
+            "surface-container-high": "var(--c-surface-container-high)",
+            "surface-container-highest": "var(--c-surface-container-highest)",
+            "surface-bright": "var(--c-surface-bright)",
+            "surface-variant": "var(--c-surface-variant)",
+            "on-surface": "var(--c-on-surface)",
+            "on-surface-variant": "var(--c-on-surface-variant)",
+            "primary": "var(--c-primary)",
+            "primary-container": "var(--c-primary-container)",
+            "on-primary": "var(--c-on-primary)",
+            "on-primary-container": "var(--c-on-primary-container)",
+            "secondary": "var(--c-secondary)",
+            "secondary-container": "var(--c-secondary-container)",
+            "on-secondary": "var(--c-on-secondary)",
+            "on-secondary-container": "var(--c-on-secondary-container)",
+            "tertiary": "var(--c-tertiary)",
+            "tertiary-container": "var(--c-tertiary-container)",
+            "error": "var(--c-error)",
+            "error-container": "var(--c-error-container)",
+            "outline": "var(--c-outline)",
+            "outline-variant": "var(--c-outline-variant)",
+            "on-background": "var(--c-on-background)",
+            "inverse-surface": "var(--c-inverse-surface)",
+            "inverse-on-surface": "var(--c-inverse-on-surface)",
           },
           borderRadius: {
             "DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"
@@ -52,9 +52,69 @@
     }
   </script>
   <style>
-    body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #0b1326; min-height: 100dvh; }
+    :root, .dark {
+      --c-background: #0b1326;
+      --c-surface: #0b1326;
+      --c-surface-container: #171f33;
+      --c-surface-container-low: #131b2e;
+      --c-surface-container-high: #222a3d;
+      --c-surface-container-highest: #2d3449;
+      --c-surface-bright: #31394d;
+      --c-surface-variant: #2d3449;
+      --c-on-surface: #dae2fd;
+      --c-on-surface-variant: #c3c6d7;
+      --c-primary: #b4c5ff;
+      --c-primary-container: #2563eb;
+      --c-on-primary: #002a78;
+      --c-on-primary-container: #eeefff;
+      --c-secondary: #4edea3;
+      --c-secondary-container: #00a572;
+      --c-on-secondary: #003824;
+      --c-on-secondary-container: #00311f;
+      --c-tertiary: #ffb2b9;
+      --c-tertiary-container: #bd4257;
+      --c-error: #ffb4ab;
+      --c-error-container: #93000a;
+      --c-outline: #8d90a0;
+      --c-outline-variant: #434655;
+      --c-on-background: #dae2fd;
+      --c-inverse-surface: #dae2fd;
+      --c-inverse-on-surface: #283044;
+    }
+    .light {
+      --c-background: #f7f9ff;
+      --c-surface: #f7f9ff;
+      --c-surface-container: #eef2ff;
+      --c-surface-container-low: #f4f6ff;
+      --c-surface-container-high: #e3e9fb;
+      --c-surface-container-highest: #d9e0f5;
+      --c-surface-bright: #ffffff;
+      --c-surface-variant: #d9e0f5;
+      --c-on-surface: #1a2238;
+      --c-on-surface-variant: #47506a;
+      --c-primary: #1d4ed8;
+      --c-primary-container: #2563eb;
+      --c-on-primary: #ffffff;
+      --c-on-primary-container: #ffffff;
+      --c-secondary: #0f766e;
+      --c-secondary-container: #2dd4bf;
+      --c-on-secondary: #ffffff;
+      --c-on-secondary-container: #083a35;
+      --c-tertiary: #be123c;
+      --c-tertiary-container: #fb7185;
+      --c-error: #b42318;
+      --c-error-container: #fecaca;
+      --c-outline: #667085;
+      --c-outline-variant: #b6bfd8;
+      --c-on-background: #1a2238;
+      --c-inverse-surface: #1a2238;
+      --c-inverse-on-surface: #f7f9ff;
+    }
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: var(--c-background); min-height: 100dvh; }
     .glass-card { background: rgba(45,52,73,0.4); backdrop-filter: blur(24px); border: 1px solid rgba(255,255,255,0.08); }
     .glass-container { background: rgba(23,31,51,0.6); backdrop-filter: blur(24px); border: 1px solid rgba(255,255,255,0.1); }
+    .light .glass-card { background: rgba(255,255,255,0.8); border: 1px solid rgba(71,80,106,0.18); }
+    .light .glass-container { background: rgba(255,255,255,0.86); border: 1px solid rgba(71,80,106,0.22); }
     .inner-glow { box-shadow: inset 0 1px 0 rgba(255,255,255,0.1); }
     .material-symbols-outlined { font-variation-settings: 'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24; }
     .screen { display: none; min-height: 100dvh; flex-direction: column; }
@@ -225,6 +285,17 @@
       <div id="filter-pills" class="flex flex-wrap gap-2"></div>
     </div>
 
+    <div class="grid grid-cols-2 gap-3">
+      <button id="btn-show-categories" class="glass-card rounded-xl px-4 py-3 flex items-center justify-center gap-2 text-on-surface hover:bg-surface-variant/40 active:scale-95 transition">
+        <span class="material-symbols-outlined text-primary">pie_chart</span>
+        <span class="text-sm font-semibold">סיכום לפי קטגוריות</span>
+      </button>
+      <button id="btn-show-forecast" class="glass-card rounded-xl px-4 py-3 flex items-center justify-center gap-2 text-on-surface hover:bg-surface-variant/40 active:scale-95 transition">
+        <span class="material-symbols-outlined text-primary">event_upcoming</span>
+        <span class="text-sm font-semibold">תחזית תשלומים עתידיים</span>
+      </button>
+    </div>
+
     <!-- Expenses list -->
     <div>
       <div class="flex justify-between items-center mb-3">
@@ -268,21 +339,23 @@
     </button>
   </header>
   <main class="flex-1 px-5 pt-6 max-w-2xl mx-auto w-full space-y-8">
-    <!-- Profile -->
+    <!-- Theme -->
     <section class="space-y-3">
       <h2 class="flex items-center gap-2 text-lg font-semibold text-on-surface">
-        <span class="material-symbols-outlined text-secondary">person</span> פרופיל
+        <span class="material-symbols-outlined text-secondary">dark_mode</span> תצוגה
       </h2>
-      <div class="glass-card rounded-lg p-4 space-y-3 inner-glow">
-        <div>
-          <label class="text-xs text-primary font-medium block mb-1 pr-1">שם תצוגה</label>
-          <input id="settings-display-name" type="text" placeholder="הכנס שם"
-            class="w-full bg-surface-container-highest border-none rounded-full px-5 py-3 text-on-surface focus:ring-2 focus:ring-primary-container outline-none"/>
+      <div class="glass-card rounded-lg p-4 inner-glow">
+        <div class="grid grid-cols-3 gap-2">
+          <button class="theme-btn p-3 rounded-lg bg-surface-container-highest text-on-surface-variant border-2 border-transparent flex flex-col items-center" data-theme="dark">
+            <span class="material-symbols-outlined">dark_mode</span><span class="text-xs">כהה</span>
+          </button>
+          <button class="theme-btn p-3 rounded-lg bg-surface-container-highest text-on-surface-variant border-2 border-transparent flex flex-col items-center" data-theme="light">
+            <span class="material-symbols-outlined">light_mode</span><span class="text-xs">בהיר</span>
+          </button>
+          <button class="theme-btn p-3 rounded-lg bg-surface-container-highest text-on-surface-variant border-2 border-transparent flex flex-col items-center" data-theme="system">
+            <span class="material-symbols-outlined">settings_suggest</span><span class="text-xs">מערכת</span>
+          </button>
         </div>
-        <button id="btn-change-password"
-          class="w-full py-3 px-5 bg-secondary-container text-on-secondary-container rounded-full font-semibold flex items-center justify-center gap-2 hover:opacity-90 active:scale-95 transition">
-          <span class="material-symbols-outlined">lock_reset</span> שינוי סיסמה
-        </button>
       </div>
     </section>
     <!-- Default currency -->
@@ -647,15 +720,15 @@
 </div>
 
 <!-- ==================== MODAL: VIEW EXPENSE ==================== -->
-<div id="modal-view-expense" class="hidden fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-end justify-center">
-  <div class="glass-container w-full max-w-lg rounded-t-2xl max-h-[90dvh] flex flex-col">
+<div id="modal-view-expense" class="hidden fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+  <div class="glass-container w-full max-w-xl rounded-2xl max-h-[88dvh] flex flex-col shadow-2xl">
     <div class="flex justify-between items-center p-6 pb-4 flex-shrink-0">
       <h3 id="view-exp-name" class="text-xl font-bold text-on-surface">פרטי הוצאה</h3>
       <button data-close="modal-view-expense" class="text-on-surface-variant hover:text-on-surface">
         <span class="material-symbols-outlined">close</span>
       </button>
     </div>
-    <div id="view-expense-body" class="overflow-y-auto flex-1 px-6 space-y-1 pb-4"></div>
+    <div id="view-expense-body" class="overflow-y-auto flex-1 px-6 space-y-4 pb-4"></div>
     <div class="flex-shrink-0 p-6 pt-4 space-y-3">
       <div class="flex gap-3">
         <button id="btn-delete-expense" class="flex-1 py-3 border border-error/30 text-error rounded-full font-semibold flex items-center justify-center gap-2 hover:bg-error/10 active:scale-95 transition">
@@ -703,6 +776,28 @@
 
 <!-- ==================== TOAST ==================== -->
 <div id="toast" class="hidden fixed bottom-24 left-1/2 -translate-x-1/2 z-[200] bg-surface-container-highest border border-white/10 text-on-surface px-5 py-3 rounded-full text-sm font-medium shadow-xl whitespace-nowrap max-w-[90vw] overflow-hidden text-ellipsis"></div>
+
+<!-- ==================== MODAL: CATEGORY SUMMARY ==================== -->
+<div id="modal-category-summary" class="hidden fixed inset-0 z-[110] bg-black/60 backdrop-blur-sm flex items-end md:items-center justify-center">
+  <div class="glass-container w-full max-w-lg rounded-t-2xl md:rounded-2xl max-h-[90dvh] flex flex-col">
+    <div class="flex justify-between items-center p-6 pb-4 flex-shrink-0">
+      <h3 class="text-xl font-bold text-on-surface">סיכום לפי קטגוריות</h3>
+      <button data-close="modal-category-summary" class="text-on-surface-variant hover:text-on-surface"><span class="material-symbols-outlined">close</span></button>
+    </div>
+    <div id="category-summary-body" class="overflow-y-auto flex-1 px-6 pb-6 space-y-3"></div>
+  </div>
+</div>
+
+<!-- ==================== MODAL: FORECAST ==================== -->
+<div id="modal-forecast" class="hidden fixed inset-0 z-[110] bg-black/60 backdrop-blur-sm flex items-end md:items-center justify-center">
+  <div class="glass-container w-full max-w-lg rounded-t-2xl md:rounded-2xl max-h-[90dvh] flex flex-col">
+    <div class="flex justify-between items-center p-6 pb-4 flex-shrink-0">
+      <h3 class="text-xl font-bold text-on-surface">תחזית תשלומים עתידיים</h3>
+      <button data-close="modal-forecast" class="text-on-surface-variant hover:text-on-surface"><span class="material-symbols-outlined">close</span></button>
+    </div>
+    <div id="forecast-body" class="overflow-y-auto flex-1 px-6 pb-6 space-y-4"></div>
+  </div>
+</div>
 
 <script src="js/config.js"></script>
 <script src="js/api.js"></script>
