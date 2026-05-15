@@ -136,7 +136,8 @@ const Expenses = {
     // Reset
     document.getElementById('exp-name').value = expense?.name || '';
     document.getElementById('exp-amount').value = expense?.amount || '';
-    document.getElementById('exp-currency').value = expense?.currency || 'ILS';
+    const defaultCurrency = localStorage.getItem('default_currency') || 'ILS';
+    document.getElementById('exp-currency').value = expense?.currency || defaultCurrency;
     document.getElementById('exp-rate').value = expense?.exchange_rate || '';
     document.getElementById('exp-date').value = expense?.payment_date?.slice(0,10) || todayStr();
     document.getElementById('exp-location').value = expense?.location || '';
@@ -174,7 +175,7 @@ const Expenses = {
       img.classList.remove('hidden');
     }
 
-    this._updateCurrencyUI(expense?.currency || 'ILS');
+    this._updateCurrencyUI(expense?.currency || defaultCurrency);
     App.openModal('modal-expense');
   },
 
