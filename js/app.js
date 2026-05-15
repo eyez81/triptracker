@@ -7,13 +7,8 @@ const App = {
       const r = await fetch('http://192.168.0.176:8090/api/health', {
         signal: AbortSignal.timeout(1500)
       });
-      if (r.ok) {
-        CONFIG.PB_URL = 'http://192.168.0.176:8090';
-        console.log('Using internal PocketBase URL');
-      }
-    } catch {
-      console.log('Using external PocketBase URL');
-    }
+      if (r.ok) CONFIG.PB_URL = 'http://192.168.0.176:8090';
+    } catch {}
 
     this._bind();
     if (pb.isAuth) {
@@ -56,26 +51,39 @@ const App = {
   },
 
   _bind() {
+    // Auth
     document.getElementById('btn-login').addEventListener('click', () => this._login());
     document.getElementById('auth-password').addEventListener('keydown', e => { if (e.key === 'Enter') this._login(); });
     document.getElementById('btn-logout').addEventListener('click', () => this._logout());
+
+    // Trips
     document.getElementById('btn-add-trip').addEventListener('click', () => Trips.openModal());
     document.getElementById('btn-save-trip').addEventListener('click', () => Trips.save());
+    document.getElementById('btn-delete-trip').addEventListener('click', () => Trips.deleteTrip());
+
+    // Trip detail
     document.getElementById('btn-back-trips').addEventListener('click', () => this.goToTrips());
     document.getElementById('btn-add-expense').addEventListener('click', () => Expenses.openModal());
     document.getElementById('btn-save-expense').addEventListener('click', () => Expenses.save());
     document.getElementById('btn-export-excel').addEventListener('click', () => ExcelExport.export(Trips.current, Expenses._list));
     document.getElementById('btn-edit-trip').addEventListener('click', () => Trips.openModal(Trips.current));
+
+    // View expense
     document.getElementById('btn-delete-expense').addEventListener('click', () => Expenses.delete());
     document.getElementById('btn-edit-expense').addEventListener('click', () => Expenses.editCurrent());
+
+    // Settings nav
     document.getElementById('nav-settings-trips').addEventListener('click', e => { e.preventDefault(); this.openSettings(); });
     document.getElementById('nav-settings-trip').addEventListener('click', e => { e.preventDefault(); this.openSettings(); });
     document.getElementById('nav-trips-from-settings').addEventListener('click', e => { e.preventDefault(); this.goToTrips(); });
     document.getElementById('nav-trips-from-trip').addEventListener('click', e => { e.preventDefault(); this.goToTrips(); });
     document.getElementById('btn-back-from-settings').addEventListener('click', () => this.showScreen(this._prevScreen));
+
+    // Settings actions
     document.getElementById('btn-export-all').addEventListener('click', async () => { showToast('ייצוא כל הטיולים בקרוב...'); });
     document.getElementById('btn-change-password').addEventListener('click', () => { showToast('שינוי סיסמה — פנה ל-PocketBase Admin'); });
 
+    // Currency buttons in settings
     document.querySelectorAll('.currency-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         document.querySelectorAll('.currency-btn').forEach(b => {
@@ -87,38 +95,47 @@ const App = {
       });
     });
 
+    // Close modal via data-close
     document.querySelectorAll('[data-close]').forEach(btn => {
       btn.addEventListener('click', () => this.closeModal(btn.dataset.close));
     });
 
+    // Close modal on overlay click
     document.querySelectorAll('[id^="modal-"]').forEach(overlay => {
       overlay.addEventListener('click', e => {
         if (e.target === overlay) this.closeModal(overlay.id);
       });
     });
 
+    // Currency change in expense form
     document.getElementById('exp-currency').addEventListener('change', e => { Expenses._updateCurrencyUI(e.target.value); });
     document.getElementById('btn-fetch-rate').addEventListener('click', () => Expenses.fetchRate());
     document.getElementById('exp-amount').addEventListener('input', () => Expenses._updateILSPreview());
     document.getElementById('exp-rate').addEventListener('input', () => Expenses._updateILSPreview());
 
+    // Payment type change
     document.querySelectorAll('input[name="payment_type"]').forEach(r => {
       r.addEventListener('change', () => Expenses._updatePaymentTypeUI(r.value));
     });
 
+    // Search + filter
     document.getElementById('expense-search').addEventListener('input', () => Expenses._applyFilters());
     document.getElementById('btn-filter').addEventListener('click', () => {
       document.getElementById('filter-panel').classList.toggle('hidden');
     });
 
+    // Receipt — מצלמה וגלריה
     document.getElementById('btn-camera').addEventListener('click', () => {
       const fi = document.getElementById('exp-receipt');
       fi.setAttribute('capture', 'environment');
+      fi.setAttribute('accept', 'image/*');
       fi.click();
     });
     document.getElementById('btn-gallery').addEventListener('click', () => {
-      document.getElementById('exp-receipt').removeAttribute('capture');
-      document.getElementById('exp-receipt').click();
+      const fi = document.getElementById('exp-receipt');
+      fi.removeAttribute('capture');
+      fi.setAttribute('accept', 'image/*,application/pdf');
+      fi.click();
     });
     document.getElementById('exp-receipt').addEventListener('change', e => {
       const file = e.target.files[0];
@@ -132,9 +149,7 @@ const App = {
       reader.readAsDataURL(file);
     });
 
-    const defaultCurrency = localStorage.getItem('default_currency');
-    if (defaultCurrency) document.getElementById('exp-currency').value = defaultCurrency;
-
+    // ESC
     document.addEventListener('keydown', e => {
       if (e.key === 'Escape') {
         document.querySelectorAll('[id^="modal-"]').forEach(m => {
