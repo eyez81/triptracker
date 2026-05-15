@@ -145,6 +145,8 @@ const Expenses = {
     this._editing = expense;
     document.getElementById('modal-expense-title').textContent = expense ? 'עריכת הוצאה' : 'הוצאה חדשה';
 
+    this._receiptFile = null;
+
     // Reset
     document.getElementById('exp-name').value = expense?.name || '';
     document.getElementById('exp-amount').value = expense?.amount || '';
@@ -178,7 +180,10 @@ const Expenses = {
     });
 
     // Receipt
+    document.getElementById('exp-receipt-camera').value = '';
+    document.getElementById('exp-receipt-gallery').value = '';
     document.getElementById('receipt-preview').classList.add('hidden');
+    document.getElementById('receipt-pdf-badge')?.classList.add('hidden');
     if (expense?.receipt) {
       const img = document.getElementById('receipt-preview');
       img.src = pb.fileUrl(expense, expense.receipt);
@@ -257,7 +262,7 @@ const Expenses = {
     };
 
     try {
-      const file = document.getElementById('exp-receipt').files[0];
+      const file = this._receiptFile || document.getElementById('exp-receipt-camera')?.files?.[0] || document.getElementById('exp-receipt-gallery')?.files?.[0];
       if (file) {
         const fd = new FormData();
         Object.entries(data).forEach(([k,v]) => { if (v != null) fd.append(k, v); });
