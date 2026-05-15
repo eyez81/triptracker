@@ -331,36 +331,59 @@ const Expenses = {
     const statusClass = sum.status === 'שולם במלואו' ? 'bg-secondary/15 text-secondary' : sum.status === 'שולם חלקית' ? 'bg-tertiary/15 text-tertiary' : 'bg-error/15 text-error';
 
     let html = `
-      <div class="glass-card rounded-xl p-4 space-y-3">
+      <div class="rounded-2xl p-5 md:p-6 space-y-4 bg-gradient-to-br from-surface-container-high/80 via-surface-container/80 to-surface-container-low/90 border border-white/10 shadow-xl">
         <div class="flex items-start justify-between gap-3">
-          <div>
-            <p class="font-bold text-lg text-on-surface">${esc(exp.name)}</p>
-            <p class="text-sm text-on-surface-variant">${cat.icon} ${esc(exp.category || 'אחר')}</p>
+          <div class="min-w-0">
+            <p class="text-2xl font-bold text-on-surface leading-tight truncate">${esc(exp.name)}</p>
+            <div class="mt-2 inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-surface-container-highest/70 text-on-surface-variant text-sm">
+              <span class="text-base">${cat.icon}</span>
+              <span>${esc(exp.category || 'אחר')}</span>
+            </div>
           </div>
-          <span class="text-xs px-3 py-1 rounded-full font-semibold ${statusClass}">${sum.status}</span>
+          <span class="text-xs px-3 py-1.5 rounded-full font-semibold ${statusClass}">${sum.status}</span>
         </div>
-        <div class="grid grid-cols-3 gap-2 text-sm">
-          <div class="bg-surface-container/50 rounded-lg p-2"><div class="text-on-surface-variant text-xs">עלות כוללת</div><div class="font-semibold text-on-surface">${Currency.fmtILS(sum.total)}</div></div>
-          <div class="bg-surface-container/50 rounded-lg p-2"><div class="text-on-surface-variant text-xs">שולם</div><div class="font-semibold text-secondary">${Currency.fmtILS(sum.paid)}</div></div>
-          <div class="bg-surface-container/50 rounded-lg p-2"><div class="text-on-surface-variant text-xs">נותר</div><div class="font-semibold text-error">${Currency.fmtILS(sum.remaining)}</div></div>
+        <div>
+          <p class="text-xs text-on-surface-variant mb-1">עלות כוללת</p>
+          <p class="text-3xl md:text-4xl font-extrabold text-on-surface tracking-tight">${Currency.fmtILS(sum.total)}</p>
         </div>
       </div>
 
-      <div class="pt-2">
-        <h4 class="font-bold text-on-surface mb-2 text-base">לוח תשלומים</h4>
-        <div class="space-y-2">
+      <div class="glass-card rounded-2xl p-4 space-y-3">
+        <div class="flex items-center justify-between">
+          <h4 class="font-bold text-on-surface text-base">סקירת תשלומים</h4>
+          <span class="text-sm font-semibold text-on-surface-variant">${Math.round(sum.total ? (sum.paid / sum.total) * 100 : 0)}%</span>
+        </div>
+        <div class="h-2.5 bg-surface-container rounded-full overflow-hidden">
+          <div class="h-full rounded-full bg-secondary-container" style="width:${Math.max(0, Math.min(100, sum.total ? (sum.paid / sum.total) * 100 : 0))}%"></div>
+        </div>
+        <div class="grid grid-cols-2 gap-3 text-sm">
+          <div class="rounded-xl p-3 bg-secondary/10">
+            <p class="text-xs text-on-surface-variant">שולם</p>
+            <p class="font-bold text-secondary text-lg">${Currency.fmtILS(sum.paid)}</p>
+          </div>
+          <div class="rounded-xl p-3 bg-error/10">
+            <p class="text-xs text-on-surface-variant">נותר</p>
+            <p class="font-bold text-error text-lg">${Currency.fmtILS(sum.remaining)}</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="pt-1">
+        <h4 class="font-bold text-on-surface mb-3 text-base">לוח תשלומים</h4>
+        <div class="space-y-3">
           ${sum.rows.map(r => {
             const paid = sum.paidSet.has(r.idx);
-            return `<div class="glass-card rounded-xl p-3 space-y-2">
-              <div class="flex items-center justify-between gap-2">
+            return `<div class="relative rounded-2xl p-4 bg-surface-container/70 border border-white/5">
+              <div class="absolute top-4 right-[-10px] w-2.5 h-2.5 rounded-full ${paid ? 'bg-secondary' : 'bg-error'}"></div>
+              <div class="flex items-start justify-between gap-3">
                 <div>
                   <p class="font-semibold text-on-surface">תשלום ${r.idx} — ${r.type}</p>
-                  <p class="text-xs text-on-surface-variant">תאריך: ${r.date ? fmtDate(r.date) : 'ללא תאריך'}</p>
+                  <p class="text-xs text-on-surface-variant mt-1">${r.date ? fmtDate(r.date) : 'ללא תאריך'}</p>
                 </div>
-                <span class="font-semibold text-on-surface">${Currency.fmtILS(r.amount)}</span>
+                <span class="font-bold text-on-surface whitespace-nowrap">${Currency.fmtILS(r.amount)}</span>
               </div>
-              <div class="flex items-center justify-between">
-                <span class="text-xs px-2.5 py-1 rounded-full font-medium ${paid ? 'bg-secondary/15 text-secondary' : 'bg-error/15 text-error'}">סטטוס: ${paid ? 'שולם' : 'לא שולם'}</span>
+              <div class="mt-3 flex items-center justify-between">
+                <span class="text-xs px-2.5 py-1 rounded-full font-medium ${paid ? 'bg-secondary/15 text-secondary' : 'bg-error/15 text-error'}">${paid ? 'שולם' : 'לא שולם'}</span>
                 <button class="pay-row-btn px-3 py-1.5 rounded-full text-sm font-semibold ${paid ? 'bg-surface-container-high text-on-surface-variant cursor-default' : 'bg-primary-container text-on-primary-container active:scale-95 transition'}" data-exp-id="${exp.id}" data-row-idx="${r.idx}" ${paid ? 'disabled' : ''}>${paid ? 'שולם' : 'סמן כשולם'}</button>
               </div>
             </div>`;
@@ -368,7 +391,6 @@ const Expenses = {
         </div>
       </div>
     `;
-
     if (exp.location) html += `<div class="pt-2"><h4 class="font-bold text-on-surface mb-1">מיקום</h4><div class="glass-card rounded-xl p-3 text-sm text-on-surface">${esc(exp.location)}</div></div>`;
     if (exp.notes) html += `<div class="pt-2"><h4 class="font-bold text-on-surface mb-1">הערות</h4><div class="glass-card rounded-xl p-3 text-sm text-on-surface whitespace-pre-wrap">${esc(exp.notes)}</div></div>`;
     if (exp.contact_name || exp.contact_phone) {
