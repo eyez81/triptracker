@@ -3,7 +3,6 @@ const CONFIG = {
   COLLECTIONS: { TRIPS: 'trips', EXPENSES: 'expenses' },
 };
 
-// קטגוריות ברירת מחדל
 const DEFAULT_CATEGORIES = {
   'לינה':         { icon: '🏨', color: '#4f8ef7' },
   'אוכל ושתייה': { icon: '🍽', color: '#38c9a0' },
@@ -16,11 +15,10 @@ const DEFAULT_CATEGORIES = {
   'אחר':          { icon: '📦', color: '#9e9e9e' },
 };
 
-// טעינת קטגוריות — מ-localStorage אם קיים, אחרת ברירת מחדל
 function loadCategories() {
   try {
-    const saved = localStorage.getItem('custom_categories');
-    if (saved) return JSON.parse(saved);
+    const s = localStorage.getItem('custom_categories');
+    if (s) return JSON.parse(s);
   } catch {}
   return { ...DEFAULT_CATEGORIES };
 }
@@ -29,16 +27,14 @@ function saveCategories(cats) {
   localStorage.setItem('custom_categories', JSON.stringify(cats));
 }
 
-// CATEGORIES הוא אובייקט דינמי
-let CATEGORIES = loadCategories();
+const CATEGORIES = loadCategories();
 
 const CURRENCY_SYMBOLS = {
   ILS:'₪', USD:'$', EUR:'€', GBP:'£', JPY:'¥', THB:'฿', TRY:'₺', AED:'د.إ',
 };
 
-// רשימת אמוג'י נפוצים לבחירה
 const EMOJI_LIST = [
   '🏨','🍽','🛍','🎡','🚗','🚌','✈','🛡','📦','🎭','🏖','🏔','🎪',
   '🚢','🏕','🎵','🎨','⚽','🏊','🚴','🍕','☕','🍺','🛒','💊',
-  '📱','💻','🎁','💰','🏦','🎓','🔧','🌐','🏛','🗺','📸','🎬',
+  '📱','💻','🎁','💰','🏦','🎓','🔧','🌐','🏛','🗺','📸','🎬','🎿','🧘',
 ];
