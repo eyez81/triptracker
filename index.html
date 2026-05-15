@@ -170,6 +170,12 @@
       <span id="trip-header-title" class="font-bold text-lg text-primary"></span>
     </div>
     <div class="flex items-center gap-1">
+      <button id="btn-show-categories" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-variant/50 transition active:scale-95" title="קטגוריות">
+        <span class="material-symbols-outlined text-on-surface-variant">pie_chart</span>
+      </button>
+      <button id="btn-show-forecast" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-variant/50 transition active:scale-95" title="תחזית">
+        <span class="material-symbols-outlined text-on-surface-variant">schedule</span>
+      </button>
       <button id="btn-export-excel" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-variant/50 transition active:scale-95" title="ייצוא Excel">
         <span class="material-symbols-outlined text-on-surface-variant">download</span>
       </button>
@@ -194,14 +200,18 @@
         </div>
         <span id="budget-pct" class="text-secondary font-semibold text-sm whitespace-nowrap">0%</span>
       </div>
-      <div class="grid grid-cols-2 gap-3">
+      <div class="grid grid-cols-3 gap-3">
         <div class="bg-surface-container/50 p-3 rounded-xl">
-          <span class="text-on-surface-variant text-xs">נוצל</span>
+          <span class="text-on-surface-variant text-xs">שולם</span>
           <p id="sum-used" class="text-on-surface font-semibold mt-1">₪0</p>
         </div>
         <div class="bg-surface-container/50 p-3 rounded-xl">
           <span class="text-on-surface-variant text-xs">נותר</span>
           <p id="sum-remaining" class="text-on-surface font-semibold mt-1">₪0</p>
+        </div>
+        <div class="bg-surface-container/50 p-3 rounded-xl">
+          <span class="text-on-surface-variant text-xs">התחייבויות</span>
+          <p id="sum-committed" class="text-primary font-semibold mt-1">₪0</p>
         </div>
       </div>
       <div id="sum-dates" class="text-on-surface-variant text-xs"></div>
@@ -268,21 +278,26 @@
     </button>
   </header>
   <main class="flex-1 px-5 pt-6 max-w-2xl mx-auto w-full space-y-8">
-    <!-- Profile -->
+    <!-- Appearance -->
     <section class="space-y-3">
       <h2 class="flex items-center gap-2 text-lg font-semibold text-on-surface">
-        <span class="material-symbols-outlined text-secondary">person</span> פרופיל
+        <span class="material-symbols-outlined text-secondary">palette</span> מראה
       </h2>
-      <div class="glass-card rounded-lg p-4 space-y-3 inner-glow">
-        <div>
-          <label class="text-xs text-primary font-medium block mb-1 pr-1">שם תצוגה</label>
-          <input id="settings-display-name" type="text" placeholder="הכנס שם"
-            class="w-full bg-surface-container-highest border-none rounded-full px-5 py-3 text-on-surface focus:ring-2 focus:ring-primary-container outline-none"/>
+      <div class="glass-card rounded-lg p-4 inner-glow">
+        <div class="grid grid-cols-3 gap-2">
+          <button class="theme-btn p-3 rounded-lg bg-surface-container-highest text-on-surface-variant border-2 border-transparent flex flex-col items-center gap-1 transition" data-theme="dark">
+            <span class="material-symbols-outlined">dark_mode</span>
+            <span class="text-xs">כהה</span>
+          </button>
+          <button class="theme-btn p-3 rounded-lg bg-surface-container-highest text-on-surface-variant border-2 border-transparent flex flex-col items-center gap-1 transition" data-theme="light">
+            <span class="material-symbols-outlined">light_mode</span>
+            <span class="text-xs">בהיר</span>
+          </button>
+          <button class="theme-btn p-3 rounded-lg bg-surface-container-highest text-on-surface-variant border-2 border-transparent flex flex-col items-center gap-1 transition" data-theme="system">
+            <span class="material-symbols-outlined">brightness_auto</span>
+            <span class="text-xs">אוטו</span>
+          </button>
         </div>
-        <button id="btn-change-password"
-          class="w-full py-3 px-5 bg-secondary-container text-on-secondary-container rounded-full font-semibold flex items-center justify-center gap-2 hover:opacity-90 active:scale-95 transition">
-          <span class="material-symbols-outlined">lock_reset</span> שינוי סיסמה
-        </button>
       </div>
     </section>
     <!-- Default currency -->
@@ -356,8 +371,8 @@
 </div>
 
 <!-- ==================== MODAL: ADD/EDIT TRIP ==================== -->
-<div id="modal-trip" class="hidden fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-end justify-center">
-  <div class="glass-container w-full max-w-lg rounded-t-2xl p-6 space-y-4 max-h-[90dvh] overflow-y-auto">
+<div id="modal-trip" class="hidden fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-end md:items-center justify-center">
+  <div class="glass-container w-full max-w-lg rounded-t-2xl md:rounded-2xl p-6 space-y-4 max-h-[90dvh] overflow-y-auto">
     <div class="flex justify-between items-center">
       <h3 id="modal-trip-title" class="text-xl font-bold text-on-surface">טיול חדש</h3>
       <button data-close="modal-trip" class="text-on-surface-variant hover:text-on-surface">
@@ -395,15 +410,12 @@
       <button data-close="modal-trip" class="flex-1 py-3 bg-surface-container-high text-on-surface-variant rounded-full font-semibold">ביטול</button>
       <button id="btn-save-trip" class="flex-1 py-3 bg-primary-container text-on-primary-container rounded-full font-bold">שמור</button>
     </div>
-    <button id="btn-delete-trip" class="hidden w-full py-3 border border-error/30 text-error rounded-full font-semibold flex items-center justify-center gap-2 hover:bg-error/10 active:scale-95 transition mt-1">
-      <span class="material-symbols-outlined text-base">delete</span> מחק טיול
-    </button>
   </div>
 </div>
 
 <!-- ==================== MODAL: ADD/EDIT EXPENSE ==================== -->
-<div id="modal-expense" class="hidden fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-end justify-center">
-  <div class="glass-container w-full max-w-lg rounded-t-2xl max-h-[96dvh] flex flex-col">
+<div id="modal-expense" class="hidden fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-end md:items-center justify-center">
+  <div class="glass-container w-full max-w-lg rounded-t-2xl md:rounded-2xl max-h-[96dvh] flex flex-col">
     <div class="flex justify-between items-center p-6 pb-4 flex-shrink-0">
       <h3 id="modal-expense-title" class="text-xl font-bold text-on-surface">הוצאה חדשה</h3>
       <button data-close="modal-expense" class="text-on-surface-variant hover:text-on-surface">
@@ -554,7 +566,7 @@
         </div>
       </div>
       <!-- Payment method -->
-      <div id="payment-method-section">
+      <div>
         <label class="text-xs text-primary font-medium block mb-1 pr-1">אמצעי תשלום</label>
         <div class="flex bg-surface-container-low rounded-full p-1 gap-1">
           <label class="flex-1 cursor-pointer"><input checked class="peer sr-only" name="payment_method" type="radio" value="אשראי"/>
@@ -629,7 +641,7 @@
             <span class="text-xs text-on-surface-variant">מהגלריה</span>
           </button>
         </div>
-        <input type="file" id="exp-receipt" accept="image/*" capture="environment" class="hidden"/>
+        <input type="file" id="exp-receipt" accept="image/*,application/pdf" class="hidden"/>
         <img id="receipt-preview" class="hidden mt-3 w-full rounded-xl max-h-48 object-contain" alt="קבלה"/>
       </div>
     </div>
@@ -643,16 +655,19 @@
 </div>
 
 <!-- ==================== MODAL: VIEW EXPENSE ==================== -->
-<div id="modal-view-expense" class="hidden fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-end justify-center">
-  <div class="glass-container w-full max-w-lg rounded-t-2xl max-h-[90dvh] flex flex-col">
+<div id="modal-view-expense" class="hidden fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-end md:items-center justify-center">
+  <div class="glass-container w-full max-w-lg rounded-t-2xl md:rounded-2xl max-h-[90dvh] flex flex-col">
     <div class="flex justify-between items-center p-6 pb-4 flex-shrink-0">
-      <h3 id="view-exp-name" class="text-xl font-bold text-on-surface">פרטי הוצאה</h3>
-      <button data-close="modal-view-expense" class="text-on-surface-variant hover:text-on-surface">
+      <h3 id="view-exp-name" class="text-xl font-bold text-on-surface truncate ml-4">פרטי הוצאה</h3>
+      <button data-close="modal-view-expense" class="text-on-surface-variant hover:text-on-surface flex-shrink-0">
         <span class="material-symbols-outlined">close</span>
       </button>
     </div>
-    <div id="view-expense-body" class="overflow-y-auto flex-1 px-6 space-y-1 pb-4"></div>
-    <div class="flex-shrink-0 p-6 pt-4 space-y-3">
+    <div id="view-expense-body" class="overflow-y-auto flex-1 px-6 pb-4"></div>
+    <div class="flex-shrink-0 p-6 pt-3 space-y-2">
+      <button id="btn-mark-paid" class="hidden w-full py-3 rounded-full font-semibold text-sm transition active:scale-95 bg-secondary/15 text-secondary border border-secondary/30">
+        ✓ סמן כשולם
+      </button>
       <div class="flex gap-3">
         <button id="btn-delete-expense" class="flex-1 py-3 border border-error/30 text-error rounded-full font-semibold flex items-center justify-center gap-2 hover:bg-error/10 active:scale-95 transition">
           <span class="material-symbols-outlined text-base">delete</span> מחק
@@ -662,6 +677,32 @@
         </button>
       </div>
     </div>
+  </div>
+</div>
+
+<!-- ==================== MODAL: CATEGORIES ==================== -->
+<div id="modal-categories" class="hidden fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-end md:items-center justify-center">
+  <div class="glass-container w-full max-w-lg rounded-t-2xl md:rounded-2xl max-h-[85dvh] flex flex-col">
+    <div class="flex justify-between items-center p-6 pb-4 flex-shrink-0">
+      <h3 class="text-xl font-bold text-on-surface">סיכום לפי קטגוריות</h3>
+      <button data-close="modal-categories" class="text-on-surface-variant hover:text-on-surface">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+    <div id="categories-modal-body" class="overflow-y-auto flex-1 px-6 pb-6 space-y-4"></div>
+  </div>
+</div>
+
+<!-- ==================== MODAL: FORECAST ==================== -->
+<div id="modal-forecast" class="hidden fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-end md:items-center justify-center">
+  <div class="glass-container w-full max-w-lg rounded-t-2xl md:rounded-2xl max-h-[85dvh] flex flex-col">
+    <div class="flex justify-between items-center p-6 pb-4 flex-shrink-0">
+      <h3 class="text-xl font-bold text-on-surface">תחזית תשלומים</h3>
+      <button data-close="modal-forecast" class="text-on-surface-variant hover:text-on-surface">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+    <div id="forecast-modal-body" class="overflow-y-auto flex-1 px-6 pb-6"></div>
   </div>
 </div>
 
