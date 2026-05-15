@@ -3,18 +3,42 @@ const CONFIG = {
   COLLECTIONS: { TRIPS: 'trips', EXPENSES: 'expenses' },
 };
 
-const CATEGORIES = {
+// קטגוריות ברירת מחדל
+const DEFAULT_CATEGORIES = {
   'לינה':         { icon: '🏨', color: '#4f8ef7' },
   'אוכל ושתייה': { icon: '🍽', color: '#38c9a0' },
   'קניות':        { icon: '🛍', color: '#f5a623' },
   'אטרקציות':     { icon: '🎡', color: '#7b5ea7' },
   'רכב שכור':     { icon: '🚗', color: '#e05252' },
   'תחבורה':       { icon: '🚌', color: '#3cb8e0' },
-  'טיסות':        { icon: '✈', color:  '#5e7ef7' },
+  'טיסות':        { icon: '✈',  color: '#5e7ef7' },
   'ביטוח':        { icon: '🛡', color: '#8bc34a' },
   'אחר':          { icon: '📦', color: '#9e9e9e' },
 };
 
+// טעינת קטגוריות — מ-localStorage אם קיים, אחרת ברירת מחדל
+function loadCategories() {
+  try {
+    const saved = localStorage.getItem('custom_categories');
+    if (saved) return JSON.parse(saved);
+  } catch {}
+  return { ...DEFAULT_CATEGORIES };
+}
+
+function saveCategories(cats) {
+  localStorage.setItem('custom_categories', JSON.stringify(cats));
+}
+
+// CATEGORIES הוא אובייקט דינמי
+let CATEGORIES = loadCategories();
+
 const CURRENCY_SYMBOLS = {
   ILS:'₪', USD:'$', EUR:'€', GBP:'£', JPY:'¥', THB:'฿', TRY:'₺', AED:'د.إ',
 };
+
+// רשימת אמוג'י נפוצים לבחירה
+const EMOJI_LIST = [
+  '🏨','🍽','🛍','🎡','🚗','🚌','✈','🛡','📦','🎭','🏖','🏔','🎪',
+  '🚢','🏕','🎵','🎨','⚽','🏊','🚴','🍕','☕','🍺','🛒','💊',
+  '📱','💻','🎁','💰','🏦','🎓','🔧','🌐','🏛','🗺','📸','🎬',
+];
