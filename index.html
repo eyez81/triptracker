@@ -532,11 +532,13 @@
       <!-- Category -->
       <div>
         <label class="text-xs text-primary font-medium block mb-1 pr-1" for="exp-cat">קטגוריה *</label>
-        <div class="relative glass-card rounded-2xl inner-glow" id="category-pills">
-          <span class="material-symbols-outlined pointer-events-none absolute top-1/2 -translate-y-1/2 left-3 text-on-surface-variant text-[20px]">expand_more</span>
-          <select id="exp-cat" name="exp-cat" class="w-full appearance-none rounded-2xl border border-outline/30 bg-transparent text-on-surface px-4 py-3 pl-10 text-sm focus:outline-none focus:border-primary/70 focus:ring-2 focus:ring-primary/30 transition-all [color-scheme:dark] cursor-pointer" dir="rtl">
-            <option value="" class="bg-surface text-on-surface-variant">בחר קטגוריה</option>
-          </select>
+        <div class="relative" id="category-pills">
+          <input id="exp-cat" name="exp-cat" type="hidden" value=""/>
+          <button id="exp-cat-trigger" type="button" class="w-full glass-card rounded-2xl inner-glow border border-outline/30 bg-surface-container/80 px-4 py-3 text-sm text-on-surface flex items-center justify-between gap-3 hover:border-outline/60 active:scale-[0.99] focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all cursor-pointer" dir="rtl" aria-haspopup="listbox" aria-expanded="false">
+            <span id="exp-cat-label" class="truncate text-on-surface-variant">בחר קטגוריה</span>
+            <span class="material-symbols-outlined text-on-surface-variant text-[20px]">expand_more</span>
+          </button>
+          <div id="exp-cat-menu" class="hidden absolute z-20 mt-2 w-full overflow-hidden rounded-2xl border border-white/10 bg-surface-container-high/95 backdrop-blur-xl shadow-2xl" dir="rtl" role="listbox"></div>
         </div>
       </div>
       <!-- Payment type -->

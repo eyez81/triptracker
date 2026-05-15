@@ -166,6 +166,7 @@ const Expenses = {
     document.getElementById('exp-balance-date').value = expense?.balance_date?.slice(0,10) || '';
 
     // Category
+    this._rebuildCategoryPills();
     this._setCategoryValue(expense?.category || '');
 
     // Payment type
@@ -596,19 +597,61 @@ const Expenses = {
   },
 
   _setCategoryValue(value) {
-    const sel = document.getElementById('exp-cat');
-    if (sel) sel.value = value || '';
+    const input = document.getElementById('exp-cat');
+    const label = document.getElementById('exp-cat-label');
+    const safeValue = value || '';
+    if (input) input.value = safeValue;
+    if (label) {
+      if (!safeValue) {
+        label.textContent = 'בחר קטגוריה';
+        label.classList.add('text-on-surface-variant');
+      } else {
+        label.textContent = `${CATEGORIES[safeValue]?.icon || '📦'} ${safeValue}`;
+        label.classList.remove('text-on-surface-variant');
+      }
+    }
   },
 
   _rebuildCategoryPills() {
-    const sel = document.getElementById('exp-cat');
-    if (!sel) return;
-    const current = sel.value;
-    sel.innerHTML = '<option value="">בחר קטגוריה</option>' +
-      Object.entries(CATEGORIES).map(([name, def]) =>
-        `<option value="${name}" class="bg-surface">${def.icon} ${name}</option>`
-      ).join('');
-    sel.value = current || '';
+    const container = document.getElementById('category-pills');
+    const input = document.getElementById('exp-cat');
+    const trigger = document.getElementById('exp-cat-trigger');
+    const menu = document.getElementById('exp-cat-menu');
+    if (!container || !input || !trigger || !menu) return;
+
+    const current = input.value;
+    menu.innerHTML = Object.entries(CATEGORIES).map(([name, def]) => `
+      <button type="button" class="cat-option w-full px-4 py-2.5 text-sm text-right text-on-surface hover:bg-surface-variant/40 transition-colors" data-value="${name}" role="option">
+        <span class="inline-flex items-center gap-2"><span>${def.icon}</span><span>${name}</span></span>
+      </button>`).join('');
+
+    menu.querySelectorAll('.cat-option').forEach(btn => {
+      btn.addEventListener('click', () => {
+        this._setCategoryValue(btn.dataset.value || '');
+        menu.classList.add('hidden');
+        trigger.setAttribute('aria-expanded', 'false');
+      });
+    });
+
+    if (!trigger.dataset.bound) {
+      trigger.addEventListener('click', () => {
+        const isOpen = menu.classList.toggle('hidden') === false;
+        trigger.setAttribute('aria-expanded', String(isOpen));
+      });
+      trigger.dataset.bound = '1';
+    }
+
+    if (!container.dataset.bound) {
+      document.addEventListener('click', (e) => {
+        if (!container.contains(e.target)) {
+          menu.classList.add('hidden');
+          trigger.setAttribute('aria-expanded', 'false');
+        }
+      });
+      container.dataset.bound = '1';
+    }
+
+    this._setCategoryValue(current || '');
   },
 
 };
