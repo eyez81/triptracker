@@ -50,19 +50,22 @@ const Expenses = {
     const isInstantPaid = e.payment_type === 'חד פעמי' && ['מזומן', 'אשראי', 'העברה', 'ביט'].includes(e.payment_method);
     const isTracking = e.payment_type === 'תשלומים' || e.payment_type === 'מקדמה+יתרה';
 
-    const TYPE_LABELS = { 'חד פעמי':'חד פעמי', 'תשלומים':'תשלומים', 'מקדמה+יתרה':'מקדמה+יתרה', 'עתידי':'עתידי' };
-    const typeChip = `<span class="text-xs text-on-surface-variant bg-surface-container-high px-2 py-0.5 rounded-full">${TYPE_LABELS[e.payment_type] || e.payment_type}</span>`;
+    // For עתידי we skip the type chip since the status badge says "צפוי" already
+    const showTypeChip = e.payment_type !== 'עתידי';
+    const TYPE_LABELS = { 'חד פעמי':'חד פעמי', 'תשלומים':'תשלומים', 'מקדמה+יתרה':'מקדמה+יתרה' };
+    const typeChip = showTypeChip
+      ? `<span class="text-xs text-on-surface-variant bg-surface-container-high px-2 py-0.5 rounded-full">${TYPE_LABELS[e.payment_type] || e.payment_type}</span>`
+      : '';
 
-    // Border accent color + status badge (no duplication for עתידי)
     let accentColor = 'rgba(255,255,255,0.08)';
     let statusHTML = '';
     let progressHTML = '';
 
     if (isInstantPaid) {
-      accentColor = 'rgba(111,207,151,0.5)'; // secondary green
+      accentColor = 'rgba(111,207,151,0.5)';
       statusHTML = `<span class="inline-flex items-center gap-1 text-xs font-semibold bg-secondary/20 text-secondary px-2 py-0.5 rounded-full"><span class="material-symbols-outlined text-xs" style="font-variation-settings:'FILL' 1">check_circle</span>שולם • ${esc(e.payment_method)}</span>`;
     } else if (e.payment_type === 'עתידי') {
-      accentColor = 'rgba(100,130,220,0.5)'; // primary blue
+      accentColor = 'rgba(100,130,220,0.5)';
       statusHTML = `<span class="text-xs font-semibold bg-primary/15 text-primary px-2 py-0.5 rounded-full">צפוי</span>`;
     } else if (isTracking) {
       const sum = this._getExpensePaymentSummary(e);
@@ -89,25 +92,28 @@ const Expenses = {
         </div>`;
     }
 
-    // Meta icons inline (receipt, link, location, contact)
-    const metaIcons = [
-      e.receipt                            ? `<span class="material-symbols-outlined text-base text-on-surface-variant" title="קבלה">receipt_long</span>` : '',
-      e.link                               ? `<span class="material-symbols-outlined text-base text-on-surface-variant" title="קישור">link</span>` : '',
-      e.location                           ? `<span class="material-symbols-outlined text-base text-on-surface-variant" title="מיקום">location_on</span>` : '',
-      (e.contact_name || e.contact_phone)  ? `<span class="material-symbols-outlined text-base text-on-surface-variant" title="איש קשר">contact_phone</span>` : '',
-    ].filter(Boolean).join('');
+    // Meta icons — sit on a dedicated compact row only if any exist
+    const metaList = [
+      e.receipt                           ? `<span class="material-symbols-outlined text-base" title="קבלה">receipt_long</span>` : '',
+      e.link                              ? `<span class="material-symbols-outlined text-base" title="קישור">link</span>` : '',
+      e.location                          ? `<span class="material-symbols-outlined text-base" title="מיקום">location_on</span>` : '',
+      (e.contact_name || e.contact_phone) ? `<span class="material-symbols-outlined text-base" title="איש קשר">contact_phone</span>` : '',
+    ].filter(Boolean);
+    const metaHTML = metaList.length
+      ? `<div class="flex items-center gap-2 mt-1.5 text-on-surface-variant/60">${metaList.join('')}</div>`
+      : '';
 
     const origStr = e.currency !== 'ILS' ? `<span class="text-xs text-on-surface-variant">${Currency.fmt(e.amount, e.currency, 2)}</span>` : '';
 
     return `
-      <div class="glass-card rounded-2xl active:scale-[0.99] transition-transform cursor-pointer expense-item overflow-hidden" data-id="${e.id}"
-           style="border-right: 3px solid ${accentColor}">
+      <div class="glass-card rounded-2xl active:scale-[0.99] transition-transform cursor-pointer expense-item overflow-hidden"
+           data-id="${e.id}" style="border-right: 3px solid ${accentColor}">
         <div class="flex items-start gap-3 px-4 py-3.5">
           <div class="w-11 h-11 rounded-xl flex items-center justify-center text-xl flex-shrink-0 mt-0.5" style="background:${cat.color}22">${cat.icon}</div>
           <div class="flex-1 min-w-0">
             <div class="flex items-baseline justify-between gap-2">
-              <p class="font-bold text-base text-on-surface leading-snug">${esc(e.name)}</p>
-              <div class="text-left flex-shrink-0">
+              <p class="font-bold text-base text-on-surface leading-snug truncate">${esc(e.name)}</p>
+              <div class="text-left flex-shrink-0 ml-1">
                 <p class="font-extrabold text-error text-lg leading-tight">${Currency.fmtILS(e.amount_ils)}-</p>
                 ${origStr}
               </div>
@@ -117,8 +123,8 @@ const Expenses = {
               ${e.payment_date ? `<span class="text-sm text-on-surface-variant">• ${fmtDate(e.payment_date)}</span>` : ''}
               ${typeChip}
               ${statusHTML}
-              ${metaIcons ? `<span class="flex items-center gap-1.5 mr-auto">${metaIcons}</span>` : ''}
             </div>
+            ${metaHTML}
             ${progressHTML}
           </div>
         </div>
