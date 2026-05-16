@@ -145,17 +145,29 @@ const Expenses = {
     document.getElementById('sum-remaining').textContent = budget ? Currency.fmtILS(Math.max(remaining,0)) : '—';
 
     const fill = document.getElementById('budget-bar-fill');
-    fill.style.width = `${Math.min(pct,100)}%`;
-    fill.className = `absolute inset-y-0 right-0 h-full rounded-full transition-all duration-500 ${
-      pct >= 100 ? 'bg-error' : pct >= 80 ? 'bg-tertiary' : 'bg-secondary-container'
-    }`;
+    fill.style.width = `${Math.min(pct, 100)}%`;
+    if (pct >= 100) fill.style.background = 'linear-gradient(to left,#f87171,#ef4444)';
+    else if (pct >= 80) fill.style.background = 'linear-gradient(to left,#fbbf24,#f59e0b)';
+    else fill.style.background = 'linear-gradient(to left,#4edea3,#2563eb)';
+
+    const circle = document.getElementById('budget-circle-progress');
+    if (circle) {
+      const c = 314;
+      const filled = Math.min(pct / 100 * c, c);
+      circle.setAttribute('stroke-dasharray', `${filled.toFixed(1)} ${(c - filled).toFixed(1)}`);
+      if (pct >= 100) circle.setAttribute('stroke', '#ef4444');
+      else if (pct >= 80) circle.setAttribute('stroke', '#f59e0b');
+      else circle.setAttribute('stroke', 'url(#budgetGrad)');
+    }
+
     const pctEl = document.getElementById('budget-pct');
     pctEl.textContent = budget ? `${pct}%` : '';
-    pctEl.className = `font-semibold text-sm whitespace-nowrap ${pct >= 100 ? 'text-error' : pct >= 80 ? 'text-tertiary' : 'text-secondary'}`;
+    pctEl.className = `text-xl font-extrabold ${pct >= 100 ? 'text-red-400' : pct >= 80 ? 'text-amber-400' : 'text-white'}`;
 
     const s = trip?.start_date ? fmtDate(trip.start_date) : '';
     const en = trip?.end_date ? fmtDate(trip.end_date) : '';
-    document.getElementById('sum-dates').textContent = s && en ? `${s} – ${en}` : s;
+    const datesEl = document.getElementById('sum-dates');
+    datesEl.innerHTML = (s && en ? `<span class="material-symbols-outlined text-base">calendar_month</span>${s} – ${en}` : s) || '';
   },
 
   _renderFilterPills() {
