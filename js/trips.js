@@ -240,15 +240,16 @@ const Trips = {
         return;
       }
       const freshTrip = await pb.get(CONFIG.COLLECTIONS.TRIPS, this._current.id);
-      const currentUsers = freshTrip.user || [];
-      if (currentUsers.includes(user.id)) {
+      const currentUsers = (freshTrip.user || []).filter(v => typeof v === 'string' ? v.trim() : v?.id);
+      const resolvedIds = currentUsers.map(v => (typeof v === 'string' ? v : v.id));
+      if (resolvedIds.includes(user.id)) {
         errEl.textContent = 'המשתמש כבר שותף בטיול';
         errEl.classList.remove('hidden');
         return;
       }
-      await pb.update(CONFIG.COLLECTIONS.TRIPS, this._current.id, {
-        user: [...currentUsers, user.id],
-      });
+      const payload = { user: [...resolvedIds, user.id] };
+      console.log('[share] trip id:', this._current.id, 'payload:', JSON.stringify(payload));
+      await pb.update(CONFIG.COLLECTIONS.TRIPS, this._current.id, payload);
       document.getElementById('share-email-input').value = '';
       const displayName = user.username || user.email || query;
       showToast(`הטיול שותף עם ${displayName} ✓`);
@@ -266,7 +267,10 @@ const Trips = {
     if (!confirm('להסיר את המשתתף מהטיול?')) return;
     try {
       const freshTrip = await pb.get(CONFIG.COLLECTIONS.TRIPS, this._current.id);
-      const updatedUsers = (freshTrip.user || []).filter(uid => uid !== userId);
+      const updatedUsers = (freshTrip.user || [])
+        .map(v => (typeof v === 'string' ? v : v.id))
+        .filter(id => id !== userId);
+      console.log('[removeMember] userId:', userId, 'updatedUsers:', JSON.stringify(updatedUsers));
       await pb.update(CONFIG.COLLECTIONS.TRIPS, this._current.id, { user: updatedUsers });
       showToast('המשתתף הוסר');
       await this._renderMembers();
