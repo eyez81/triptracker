@@ -50,13 +50,15 @@ const Expenses = {
     const isInstantPaid = e.payment_type === 'חד פעמי' && ['מזומן', 'אשראי', 'העברה', 'ביט'].includes(e.payment_method);
     const isTracking = e.payment_type === 'תשלומים' || e.payment_type === 'מקדמה+יתרה';
 
-    // Status badge — shows what actually matters
+    const TYPE_LABELS = { 'חד פעמי':'חד פעמי', 'תשלומים':'תשלומים', 'מקדמה+יתרה':'מקדמה+יתרה', 'עתידי':'עתידי' };
+    const typeChip = `<span class="text-xs text-on-surface-variant bg-surface-container-high px-2 py-0.5 rounded-full">${TYPE_LABELS[e.payment_type] || e.payment_type}</span>`;
+
     let statusHTML = '';
     let progressHTML = '';
     if (isInstantPaid) {
-      statusHTML = `<span class="inline-flex items-center gap-1 text-xs font-semibold bg-secondary/20 text-secondary px-2.5 py-1 rounded-full"><span class="material-symbols-outlined text-sm" style="font-variation-settings:'FILL' 1">check_circle</span>שולם • ${esc(e.payment_method)}</span>`;
+      statusHTML = `<span class="inline-flex items-center gap-1 text-xs font-semibold bg-secondary/20 text-secondary px-2 py-0.5 rounded-full"><span class="material-symbols-outlined text-xs" style="font-variation-settings:'FILL' 1">check_circle</span>שולם • ${esc(e.payment_method)}</span>`;
     } else if (e.payment_type === 'עתידי') {
-      statusHTML = `<span class="text-xs font-semibold bg-primary/15 text-primary px-2.5 py-1 rounded-full">צפוי</span>`;
+      statusHTML = `<span class="text-xs font-semibold bg-primary/15 text-primary px-2 py-0.5 rounded-full">צפוי</span>`;
     } else if (isTracking) {
       const sum = this._getExpensePaymentSummary(e);
       const pct = sum.total > 0 ? Math.round((sum.paid / sum.total) * 100) : 0;
@@ -64,28 +66,37 @@ const Expenses = {
       const isPartial = sum.paid > 0 && !isFullyPaid;
       const statusLabel = isFullyPaid ? 'שולם במלואו' : isPartial ? 'שולם חלקית' : 'טרם שולם';
       const statusCls = isFullyPaid ? 'bg-secondary/20 text-secondary' : isPartial ? 'bg-tertiary/20 text-tertiary' : 'bg-error/15 text-error';
-      statusHTML = `<span class="text-xs font-semibold ${statusCls} px-2.5 py-1 rounded-full">${statusLabel}</span>`;
-      const barCol = isFullyPaid ? 'bg-secondary' : isPartial ? 'bg-tertiary' : 'bg-surface-variant';
+      const ringCls = isFullyPaid ? 'text-secondary' : isPartial ? 'text-tertiary' : 'text-on-surface-variant';
+      const dash = Math.min(pct, 100);
+      statusHTML = `<span class="text-xs font-semibold ${statusCls} px-2 py-0.5 rounded-full">${statusLabel}</span>`;
       progressHTML = `
-        <div class="mt-2.5 space-y-1.5">
-          <div class="flex justify-between items-center">
-            <span class="text-sm text-on-surface-variant">שולם <span class="font-bold text-on-surface">${Currency.fmtILS(sum.paid)}</span> מתוך <span class="font-semibold">${Currency.fmtILS(sum.total)}</span></span>
-            <span class="text-sm font-bold ${isFullyPaid ? 'text-secondary' : isPartial ? 'text-tertiary' : 'text-on-surface-variant'}">${pct}%</span>
+        <div class="flex items-center gap-2.5 mt-2">
+          <div class="relative w-9 h-9 flex-shrink-0 ${ringCls}">
+            <svg class="w-9 h-9 -rotate-90" viewBox="0 0 36 36">
+              <circle cx="18" cy="18" r="15.9" fill="none" stroke="currentColor" stroke-width="2.5" opacity="0.12"/>
+              <circle cx="18" cy="18" r="15.9" fill="none" stroke="currentColor" stroke-width="2.5"
+                stroke-dasharray="${dash} ${100 - dash}" stroke-linecap="round"/>
+            </svg>
+            <span class="absolute inset-0 flex items-center justify-center font-bold leading-none" style="font-size:8px">${pct}%</span>
           </div>
-          <div class="h-2 bg-white/8 rounded-full overflow-hidden">
-            <div class="${barCol} h-full rounded-full" style="width:${Math.min(pct,100)}%"></div>
-          </div>
+          <span class="text-sm text-on-surface-variant">שולם <span class="font-bold text-on-surface">${Currency.fmtILS(sum.paid)}</span> מתוך ${Currency.fmtILS(sum.total)}</span>
         </div>`;
     }
 
-    const origStr = e.currency !== 'ILS' ? `<span class="text-sm text-on-surface-variant">${Currency.fmt(e.amount, e.currency, 2)}</span>` : '';
-    const hasReceipt = !!e.receipt;
-    const hasLink = !!e.link;
+    // Meta icons — receipt, link, location, contact
+    const metaIcons = [
+      e.receipt        ? `<span class="material-symbols-outlined text-lg text-on-surface-variant" title="קבלה">receipt_long</span>` : '',
+      e.link           ? `<span class="material-symbols-outlined text-lg text-on-surface-variant" title="קישור">link</span>` : '',
+      e.location       ? `<span class="material-symbols-outlined text-lg text-on-surface-variant" title="מיקום">location_on</span>` : '',
+      (e.contact_name || e.contact_phone) ? `<span class="material-symbols-outlined text-lg text-on-surface-variant" title="איש קשר">contact_phone</span>` : '',
+    ].filter(Boolean).join('');
+
+    const origStr = e.currency !== 'ILS' ? `<span class="text-xs text-on-surface-variant">${Currency.fmt(e.amount, e.currency, 2)}</span>` : '';
 
     return `
       <div class="glass-card px-4 py-3.5 rounded-2xl active:scale-[0.99] transition-transform cursor-pointer expense-item" data-id="${e.id}">
         <div class="flex items-start gap-3">
-          <div class="w-12 h-12 rounded-xl flex items-center justify-center text-2xl flex-shrink-0 mt-0.5" style="background:${cat.color}22">${cat.icon}</div>
+          <div class="w-11 h-11 rounded-xl flex items-center justify-center text-xl flex-shrink-0 mt-0.5" style="background:${cat.color}22">${cat.icon}</div>
           <div class="flex-1 min-w-0">
             <div class="flex items-start justify-between gap-2">
               <p class="font-bold text-base text-on-surface leading-snug">${esc(e.name)}</p>
@@ -94,16 +105,14 @@ const Expenses = {
                 ${origStr}
               </div>
             </div>
-            <div class="flex items-center gap-2 mt-1 flex-wrap">
+            <div class="flex items-center gap-1.5 mt-1 flex-wrap">
               <span class="text-sm text-on-surface-variant">${esc(e.category || 'אחר')}</span>
               ${e.payment_date ? `<span class="text-sm text-on-surface-variant">• ${fmtDate(e.payment_date)}</span>` : ''}
+              ${typeChip}
               ${statusHTML}
             </div>
             ${progressHTML}
-            ${hasReceipt || hasLink ? `<div class="flex items-center gap-2 mt-2">
-              ${hasReceipt ? '<span class="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-surface-container-high text-on-surface-variant">🧾 קבלה</span>' : ''}
-              ${hasLink ? '<span class="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-surface-container-high text-on-surface-variant"><span class="material-symbols-outlined text-xs">link</span>קישור</span>' : ''}
-            </div>` : ''}
+            ${metaIcons ? `<div class="flex items-center gap-3 mt-2">${metaIcons}</div>` : ''}
           </div>
         </div>
       </div>`;
