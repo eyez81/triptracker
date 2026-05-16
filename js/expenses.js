@@ -202,6 +202,7 @@ const Expenses = {
   _updatePaymentTypeUI(type) {
     document.getElementById('installments-extra').classList.toggle('hidden', type !== 'תשלומים');
     document.getElementById('advance-extra').classList.toggle('hidden', type !== 'מקדמה+יתרה');
+    document.getElementById('payment-method-section').classList.toggle('hidden', type === 'מקדמה+יתרה');
   },
 
   _updateCurrencyUI(currency) {
