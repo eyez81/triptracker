@@ -64,11 +64,18 @@ const Trips = {
     const start = trip.start_date ? fmtDate(trip.start_date) : '';
     const end = trip.end_date ? fmtDate(trip.end_date) : '';
     const dates = start && end ? `${start} – ${end}` : start || '';
+    const isOwner = trip.owner_id === pb.userId;
+    const sharedBadge = !isOwner
+      ? `<span class="text-[10px] bg-primary/15 text-primary px-2 py-0.5 rounded-full">שותף</span>`
+      : '';
     return `
       <div class="glass-card rounded-lg p-5 cursor-pointer active:scale-[0.98] transition-transform trip-card" data-id="${trip.id}">
         <div class="flex justify-between items-start mb-3">
           <div>
-            <p class="font-bold text-lg text-on-surface">${esc(trip.name)}</p>
+            <div class="flex items-center gap-2 flex-wrap">
+              <p class="font-bold text-lg text-on-surface">${esc(trip.name)}</p>
+              ${sharedBadge}
+            </div>
             ${trip.destination ? `<p class="text-on-surface-variant text-sm mt-0.5">📍 ${esc(trip.destination)}</p>` : ''}
           </div>
           <div class="flex items-center gap-1 text-on-surface-variant text-xs mt-1">
@@ -115,9 +122,11 @@ const Trips = {
       destination: document.getElementById('trip-destination').value.trim(),
       user: pb.userId,
     };
+    if (!this._editing) data.owner_id = pb.userId;
     try {
       if (this._editing) {
         await pb.update(CONFIG.COLLECTIONS.TRIPS, this._editing.id, data);
+
         if (this._current?.id === this._editing.id) {
           this._current = { ...this._current, ...data };
           document.getElementById('trip-header-title').textContent = data.name;
@@ -143,6 +152,13 @@ const Trips = {
       for (const exp of (res.items || [])) {
         await pb.delete(CONFIG.COLLECTIONS.EXPENSES, exp.id);
       }
+      // מחק חברי שיתוף
+      const members = await pb.list(CONFIG.COLLECTIONS.TRIP_MEMBERS, {
+        filter: `trip_id="${this._editing.id}"`, perPage: 100
+      });
+      for (const m of (members.items || [])) {
+        await pb.delete(CONFIG.COLLECTIONS.TRIP_MEMBERS, m.id);
+      }
       await pb.delete(CONFIG.COLLECTIONS.TRIPS, this._editing.id);
       showToast('הטיול נמחק');
       App.closeModal('modal-trip');
@@ -153,6 +169,113 @@ const Trips = {
   setCurrent(trip) {
     this._current = trip;
     document.getElementById('trip-header-title').textContent = trip.name;
+    const isOwner = trip.owner_id === pb.userId;
+    const shareBtn = document.getElementById('btn-share-trip');
+    if (shareBtn) shareBtn.classList.toggle('hidden', !isOwner);
+  },
+
+  async openShareModal() {
+    const trip = this._current;
+    if (!trip) return;
+    document.getElementById('share-email-input').value = '';
+    document.getElementById('share-error').classList.add('hidden');
+    await this._renderMembers();
+    App.openModal('modal-share-trip');
+  },
+
+  async _renderMembers() {
+    const trip = this._current;
+    const el = document.getElementById('share-members-list');
+    el.innerHTML = '<p class="text-xs text-on-surface-variant">טוען...</p>';
+    try {
+      const res = await pb.list(CONFIG.COLLECTIONS.TRIP_MEMBERS, {
+        filter: `trip_id="${trip.id}"`, perPage: 100
+      });
+      const members = res.items || [];
+      if (!members.length) {
+        el.innerHTML = '<p class="text-xs text-on-surface-variant text-center py-2">אין משתתפים משותפים עדיין</p>';
+        return;
+      }
+      const memberHTMLs = await Promise.all(members.map(async m => {
+        let email = m.user_id;
+        try {
+          const u = await pb.get('users', m.user_id);
+          email = u.email || m.user_id;
+        } catch {}
+        return `
+          <div class="flex items-center justify-between py-2 border-b border-white/5">
+            <div class="flex items-center gap-2 min-w-0">
+              <span class="material-symbols-outlined text-on-surface-variant text-base">person</span>
+              <span class="text-sm text-on-surface truncate">${esc(email)}</span>
+              <span class="text-[10px] bg-surface-container-high text-on-surface-variant px-2 py-0.5 rounded-full">${m.role === 'editor' ? 'עורך' : 'צופה'}</span>
+            </div>
+            <button class="remove-member-btn text-error text-xs px-2 py-1 rounded-full hover:bg-error/10 transition active:scale-95" data-member-id="${m.id}">
+              <span class="material-symbols-outlined text-base">person_remove</span>
+            </button>
+          </div>`;
+      }));
+      el.innerHTML = memberHTMLs.join('');
+      el.querySelectorAll('.remove-member-btn').forEach(btn => {
+        btn.addEventListener('click', () => this._removeMember(btn.dataset.memberId));
+      });
+    } catch (e) {
+      el.innerHTML = `<p class="text-xs text-error">שגיאה: ${e.message}</p>`;
+    }
+  },
+
+  async shareWithEmail() {
+    const email = document.getElementById('share-email-input').value.trim().toLowerCase();
+    const errEl = document.getElementById('share-error');
+    errEl.classList.add('hidden');
+    if (!email) { errEl.textContent = 'נא להזין אימייל'; errEl.classList.remove('hidden'); return; }
+    const btn = document.getElementById('btn-do-share');
+    btn.textContent = 'מחפש...';
+    btn.disabled = true;
+    try {
+      const res = await pb.list('users', { filter: `email="${email}"`, perPage: 1 });
+      const user = res.items?.[0];
+      if (!user) {
+        errEl.textContent = 'משתמש לא נמצא במערכת';
+        errEl.classList.remove('hidden');
+        return;
+      }
+      if (user.id === pb.userId) {
+        errEl.textContent = 'לא ניתן לשתף עם עצמך';
+        errEl.classList.remove('hidden');
+        return;
+      }
+      const existing = await pb.list(CONFIG.COLLECTIONS.TRIP_MEMBERS, {
+        filter: `trip_id="${this._current.id}" && user_id="${user.id}"`, perPage: 1
+      });
+      if (existing.items?.length) {
+        errEl.textContent = 'המשתמש כבר שותף בטיול';
+        errEl.classList.remove('hidden');
+        return;
+      }
+      await pb.create(CONFIG.COLLECTIONS.TRIP_MEMBERS, {
+        trip_id: this._current.id,
+        user_id: user.id,
+        role: 'viewer',
+      });
+      document.getElementById('share-email-input').value = '';
+      showToast(`הטיול שותף עם ${email} ✓`);
+      await this._renderMembers();
+    } catch (e) {
+      errEl.textContent = `שגיאה: ${e.message}`;
+      errEl.classList.remove('hidden');
+    } finally {
+      btn.textContent = 'שתף';
+      btn.disabled = false;
+    }
+  },
+
+  async _removeMember(memberId) {
+    if (!confirm('להסיר את המשתתף מהטיול?')) return;
+    try {
+      await pb.delete(CONFIG.COLLECTIONS.TRIP_MEMBERS, memberId);
+      showToast('המשתתף הוסר');
+      await this._renderMembers();
+    } catch (e) { showToast(`שגיאה: ${e.message}`); }
   },
 };
 

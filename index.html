@@ -233,6 +233,11 @@
       <button id="btn-export-excel" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-variant/50 transition active:scale-95" title="ייצוא Excel">
         <span class="material-symbols-outlined text-on-surface-variant">download</span>
       </button>
+      <button id="btn-share-trip"
+        class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-variant/50 transition active:scale-95 hidden"
+        title="שיתוף טיול">
+        <span class="material-symbols-outlined text-on-surface-variant">group_add</span>
+      </button>
       <button id="btn-edit-trip" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-variant/50 transition active:scale-95" title="עריכת טיול">
         <span class="material-symbols-outlined text-on-surface-variant">edit</span>
       </button>
@@ -784,6 +789,34 @@
       <button data-close="modal-forecast" class="text-on-surface-variant hover:text-on-surface"><span class="material-symbols-outlined">close</span></button>
     </div>
     <div id="forecast-body" class="overflow-y-auto flex-1 px-6 pb-6 space-y-4"></div>
+  </div>
+</div>
+
+<!-- ==================== MODAL: SHARE TRIP ==================== -->
+<div id="modal-share-trip" class="hidden fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-end justify-center">
+  <div class="glass-container w-full max-w-lg rounded-t-2xl p-6 space-y-4 max-h-[80dvh] overflow-y-auto">
+    <div class="flex justify-between items-center">
+      <h3 class="text-xl font-bold text-on-surface">שיתוף טיול</h3>
+      <button data-close="modal-share-trip" class="text-on-surface-variant hover:text-on-surface">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+    <div class="space-y-2">
+      <label class="text-xs text-primary font-medium block pr-1">אימייל משתמש רשום</label>
+      <div class="flex gap-2">
+        <input id="share-email-input" type="email" placeholder="friend@email.com" dir="ltr"
+          class="flex-1 bg-surface-container-highest border-none rounded-full px-5 py-3 text-on-surface focus:ring-2 focus:ring-primary-container outline-none"/>
+        <button id="btn-do-share"
+          class="bg-primary-container text-on-primary-container px-5 py-3 rounded-full font-semibold active:scale-95 transition whitespace-nowrap">
+          שתף
+        </button>
+      </div>
+      <p id="share-error" class="hidden text-error text-xs pr-2"></p>
+    </div>
+    <div>
+      <h4 class="text-sm font-semibold text-on-surface-variant mb-2">משתתפים</h4>
+      <div id="share-members-list" class="space-y-1"></div>
+    </div>
   </div>
 </div>
 
