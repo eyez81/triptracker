@@ -10,10 +10,17 @@ const Trips = {
     document.getElementById('trips-upcoming').innerHTML = '';
     document.getElementById('trips-past').innerHTML = '';
     try {
-      const res = await pb.list(CONFIG.COLLECTIONS.TRIPS, { sort: '-start_date', perPage: 50 });
+      const uid = pb.userId;
+      const res = await pb.list(CONFIG.COLLECTIONS.TRIPS, {
+        sort: '-start_date',
+        perPage: 50,
+        filter: `owner_id = "${uid}" || user ~ "${uid}"`,
+      });
+      console.log('[trips.load] filter uid:', uid, 'total returned:', res.items?.length);
       this._list = res.items || [];
       await this._render();
     } catch (e) {
+      console.error('[trips.load] error:', e.message);
       showToast('שגיאה בטעינת טיולים');
     } finally {
       document.getElementById('trips-loading').classList.add('hidden');
@@ -259,7 +266,8 @@ const Trips = {
       const payload = { user: [...resolvedIds, newUserId] };
       console.log('Payload to send:', JSON.stringify(payload));
 
-      await pb.update(CONFIG.COLLECTIONS.TRIPS, this._current.id, payload);
+      const updateResult = await pb.update(CONFIG.COLLECTIONS.TRIPS, this._current.id, payload);
+      console.log('Update response user field:', JSON.stringify(updateResult.user));
 
       document.getElementById('share-email-input').value = '';
       const displayName = foundUser.name || foundUser.email || query;
