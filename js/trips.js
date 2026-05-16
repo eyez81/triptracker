@@ -189,16 +189,16 @@ const Trips = {
         return;
       }
       const memberHTMLs = await Promise.all(userIds.map(async uid => {
-        let email = uid;
+        let displayName = uid;
         try {
           const u = await pb.get('users', uid);
-          email = u.email || uid;
+          displayName = u.username || u.email || uid;
         } catch {}
         return `
           <div class="flex items-center justify-between py-2 border-b border-white/5">
             <div class="flex items-center gap-2 min-w-0">
               <span class="material-symbols-outlined text-on-surface-variant text-base">person</span>
-              <span class="text-sm text-on-surface truncate">${esc(email)}</span>
+              <span class="text-sm text-on-surface truncate">${esc(displayName)}</span>
             </div>
             <button class="remove-member-btn text-error text-xs px-2 py-1 rounded-full hover:bg-error/10 transition active:scale-95" data-user-id="${uid}">
               <span class="material-symbols-outlined text-base">person_remove</span>
@@ -215,15 +215,19 @@ const Trips = {
   },
 
   async shareWithEmail() {
-    const email = document.getElementById('share-email-input').value.trim().toLowerCase();
+    const query = document.getElementById('share-email-input').value.trim();
     const errEl = document.getElementById('share-error');
     errEl.classList.add('hidden');
-    if (!email) { errEl.textContent = 'נא להזין אימייל'; errEl.classList.remove('hidden'); return; }
+    if (!query) { errEl.textContent = 'נא להזין שם משתמש או אימייל'; errEl.classList.remove('hidden'); return; }
     const btn = document.getElementById('btn-do-share');
     btn.textContent = 'מחפש...';
     btn.disabled = true;
     try {
-      const res = await pb.list('users', { filter: `email="${email}"`, perPage: 1 });
+      const q = query.toLowerCase();
+      const res = await pb.list('users', {
+        filter: `username="${q}" || email="${q}"`,
+        perPage: 1,
+      });
       const user = res.items?.[0];
       if (!user) {
         errEl.textContent = 'משתמש לא נמצא במערכת';
@@ -246,7 +250,8 @@ const Trips = {
         user: [...currentUsers, user.id],
       });
       document.getElementById('share-email-input').value = '';
-      showToast(`הטיול שותף עם ${email} ✓`);
+      const displayName = user.username || user.email || query;
+      showToast(`הטיול שותף עם ${displayName} ✓`);
       await this._renderMembers();
     } catch (e) {
       errEl.textContent = `שגיאה: ${e.message}`;
