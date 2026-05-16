@@ -225,23 +225,37 @@ const Trips = {
     const query = document.getElementById('share-email-input').value.trim();
     const errEl = document.getElementById('share-error');
     errEl.classList.add('hidden');
-    if (!query) { errEl.textContent = 'נא להזין שם משתמש או אימייל'; errEl.classList.remove('hidden'); return; }
+    if (!query) { errEl.textContent = 'נא להזין אימייל'; errEl.classList.remove('hidden'); return; }
     const btn = document.getElementById('btn-do-share');
     btn.textContent = 'מחפש...';
     btn.disabled = true;
     try {
       const q = query.toLowerCase();
-      const res = await pb.list('users', { filter: `email="${q}"`, perPage: 1 });
+      const filter = `email="${q}"`;
+      const fullUrl = `${CONFIG.PB_URL}/api/collections/users/records?page=1&filter=${encodeURIComponent(filter)}&perPage=1`;
 
-      console.log('Selected user result:', JSON.stringify(res.items?.[0]));
+      console.log('--- SHARE DEBUG ---');
+      console.log('PocketBase URL:', CONFIG.PB_URL);
+      console.log('Logged-in user id:', pb.userId);
+      console.log('Auth token exists:', !!pb.token);
+      console.log('Search email:', q);
+      console.log('Filter string:', filter);
+      console.log('Full request URL:', fullUrl);
+
+      const res = await pb.list('users', { filter, perPage: 1 });
+
+      console.log('PocketBase response:', JSON.stringify(res));
+      console.log('items length:', res.items?.length);
 
       const foundUser = res.items?.[0];
       if (!foundUser) {
+        console.log('No user found for email:', q);
         errEl.textContent = 'משתמש לא נמצא במערכת';
         errEl.classList.remove('hidden');
         return;
       }
 
+      console.log('Found user:', JSON.stringify(foundUser));
       const newUserId = foundUser.id;
       console.log('New user id to add:', newUserId);
 
