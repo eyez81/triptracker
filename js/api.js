@@ -15,7 +15,11 @@ const pb = {
     }
     const res = await fetch(url, opts);
     const data = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(data.message || `HTTP ${res.status}`);
+    if (!res.ok) {
+      console.error('[PocketBase error]', method, url, '\nstatus:', res.status, '\nresponse:', JSON.stringify(data, null, 2));
+      const detail = data.data ? ' | ' + JSON.stringify(data.data) : '';
+      throw new Error((data.message || `HTTP ${res.status}`) + detail);
+    }
     return data;
   },
 
