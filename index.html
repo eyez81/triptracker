@@ -245,41 +245,55 @@
   </header>
   <main class="flex-1 px-5 pt-6 max-w-2xl mx-auto w-full space-y-5">
     <!-- Budget card -->
-    <div class="glass-card rounded-lg p-6 space-y-4">
-      <div class="flex justify-between items-end">
-        <div>
+    <div class="rounded-2xl p-5 space-y-4" style="background:linear-gradient(135deg,rgba(37,99,235,0.18) 0%,rgba(78,222,163,0.12) 100%);border:1px solid rgba(255,255,255,0.08)">
+      <div class="flex items-start justify-between gap-4">
+        <div class="flex-1 min-w-0">
           <span class="text-on-surface-variant text-sm font-medium">מעקב תקציב</span>
-          <h2 id="sum-spent" class="text-secondary text-3xl font-bold">₪0</h2>
+          <h2 id="sum-spent" class="text-white text-4xl font-extrabold mt-0.5 leading-none">₪0</h2>
+          <span id="sum-budget" class="text-on-surface-variant text-sm">מתוך ₪0</span>
+          <div class="relative h-2.5 bg-white/8 rounded-full overflow-hidden mt-3">
+            <div id="budget-bar-fill" class="absolute inset-y-0 right-0 h-full rounded-full transition-all duration-700" style="width:0%;background:linear-gradient(to left,#4edea3,#2563eb)"></div>
+          </div>
         </div>
-        <span id="sum-budget" class="text-on-surface-variant text-sm">מתוך ₪0</span>
-      </div>
-      <div class="flex items-center gap-3">
-        <div class="relative h-3 flex-grow bg-surface-container rounded-full overflow-hidden">
-          <div id="budget-bar-fill" class="absolute inset-y-0 right-0 h-full rounded-full transition-all duration-500" style="width:0%"></div>
+        <div class="relative w-24 h-24 flex-shrink-0">
+          <svg class="w-24 h-24 -rotate-90" viewBox="0 0 120 120">
+            <defs>
+              <linearGradient id="budgetGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#2563eb"/>
+                <stop offset="100%" stop-color="#4edea3"/>
+              </linearGradient>
+            </defs>
+            <circle cx="60" cy="60" r="50" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="10"/>
+            <circle id="budget-circle-progress" cx="60" cy="60" r="50" fill="none"
+              stroke="url(#budgetGrad)" stroke-width="10" stroke-linecap="round"
+              stroke-dasharray="0 314" style="transition:stroke-dasharray 0.7s ease"/>
+          </svg>
+          <div class="absolute inset-0 flex items-center justify-center">
+            <span id="budget-pct" class="text-xl font-extrabold text-white">0%</span>
+          </div>
         </div>
-        <span id="budget-pct" class="text-secondary font-semibold text-sm whitespace-nowrap">0%</span>
       </div>
       <div class="grid grid-cols-2 gap-3">
-        <div class="bg-surface-container/50 p-3 rounded-xl">
+        <div class="rounded-xl p-3" style="background:rgba(255,255,255,0.06)">
           <span class="text-on-surface-variant text-xs">נוצל</span>
-          <p id="sum-used" class="text-on-surface font-semibold mt-1">₪0</p>
+          <p id="sum-used" class="text-white font-bold text-base mt-0.5">₪0</p>
         </div>
-        <div class="bg-surface-container/50 p-3 rounded-xl">
+        <div class="rounded-xl p-3" style="background:rgba(255,255,255,0.06)">
           <span class="text-on-surface-variant text-xs">נותר</span>
-          <p id="sum-remaining" class="text-on-surface font-semibold mt-1">₪0</p>
+          <p id="sum-remaining" class="text-white font-bold text-base mt-0.5">₪0</p>
         </div>
       </div>
-      <div id="sum-dates" class="text-on-surface-variant text-xs"></div>
+      <div id="sum-dates" class="text-on-surface-variant text-sm flex items-center gap-1.5">
+        <span class="material-symbols-outlined text-base">calendar_month</span>
+      </div>
     </div>
 
     <!-- Search + Filter -->
-    <div class="flex gap-3">
-      <div class="relative flex-grow">
-        <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-xl">search</span>
-        <input id="expense-search" type="text" placeholder="חיפוש הוצאה..."
-          class="w-full bg-surface-container-high border-none rounded-xl pr-10 pl-4 py-3 text-on-surface placeholder:text-on-surface-variant focus:ring-2 focus:ring-primary outline-none"/>
-      </div>
-      <button id="btn-filter" class="w-12 h-12 flex items-center justify-center bg-surface-container-high rounded-xl text-on-surface-variant hover:text-primary transition">
+    <div class="relative">
+      <span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+      <input id="expense-search" type="text" placeholder="חיפוש הוצאה..."
+        class="w-full bg-surface-container-high border border-white/5 rounded-2xl pr-12 pl-12 py-3.5 text-on-surface placeholder:text-on-surface-variant focus:ring-2 focus:ring-primary outline-none"/>
+      <button id="btn-filter" class="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-primary transition active:scale-90">
         <span class="material-symbols-outlined">filter_list</span>
       </button>
     </div>
@@ -291,13 +305,21 @@
     </div>
 
     <div class="grid grid-cols-2 gap-3">
-      <button id="btn-show-categories" class="glass-card rounded-xl px-4 py-3 flex items-center justify-center gap-2 text-on-surface hover:bg-surface-variant/40 active:scale-95 transition">
-        <span class="material-symbols-outlined text-primary">pie_chart</span>
-        <span class="text-sm font-semibold">סיכום לפי קטגוריות</span>
+      <button id="btn-show-categories" class="rounded-2xl px-4 py-4 flex items-center gap-3 active:scale-95 transition" style="background:linear-gradient(135deg,#3730a3,#6c5ce7)">
+        <span class="material-symbols-outlined text-white text-2xl" style="font-variation-settings:'FILL' 1">pie_chart</span>
+        <div class="text-right flex-1">
+          <p class="text-white font-bold text-sm leading-tight">סיכום לפי</p>
+          <p class="text-white/70 text-xs">קטגוריות</p>
+        </div>
+        <span class="material-symbols-outlined text-white/50">chevron_left</span>
       </button>
-      <button id="btn-show-forecast" class="glass-card rounded-xl px-4 py-3 flex items-center justify-center gap-2 text-on-surface hover:bg-surface-variant/40 active:scale-95 transition">
-        <span class="material-symbols-outlined text-primary">event_upcoming</span>
-        <span class="text-sm font-semibold">תחזית תשלומים עתידיים</span>
+      <button id="btn-show-forecast" class="rounded-2xl px-4 py-4 flex items-center gap-3 active:scale-95 transition" style="background:linear-gradient(135deg,#065f46,#059669)">
+        <span class="material-symbols-outlined text-white text-2xl" style="font-variation-settings:'FILL' 1">event_upcoming</span>
+        <div class="text-right flex-1">
+          <p class="text-white font-bold text-sm leading-tight">תחזית</p>
+          <p class="text-white/70 text-xs">תשלומים עתידיים</p>
+        </div>
+        <span class="material-symbols-outlined text-white/50">chevron_left</span>
       </button>
     </div>
 
@@ -316,8 +338,9 @@
   </main>
 
   <button id="btn-add-expense"
-    class="fixed bottom-24 left-5 z-50 bg-primary-container text-on-primary-container px-6 py-4 rounded-xl shadow-xl flex items-center gap-3 active:scale-95 transition-transform font-semibold">
-    <span class="material-symbols-outlined">add</span> הוצאה חדשה
+    class="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 px-7 py-3.5 rounded-full shadow-2xl flex items-center gap-2 active:scale-95 transition-transform font-bold text-base text-white"
+    style="background:linear-gradient(135deg,#2563eb,#4edea3);box-shadow:0 8px 32px rgba(78,222,163,0.35)">
+    <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1">add</span> הוצאה חדשה
   </button>
 
   <nav class="fixed bottom-0 w-full z-50 bg-surface/80 backdrop-blur-xl border-t border-white/10 rounded-t-lg flex flex-row-reverse justify-around items-center h-20 px-4">
