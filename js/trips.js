@@ -228,33 +228,48 @@ const Trips = {
         filter: `username="${q}" || email="${q}"`,
         perPage: 1,
       });
-      const user = res.items?.[0];
-      if (!user) {
+
+      console.log('Selected user result:', JSON.stringify(res.items?.[0]));
+
+      const foundUser = res.items?.[0];
+      if (!foundUser) {
         errEl.textContent = 'משתמש לא נמצא במערכת';
         errEl.classList.remove('hidden');
         return;
       }
-      if (user.id === pb.userId) {
+
+      const newUserId = foundUser.id;
+      console.log('New user id to add:', newUserId);
+
+      if (newUserId === pb.userId) {
         errEl.textContent = 'לא ניתן לשתף עם עצמך';
         errEl.classList.remove('hidden');
         return;
       }
+
       const freshTrip = await pb.get(CONFIG.COLLECTIONS.TRIPS, this._current.id);
-      const currentUsers = (freshTrip.user || []).filter(v => typeof v === 'string' ? v.trim() : v?.id);
-      const resolvedIds = currentUsers.map(v => (typeof v === 'string' ? v : v.id));
-      if (resolvedIds.includes(user.id)) {
+      console.log('Fresh trip user field:', JSON.stringify(freshTrip.user));
+
+      const resolvedIds = (freshTrip.user || []).map(v => (typeof v === 'string' ? v : v.id));
+      console.log('Resolved existing user ids:', JSON.stringify(resolvedIds));
+
+      if (resolvedIds.includes(newUserId)) {
         errEl.textContent = 'המשתמש כבר שותף בטיול';
         errEl.classList.remove('hidden');
         return;
       }
-      const payload = { user: [...resolvedIds, user.id] };
-      console.log('[share] trip id:', this._current.id, 'payload:', JSON.stringify(payload));
+
+      const payload = { user: [...resolvedIds, newUserId] };
+      console.log('Payload to send:', JSON.stringify(payload));
+
       await pb.update(CONFIG.COLLECTIONS.TRIPS, this._current.id, payload);
+
       document.getElementById('share-email-input').value = '';
-      const displayName = user.username || user.email || query;
+      const displayName = foundUser.username || foundUser.email || query;
       showToast(`הטיול שותף עם ${displayName} ✓`);
       await this._renderMembers();
     } catch (e) {
+      console.error('shareWithEmail error:', e.message);
       errEl.textContent = `שגיאה: ${e.message}`;
       errEl.classList.remove('hidden');
     } finally {
