@@ -224,10 +224,8 @@ const Trips = {
     btn.disabled = true;
     try {
       const q = query.toLowerCase();
-      const res = await pb.list('users', {
-        filter: `username="${q}" || email="${q}"`,
-        perPage: 1,
-      });
+      const filter = q.includes('@') ? `email="${q}"` : `username="${q}"`;
+      const res = await pb.list('users', { filter, perPage: 1 });
 
       console.log('Selected user result:', JSON.stringify(res.items?.[0]));
 
