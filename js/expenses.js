@@ -332,7 +332,11 @@ const Expenses = {
     if (isInstantPaid) {
       return { rows, paidSet: new Set(rows.map(r => r.idx)), total, paid: total, remaining: 0, status: 'שולם במלואו', isInstantPaid: true };
     }
-    const paidSet = this._getPaidRowsSet(exp.id);
+    const today = new Date(); today.setHours(23, 59, 59, 999);
+    const manualPaid = this._getPaidRowsSet(exp.id);
+    const paidSet = new Set(rows
+      .filter(r => manualPaid.has(r.idx) || (r.date && new Date(r.date) <= today))
+      .map(r => r.idx));
     const paid = rows.reduce((s, r) => s + (paidSet.has(r.idx) ? (Number(r.amount) || 0) : 0), 0);
     const remaining = Math.max(0, total - paid);
     const status = paid <= 0 ? 'טרם שולם' : remaining <= 0.01 ? 'שולם במלואו' : 'שולם חלקית';
