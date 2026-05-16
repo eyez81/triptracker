@@ -120,9 +120,11 @@ const Trips = {
       end_date: document.getElementById('trip-end').value || null,
       budget: Number(document.getElementById('trip-budget').value) || 0,
       destination: document.getElementById('trip-destination').value.trim(),
-      user: pb.userId,
     };
-    if (!this._editing) data.owner_id = pb.userId;
+    if (!this._editing) {
+      data.owner_id = pb.userId;
+      data.user = [pb.userId];
+    }
     try {
       if (this._editing) {
         await pb.update(CONFIG.COLLECTIONS.TRIPS, this._editing.id, data);
@@ -145,19 +147,11 @@ const Trips = {
     if (!this._editing) return;
     if (!confirm(`למחוק את הטיול "${this._editing.name}"?\nכל ההוצאות ימחקו גם כן.`)) return;
     try {
-      // מחק קודם את כל ההוצאות של הטיול
       const res = await pb.list(CONFIG.COLLECTIONS.EXPENSES, {
         filter: `trip="${this._editing.id}"`, perPage: 500
       });
       for (const exp of (res.items || [])) {
         await pb.delete(CONFIG.COLLECTIONS.EXPENSES, exp.id);
-      }
-      // מחק חברי שיתוף
-      const members = await pb.list(CONFIG.COLLECTIONS.TRIP_MEMBERS, {
-        filter: `trip_id="${this._editing.id}"`, perPage: 100
-      });
-      for (const m of (members.items || [])) {
-        await pb.delete(CONFIG.COLLECTIONS.TRIP_MEMBERS, m.id);
       }
       await pb.delete(CONFIG.COLLECTIONS.TRIPS, this._editing.id);
       showToast('הטיול נמחק');
@@ -188,35 +182,32 @@ const Trips = {
     const el = document.getElementById('share-members-list');
     el.innerHTML = '<p class="text-xs text-on-surface-variant">טוען...</p>';
     try {
-      const res = await pb.list(CONFIG.COLLECTIONS.TRIP_MEMBERS, {
-        filter: `trip_id="${trip.id}"`, perPage: 100
-      });
-      const members = res.items || [];
-      if (!members.length) {
+      const freshTrip = await pb.get(CONFIG.COLLECTIONS.TRIPS, trip.id);
+      const userIds = (freshTrip.user || []).filter(uid => uid !== freshTrip.owner_id);
+      if (!userIds.length) {
         el.innerHTML = '<p class="text-xs text-on-surface-variant text-center py-2">אין משתתפים משותפים עדיין</p>';
         return;
       }
-      const memberHTMLs = await Promise.all(members.map(async m => {
-        let email = m.user_id;
+      const memberHTMLs = await Promise.all(userIds.map(async uid => {
+        let email = uid;
         try {
-          const u = await pb.get('users', m.user_id);
-          email = u.email || m.user_id;
+          const u = await pb.get('users', uid);
+          email = u.email || uid;
         } catch {}
         return `
           <div class="flex items-center justify-between py-2 border-b border-white/5">
             <div class="flex items-center gap-2 min-w-0">
               <span class="material-symbols-outlined text-on-surface-variant text-base">person</span>
               <span class="text-sm text-on-surface truncate">${esc(email)}</span>
-              <span class="text-[10px] bg-surface-container-high text-on-surface-variant px-2 py-0.5 rounded-full">${m.role === 'editor' ? 'עורך' : 'צופה'}</span>
             </div>
-            <button class="remove-member-btn text-error text-xs px-2 py-1 rounded-full hover:bg-error/10 transition active:scale-95" data-member-id="${m.id}">
+            <button class="remove-member-btn text-error text-xs px-2 py-1 rounded-full hover:bg-error/10 transition active:scale-95" data-user-id="${uid}">
               <span class="material-symbols-outlined text-base">person_remove</span>
             </button>
           </div>`;
       }));
       el.innerHTML = memberHTMLs.join('');
       el.querySelectorAll('.remove-member-btn').forEach(btn => {
-        btn.addEventListener('click', () => this._removeMember(btn.dataset.memberId));
+        btn.addEventListener('click', () => this._removeMember(btn.dataset.userId));
       });
     } catch (e) {
       el.innerHTML = `<p class="text-xs text-error">שגיאה: ${e.message}</p>`;
@@ -244,18 +235,15 @@ const Trips = {
         errEl.classList.remove('hidden');
         return;
       }
-      const existing = await pb.list(CONFIG.COLLECTIONS.TRIP_MEMBERS, {
-        filter: `trip_id="${this._current.id}" && user_id="${user.id}"`, perPage: 1
-      });
-      if (existing.items?.length) {
+      const freshTrip = await pb.get(CONFIG.COLLECTIONS.TRIPS, this._current.id);
+      const currentUsers = freshTrip.user || [];
+      if (currentUsers.includes(user.id)) {
         errEl.textContent = 'המשתמש כבר שותף בטיול';
         errEl.classList.remove('hidden');
         return;
       }
-      await pb.create(CONFIG.COLLECTIONS.TRIP_MEMBERS, {
-        trip_id: this._current.id,
-        user_id: user.id,
-        role: 'viewer',
+      await pb.update(CONFIG.COLLECTIONS.TRIPS, this._current.id, {
+        user: [...currentUsers, user.id],
       });
       document.getElementById('share-email-input').value = '';
       showToast(`הטיול שותף עם ${email} ✓`);
@@ -269,10 +257,12 @@ const Trips = {
     }
   },
 
-  async _removeMember(memberId) {
+  async _removeMember(userId) {
     if (!confirm('להסיר את המשתתף מהטיול?')) return;
     try {
-      await pb.delete(CONFIG.COLLECTIONS.TRIP_MEMBERS, memberId);
+      const freshTrip = await pb.get(CONFIG.COLLECTIONS.TRIPS, this._current.id);
+      const updatedUsers = (freshTrip.user || []).filter(uid => uid !== userId);
+      await pb.update(CONFIG.COLLECTIONS.TRIPS, this._current.id, { user: updatedUsers });
       showToast('המשתתף הוסר');
       await this._renderMembers();
     } catch (e) { showToast(`שגיאה: ${e.message}`); }

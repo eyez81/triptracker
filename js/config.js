@@ -1,6 +1,6 @@
 const CONFIG = {
   PB_URL: 'https://pb.eyalnas.cc',
-  COLLECTIONS: { TRIPS: 'trips', EXPENSES: 'expenses', TRIP_MEMBERS: 'trip_members' },
+  COLLECTIONS: { TRIPS: 'trips', EXPENSES: 'expenses' },
 };
 
 const DEFAULT_CATEGORIES = {
