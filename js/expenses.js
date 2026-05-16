@@ -47,7 +47,10 @@ const Expenses = {
 
   _itemHTML(e) {
     const cat = CATEGORIES[e.category] || { icon:'📦', color:'#9e9e9e' };
-    const typeTag = e.payment_type === 'עתידי'
+    const isInstantPaid = e.payment_type === 'חד פעמי' && ['מזומן', 'אשראי', 'העברה', 'ביט'].includes(e.payment_method);
+    const typeTag = isInstantPaid
+      ? `<span class="text-[11px] bg-secondary/15 text-secondary px-2 py-0.5 rounded-full inline-flex items-center gap-0.5"><span class="material-symbols-outlined text-[12px]">check_circle</span>שולם • ${esc(e.payment_method)}</span>`
+      : e.payment_type === 'עתידי'
       ? `<span class="text-[11px] bg-primary/15 text-primary px-2 py-0.5 rounded-full">צפוי</span>`
       : e.payment_type === 'מקדמה+יתרה'
       ? `<span class="text-[11px] bg-tertiary/15 text-tertiary px-2 py-0.5 rounded-full">מקדמה/יתרה</span>`
@@ -321,13 +324,18 @@ const Expenses = {
   },
 
   _getExpensePaymentSummary(exp) {
+    const isInstantPaid = exp.payment_type === 'חד פעמי' &&
+      ['מזומן', 'אשראי', 'העברה', 'ביט'].includes(exp.payment_method);
     const rows = this._getExpensePaymentRows(exp);
-    const paidSet = this._getPaidRowsSet(exp.id);
     const total = rows.reduce((s, r) => s + (Number(r.amount) || 0), 0);
+    if (isInstantPaid) {
+      return { rows, paidSet: new Set(rows.map(r => r.idx)), total, paid: total, remaining: 0, status: 'שולם במלואו', isInstantPaid: true };
+    }
+    const paidSet = this._getPaidRowsSet(exp.id);
     const paid = rows.reduce((s, r) => s + (paidSet.has(r.idx) ? (Number(r.amount) || 0) : 0), 0);
     const remaining = Math.max(0, total - paid);
     const status = paid <= 0 ? 'טרם שולם' : remaining <= 0.01 ? 'שולם במלואו' : 'שולם חלקית';
-    return { rows, paidSet, total, paid, remaining, status };
+    return { rows, paidSet, total, paid, remaining, status, isInstantPaid: false };
   },
 
   async markPaymentAsPaid(expenseId, paymentIdx) {
@@ -343,9 +351,41 @@ const Expenses = {
     document.getElementById('view-exp-name').textContent = exp.name;
     const cat = CATEGORIES[exp.category] || { icon:'📦', color:'#9e9e9e' };
     const sum = this._getExpensePaymentSummary(exp);
-    const statusClass = sum.status === 'שולם במלואו' ? 'bg-secondary/15 text-secondary' : sum.status === 'שולם חלקית' ? 'bg-tertiary/15 text-tertiary' : 'bg-error/15 text-error';
 
-    let html = `
+    const METHOD_ICON = { 'אשראי':'credit_card', 'מזומן':'payments', 'העברה':'account_balance', 'ביט':'smartphone' };
+    const methodIcon = METHOD_ICON[exp.payment_method] || 'payments';
+
+    const headerCard = `
+      <div class="rounded-2xl p-5 md:p-6 space-y-4 bg-gradient-to-br from-surface-container-high/80 via-surface-container/80 to-surface-container-low/90 border border-white/10 shadow-xl">
+        <div class="flex items-start justify-between gap-3">
+          <div class="min-w-0">
+            <p class="text-2xl font-bold text-on-surface leading-tight truncate">${esc(exp.name)}</p>
+            <div class="mt-2 inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-surface-container-highest/70 text-on-surface-variant text-sm">
+              <span class="text-base">${cat.icon}</span>
+              <span>${esc(exp.category || 'אחר')}</span>
+            </div>
+          </div>
+          <span class="text-xs px-3 py-1.5 rounded-full font-semibold bg-secondary/15 text-secondary">שולם</span>
+        </div>
+        <div>
+          <p class="text-xs text-on-surface-variant mb-1">סכום</p>
+          <p class="text-3xl md:text-4xl font-extrabold text-on-surface tracking-tight">${Currency.fmtILS(sum.total)}</p>
+        </div>
+        <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-on-surface-variant">
+          <span class="inline-flex items-center gap-1 text-secondary font-medium">
+            <span class="material-symbols-outlined text-base">check_circle</span>שולם במלואו
+          </span>
+          <span>•</span>
+          <span class="inline-flex items-center gap-1">
+            <span class="material-symbols-outlined text-base">${methodIcon}</span>${esc(exp.payment_method || '')}
+          </span>
+          <span>•</span>
+          <span>חד פעמי</span>
+        </div>
+      </div>`;
+
+    const statusClass = sum.status === 'שולם במלואו' ? 'bg-secondary/15 text-secondary' : sum.status === 'שולם חלקית' ? 'bg-tertiary/15 text-tertiary' : 'bg-error/15 text-error';
+    const trackingCard = `
       <div class="rounded-2xl p-5 md:p-6 space-y-4 bg-gradient-to-br from-surface-container-high/80 via-surface-container/80 to-surface-container-low/90 border border-white/10 shadow-xl">
         <div class="flex items-start justify-between gap-3">
           <div class="min-w-0">
@@ -404,8 +444,10 @@ const Expenses = {
             </div>`;
           }).join('')}
         </div>
-      </div>
-    `;
+      </div>`;
+
+    let html = sum.isInstantPaid ? headerCard : trackingCard;
+
     if (exp.location) {
       const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(exp.location)}`;
       html += `<div class="pt-2"><h4 class="font-bold text-on-surface mb-1">מיקום</h4><a href="${mapsUrl}" target="_blank" rel="noopener noreferrer" class="glass-card rounded-xl p-3 text-sm text-on-surface flex items-center justify-between gap-3 hover:bg-surface-variant/30 active:scale-[0.99] transition cursor-pointer"><span class="inline-flex items-center gap-2 min-w-0"><span class="material-symbols-outlined text-primary text-base">location_on</span><span class="truncate">${esc(exp.location)}</span></span><span class="material-symbols-outlined text-on-surface-variant text-base">open_in_new</span></a></div>`;
