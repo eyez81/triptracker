@@ -192,7 +192,7 @@ const Trips = {
         let displayName = uid;
         try {
           const u = await pb.get('users', uid);
-          displayName = u.username || u.email || uid;
+          displayName = u.name || u.email || uid;
         } catch {}
         return `
           <div class="flex items-center justify-between py-2 border-b border-white/5">
@@ -224,8 +224,7 @@ const Trips = {
     btn.disabled = true;
     try {
       const q = query.toLowerCase();
-      const filter = q.includes('@') ? `email="${q}"` : `username="${q}"`;
-      const res = await pb.list('users', { filter, perPage: 1 });
+      const res = await pb.list('users', { filter: `email="${q}"`, perPage: 1 });
 
       console.log('Selected user result:', JSON.stringify(res.items?.[0]));
 
@@ -263,7 +262,7 @@ const Trips = {
       await pb.update(CONFIG.COLLECTIONS.TRIPS, this._current.id, payload);
 
       document.getElementById('share-email-input').value = '';
-      const displayName = foundUser.username || foundUser.email || query;
+      const displayName = foundUser.name || foundUser.email || query;
       showToast(`הטיול שותף עם ${displayName} ✓`);
       await this._renderMembers();
     } catch (e) {
