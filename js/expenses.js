@@ -55,7 +55,7 @@ const Expenses = {
 
     const CAT_MS = {
       'לינה':'hotel','אוכל ושתייה':'restaurant','קניות':'shopping_bag',
-      'אטרקציות':'attractions','רכב שכור':'directions_car','תחבורה':'directions_bus',
+      'אטרקציות':'attractions','רכב':'directions_car','רכב שכור':'directions_car','תחבורה':'directions_bus',
       'טיסות':'flight','ביטוח':'shield','אחר':'category',
     };
     const msIcon = CAT_MS[e.category] || (/^[a-z][a-z_]+$/.test(cat.icon) ? cat.icon : null);
@@ -402,7 +402,7 @@ const Expenses = {
 
     const CAT_MS_V = {
       'לינה':'hotel','אוכל ושתייה':'restaurant','קניות':'shopping_bag',
-      'אטרקציות':'attractions','רכב שכור':'directions_car','תחבורה':'directions_bus',
+      'אטרקציות':'attractions','רכב':'directions_car','רכב שכור':'directions_car','תחבורה':'directions_bus',
       'טיסות':'flight','ביטוח':'shield','אחר':'category',
     };
     const catMs = CAT_MS_V[exp.category] || (/^[a-z][a-z_]+$/.test(cat.icon) ? cat.icon : null);
@@ -642,7 +642,7 @@ const Expenses = {
 
     const CAT_MS = {
       'לינה':'hotel','אוכל ושתייה':'restaurant','קניות':'shopping_bag',
-      'אטרקציות':'attractions','רכב שכור':'directions_car','תחבורה':'directions_bus',
+      'אטרקציות':'attractions','רכב':'directions_car','רכב שכור':'directions_car','תחבורה':'directions_bus',
       'טיסות':'flight','ביטוח':'shield','אחר':'category',
     };
 
