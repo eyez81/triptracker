@@ -3,12 +3,13 @@ const Lightbox = {
   _hintTimer: null,
   _type: 'image',
   _url: '',
+  _pdfRendering: false,
 
   /* type: 'image' | 'pdf' */
   open(url, type = 'image', filename = '') {
     this._url = url;
     this._type = type;
-    const lb  = document.getElementById('lightbox');
+    const lb      = document.getElementById('lightbox');
     const titleEl = document.getElementById('lightbox-title');
     const imgWrap = document.getElementById('lightbox-image-wrap');
     const pdfWrap = document.getElementById('lightbox-pdf-wrap');
@@ -20,7 +21,11 @@ const Lightbox = {
       imgWrap.classList.add('hidden');
       pdfWrap.classList.remove('hidden');
       if (hint) hint.style.opacity = '0';
-      document.getElementById('lightbox-pdf-frame').src = url;
+      const pagesEl   = document.getElementById('lightbox-pdf-pages');
+      const loadingEl = document.getElementById('lightbox-pdf-loading');
+      if (pagesEl) pagesEl.innerHTML = '';
+      if (loadingEl) { loadingEl.style.display = 'flex'; }
+      this._renderPDF(url);
     } else {
       pdfWrap.classList.add('hidden');
       imgWrap.classList.remove('hidden');
@@ -42,13 +47,45 @@ const Lightbox = {
     });
   },
 
+  async _renderPDF(url) {
+    const pagesEl   = document.getElementById('lightbox-pdf-pages');
+    const loadingEl = document.getElementById('lightbox-pdf-loading');
+    try {
+      if (typeof pdfjsLib === 'undefined') throw new Error('PDF.js לא נטען');
+      pdfjsLib.GlobalWorkerOptions.workerSrc =
+        'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+      const pdf = await pdfjsLib.getDocument(url).promise;
+      if (loadingEl) loadingEl.style.display = 'none';
+      const containerWidth = (pagesEl.parentElement?.clientWidth || 360) - 16;
+      for (let i = 1; i <= pdf.numPages; i++) {
+        /* stop if lightbox was closed mid-render */
+        if (document.getElementById('lightbox').classList.contains('hidden')) return;
+        const page     = await pdf.getPage(i);
+        const vp0      = page.getViewport({ scale: 1 });
+        const scale    = Math.min(containerWidth / vp0.width, 3);
+        const viewport = page.getViewport({ scale });
+        const canvas   = document.createElement('canvas');
+        canvas.width   = viewport.width;
+        canvas.height  = viewport.height;
+        canvas.style.cssText = 'max-width:100%;border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,0.5);display:block';
+        pagesEl.appendChild(canvas);
+        await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
+      }
+    } catch (err) {
+      if (loadingEl) loadingEl.style.display = 'none';
+      if (pagesEl) pagesEl.innerHTML =
+        `<div style="color:rgba(255,255,255,0.55);text-align:center;padding:32px 16px;font-size:14px">שגיאה בטעינת PDF<br><span style="font-size:11px;opacity:0.6">${err.message}</span></div>`;
+    }
+  },
+
   close() {
     const lb = document.getElementById('lightbox');
     lb.style.opacity = '0';
     setTimeout(() => {
       lb.classList.add('hidden');
       document.getElementById('lightbox-img').src = '';
-      document.getElementById('lightbox-pdf-frame').src = '';
+      const pagesEl = document.getElementById('lightbox-pdf-pages');
+      if (pagesEl) pagesEl.innerHTML = '';
       document.body.style.overflow = '';
     }, 200);
   },
@@ -397,6 +434,8 @@ const App = {
       const file = e.target.files?.[0];
       if (!file) return;
       Expenses._receiptFile = file;
+      /* hide existing-attachment section when user picks a replacement */
+      document.getElementById('receipt-existing-section')?.classList.add('hidden');
       const preview  = document.getElementById('receipt-preview');
       const pdfBadge = document.getElementById('receipt-pdf-badge');
       if (file.type === 'application/pdf') {
