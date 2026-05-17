@@ -28,22 +28,24 @@ const Expenses = {
     }
   },
 
+  _click(id) {
+    try {
+      const exp = this._list.find(e => e.id === id);
+      if (exp) this.openView(exp);
+    } catch (err) {
+      showToast('שגיאה: ' + err.message);
+    }
+  },
+
   _render() {
     const el = document.getElementById('expenses-list');
     if (!this._filtered.length) {
       el.innerHTML = `<div class="text-center py-12 text-on-surface-variant">
         <span class="material-symbols-outlined text-5xl block mb-3">receipt_long</span>
         <p>אין הוצאות להצגה</p></div>`;
-      el.onclick = null;
       return;
     }
     el.innerHTML = `<div class="glass-card rounded-2xl overflow-hidden">${this._filtered.map(e => this._itemHTML(e)).join('')}</div>`;
-    el.onclick = (ev) => {
-      const item = ev.target.closest('.expense-item');
-      if (!item) return;
-      const exp = this._list.find(e => e.id === item.dataset.id);
-      if (exp) this.openView(exp);
-    };
   },
 
   _itemHTML(e) {
@@ -87,8 +89,8 @@ const Expenses = {
 
     return `
       <div class="expense-item flex items-center gap-3 px-4 cursor-pointer"
-           data-id="${e.id}"
-           style="padding-top:16px;padding-bottom:16px;border-bottom:1px solid rgba(255,255,255,0.06);font-family:'Heebo',sans-serif;-webkit-tap-highlight-color:rgba(255,255,255,0.05)">
+           data-id="${e.id}" onclick="Expenses._click(this.dataset.id)"
+           style="padding-top:16px;padding-bottom:16px;border-bottom:1px solid rgba(255,255,255,0.06);font-family:'Heebo',sans-serif">
         <div class="flex-shrink-0 flex items-center justify-center" style="width:46px;height:46px;border-radius:50%;background:${cat.color}">${iconHTML}</div>
         <div class="flex-1 min-w-0">
           <p style="font-size:17px;font-weight:700;color:rgba(255,255,255,0.95);line-height:1.25;font-family:'Heebo',sans-serif">${esc(e.name)}</p>
@@ -379,6 +381,7 @@ const Expenses = {
   },
 
   openView(exp) {
+    try {
     this._viewing = exp;
     document.getElementById('view-exp-name').textContent = exp.name;
     const cat = CATEGORIES[exp.category] || { icon:'📦', color:'#9e9e9e' };
@@ -523,6 +526,7 @@ const Expenses = {
       el.addEventListener('click', () => Lightbox.open(el.dataset.lightboxUrl));
     });
     App.openModal('modal-view-expense');
+    } catch (err) { showToast('שגיאה בפתיחה: ' + err.message); }
   },
 
   async delete() {
