@@ -784,18 +784,18 @@
 <div id="modal-view-expense" class="hidden fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
   <div class="glass-container w-full max-w-xl rounded-2xl max-h-[88dvh] flex flex-col shadow-2xl">
     <div class="flex justify-between items-center px-5 py-4 flex-shrink-0">
+      <h3 id="view-exp-name" class="text-xl font-bold text-on-surface">פרטי הוצאה</h3>
       <div class="flex items-center gap-1">
-        <button id="btn-delete-expense" class="w-9 h-9 flex items-center justify-center rounded-full hover:bg-error/15 transition active:scale-90">
-          <span class="material-symbols-outlined" style="font-size:20px;color:#f87171">delete</span>
+        <button data-close="modal-view-expense" class="w-9 h-9 flex items-center justify-center rounded-full hover:bg-white/10 transition active:scale-90">
+          <span class="material-symbols-outlined" style="font-size:20px;color:rgba(255,255,255,0.65)">close</span>
         </button>
         <button id="btn-edit-expense" class="w-9 h-9 flex items-center justify-center rounded-full hover:bg-white/10 transition active:scale-90">
           <span class="material-symbols-outlined" style="font-size:20px;color:rgba(255,255,255,0.65)">edit</span>
         </button>
-        <button data-close="modal-view-expense" class="w-9 h-9 flex items-center justify-center rounded-full hover:bg-white/10 transition active:scale-90">
-          <span class="material-symbols-outlined" style="font-size:20px;color:rgba(255,255,255,0.65)">close</span>
+        <button id="btn-delete-expense" class="w-9 h-9 flex items-center justify-center rounded-full hover:bg-error/15 transition active:scale-90">
+          <span class="material-symbols-outlined" style="font-size:20px;color:#f87171">delete</span>
         </button>
       </div>
-      <h3 id="view-exp-name" class="text-xl font-bold text-on-surface">פרטי הוצאה</h3>
     </div>
     <div id="view-expense-body" class="overflow-y-auto flex-1 px-5 space-y-3 pb-6"></div>
   </div>
