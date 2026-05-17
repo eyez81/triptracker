@@ -250,6 +250,19 @@ const Expenses = {
     return ext ? ext.toUpperCase() : 'FILE';
   },
 
+
+  _openAttachment(url, type = 'image', filename = '') {
+    if (type === 'pdf') {
+      const a = document.createElement('a');
+      a.href = url;
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer';
+      a.click();
+      return;
+    }
+    Lightbox.open(url, 'image', filename);
+  },
+
   _updatePaymentTypeUI(type) {
     document.getElementById('installments-extra').classList.toggle('hidden', type !== 'תשלומים');
     document.getElementById('advance-extra').classList.toggle('hidden', type !== 'מקדמה+יתרה');
@@ -303,7 +316,7 @@ const Expenses = {
     }).join('');
     wrap.classList.toggle('hidden', !files.length);
     pending.innerHTML = this._pendingFiles.map((file, idx) => `<div class="glass-card rounded-xl p-3 flex items-center gap-3"><div style="width:40px;height:40px;border-radius:10px;background:rgba(45,212,191,0.12);border:1px solid rgba(45,212,191,0.2);display:flex;align-items:center;justify-content:center;flex-shrink:0"><span class="material-symbols-outlined" style="font-size:19px;color:#2dd4bf">attach_file</span></div><div class="flex-1 min-w-0"><p class="text-sm font-semibold text-on-surface truncate">${esc(file.name)}</p><p class="text-xs text-on-surface-variant mt-0.5">${file.type === 'application/pdf' ? 'PDF' : this._extFromName(file.name)}</p></div><button type="button" onclick="Expenses._pendingFiles.splice(${idx},1);Expenses._renderAttachmentEditor();" class="w-8 h-8 rounded-full flex items-center justify-center active:scale-90 transition" style="background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.2)"><span class="material-symbols-outlined" style="font-size:16px;color:#f87171">close</span></button></div>`).join('');
-    list.querySelectorAll('.js-open-existing').forEach(el => el.addEventListener('click', ()=> Lightbox.open(el.dataset.url, el.dataset.type, el.dataset.filename)));
+    list.querySelectorAll('.js-open-existing').forEach(el => el.addEventListener('click', ()=> this._openAttachment(el.dataset.url, el.dataset.type, el.dataset.filename)));
   },
 
   async save() {
@@ -641,7 +654,7 @@ const Expenses = {
     }
     const attachments = this._normalizeAttachments(exp);
     if (attachments.length) {
-      html += `<div>${secLabel('קבצים מצורפים')}<div class="grid grid-cols-1 sm:grid-cols-2 gap-3">${attachments.map(att => `<div class="js-open-attachment cursor-pointer rounded-2xl overflow-hidden active:scale-[0.99] transition" style="background:var(--vrow-bg);border:1px solid var(--vrow-border)" data-url="${att.url}" data-type="${att.type}" data-filename="${esc(att.cleanName)}">${att.type === 'pdf' ? `<div class="p-4 flex items-center gap-3"><span class="material-symbols-outlined" style="font-size:24px;color:#f87171;font-variation-settings:\'FILL\' 1">picture_as_pdf</span><div class="min-w-0 flex-1"><p class="text-sm font-semibold truncate" style="color:var(--vcont-name)">${esc(att.cleanName)}</p><p class="text-xs mt-0.5" style="color:var(--vschedrow-dtxt)">PDF</p></div></div>` : `<img src="${att.url}" alt="${esc(att.cleanName)}" class="w-full" style="height:160px;object-fit:cover"/>`}</div>`).join('')}</div></div>`;
+      html += `<div>${secLabel('קבצים מצורפים')}<div class="grid grid-cols-1 sm:grid-cols-2 gap-3">${attachments.map(att => `<div class="js-open-attachment cursor-pointer rounded-2xl overflow-hidden active:scale-[0.99] transition" style="background:var(--vrow-bg);border:1px solid var(--vrow-border)" data-url="${att.url}" data-type="${att.type}" data-filename="${esc(att.cleanName)}">${att.type === 'pdf' ? `<div class="p-4 flex items-center gap-3"><span class="material-symbols-outlined" style="font-size:24px;color:#f87171;font-variation-settings:\'FILL\' 1">picture_as_pdf</span><div class="min-w-0 flex-1"><p class="text-sm font-semibold truncate" style="color:var(--vcont-name)">${esc(att.cleanName)}</p><p class="text-xs mt-0.5" style="color:var(--vschedrow-dtxt)">PDF · פתיחה באפליקציה חיצונית</p></div></div>` : `<img src="${att.url}" alt="${esc(att.cleanName)}" class="w-full" style="height:160px;object-fit:cover"/>`}</div>`).join('')}</div></div>`;
     }
 
     const body = document.getElementById('view-expense-body');
@@ -661,7 +674,7 @@ const Expenses = {
       });
     }
     body.querySelectorAll('.js-open-attachment').forEach(el => {
-      el.addEventListener('click', () => Lightbox.open(el.dataset.url, el.dataset.type || 'image', el.dataset.filename || ''));
+      el.addEventListener('click', () => this._openAttachment(el.dataset.url, el.dataset.type || 'image', el.dataset.filename || ''));
     });
     App.openModal('modal-view-expense');
     } catch (err) { showToast('שגיאה בפתיחה: ' + err.message); }

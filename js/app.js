@@ -22,16 +22,12 @@ const Lightbox = {
     if (titleEl) titleEl.textContent = filename || (type === 'pdf' ? 'PDF' : 'תמונה');
 
     if (type === 'pdf') {
-      imgWrap.classList.add('hidden');
-      pdfWrap.classList.remove('hidden');
-      if (hint) hint.style.opacity = '0';
-      this._pdfZoomIdx = 2; // reset to 100%
-      this._pdfDoc = null;
-      document.getElementById('lightbox-pdf-pages').innerHTML = '';
-      document.getElementById('lightbox-pdf-scroll').classList.add('hidden');
-      document.getElementById('lightbox-pdf-toolbar').classList.add('hidden');
-      document.getElementById('lightbox-pdf-loading').style.display = 'flex';
-      this._loadPDF(url);
+      const a = document.createElement('a');
+      a.href = url;
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer';
+      a.click();
+      return;
     } else {
       pdfWrap.classList.add('hidden');
       imgWrap.classList.remove('hidden');
