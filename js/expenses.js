@@ -647,56 +647,76 @@ const Expenses = {
     };
 
     const total = data.reduce((s, r) => s + r.amount, 0);
-    const avg = data.length ? total / data.length : 0;
+    const avg   = data.length ? total / data.length : 0;
 
+    // ── Header: 3 stats ──
     const summaryHeader = `
-      <div style="background:linear-gradient(135deg,rgba(255,255,255,0.06) 0%,rgba(255,255,255,0.02) 100%);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:14px 16px;margin-bottom:2px">
-        <div class="flex items-center justify-between gap-3">
-          <div>
-            <p style="font-size:10px;font-weight:700;color:rgba(255,255,255,0.32);letter-spacing:0.07em;margin-bottom:3px">סה"כ הוצאות</p>
-            <p style="font-size:22px;font-weight:800;color:#fff;letter-spacing:-0.02em;direction:ltr">${Currency.fmtILS(total)}</p>
-          </div>
-          <div class="flex items-center gap-4">
-            <div style="text-align:center">
-              <p style="font-size:10px;color:rgba(255,255,255,0.32);margin-bottom:2px">קטגוריות</p>
-              <p style="font-size:20px;font-weight:800;color:#fff">${data.length}</p>
+      <div style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:16px;box-shadow:0 8px 24px rgba(0,0,0,0.25)">
+        <div style="display:flex;align-items:stretch;gap:0">
+          <!-- RIGHT: total (first in RTL HTML) -->
+          <div style="flex:1;min-width:0">
+            <p style="font-size:11px;color:rgba(255,255,255,0.38);margin-bottom:5px;white-space:nowrap">סה"כ הוצאות</p>
+            <div style="display:flex;align-items:center;gap:5px">
+              <span class="material-symbols-outlined" style="font-size:18px;color:rgba(255,255,255,0.45);font-variation-settings:'FILL' 1">account_balance_wallet</span>
+              <span style="font-size:22px;font-weight:800;color:#fff;direction:ltr">${Currency.fmtILS(total)}</span>
             </div>
-            <div style="width:1px;height:32px;background:rgba(255,255,255,0.08)"></div>
-            <div style="text-align:center">
-              <p style="font-size:10px;color:rgba(255,255,255,0.32);margin-bottom:2px">ממוצע</p>
-              <p style="font-size:16px;font-weight:800;color:rgba(255,255,255,0.75);direction:ltr">${Currency.fmtILS(avg)}</p>
+          </div>
+          <div style="width:1px;background:rgba(255,255,255,0.08);margin:0 12px"></div>
+          <!-- CENTER: count -->
+          <div style="flex:0 0 auto;text-align:center">
+            <p style="font-size:11px;color:rgba(255,255,255,0.38);margin-bottom:5px">קטגוריות</p>
+            <div style="display:flex;align-items:center;justify-content:center;gap:5px">
+              <span class="material-symbols-outlined" style="font-size:18px;color:rgba(255,255,255,0.45);font-variation-settings:'FILL' 1">shopping_bag</span>
+              <span style="font-size:22px;font-weight:800;color:#fff">${data.length}</span>
+            </div>
+          </div>
+          <div style="width:1px;background:rgba(255,255,255,0.08);margin:0 12px"></div>
+          <!-- LEFT: average (last in RTL HTML) -->
+          <div style="flex:1;min-width:0;text-align:left">
+            <p style="font-size:11px;color:rgba(255,255,255,0.38);margin-bottom:5px;white-space:nowrap">הוצאה ממוצעת לקטגוריה</p>
+            <div style="display:flex;align-items:center;justify-content:flex-start;gap:5px">
+              <span class="material-symbols-outlined" style="font-size:18px;color:rgba(255,255,255,0.45);font-variation-settings:'FILL' 1">bar_chart</span>
+              <span style="font-size:20px;font-weight:800;color:rgba(255,255,255,0.82);direction:ltr">${Currency.fmtILS(avg)}</span>
             </div>
           </div>
         </div>
       </div>`;
 
-    const rows = data.map((row, i) => {
+    // ── Category rows ──
+    const rows = data.map((row) => {
       const msIcon = CAT_MS[row.name] || (/^[a-z][a-z_]+$/.test(row.style.icon) ? row.style.icon : null);
       const iconHTML = msIcon
-        ? `<span class="material-symbols-outlined" style="font-size:19px;color:#fff;font-variation-settings:'FILL' 1">${msIcon}</span>`
-        : `<span style="font-size:17px;line-height:1">${row.style.icon}</span>`;
-
-      const isTop = i === 0;
-      const glowBorder = isTop
-        ? `border:1px solid ${row.style.color}40;box-shadow:inset 0 1px 0 rgba(255,255,255,0.06),0 0 0 1px ${row.style.color}18`
-        : `border:1px solid rgba(255,255,255,0.06)`;
+        ? `<span class="material-symbols-outlined" style="font-size:22px;color:#fff;font-variation-settings:'FILL' 1">${msIcon}</span>`
+        : `<span style="font-size:20px;line-height:1">${row.style.icon}</span>`;
 
       return `
-        <div style="background:rgba(255,255,255,0.04);${glowBorder};border-radius:13px;padding:10px 12px 8px;position:relative;overflow:hidden">
-          ${isTop ? `<div style="position:absolute;inset:0;background:radial-gradient(ellipse 80% 130% at 90% 0%,${row.style.color}15 0%,transparent 60%);pointer-events:none"></div>` : ''}
-          <div style="display:flex;align-items:center;gap:10px;position:relative">
-            <div style="width:36px;height:36px;flex-shrink:0;border-radius:10px;background:${row.style.color};display:flex;align-items:center;justify-content:center;box-shadow:inset 0 1px 0 rgba(255,255,255,0.22)">
-              ${iconHTML}
+        <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:16px;box-shadow:0 8px 24px rgba(0,0,0,0.25)">
+          <div style="display:flex;align-items:center;gap:12px">
+
+            <!-- RIGHT column: icon + name + amount + progress bar (first in RTL) -->
+            <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:10px">
+              <div style="display:flex;align-items:center;gap:10px">
+                <!-- Icon (rightmost) -->
+                <div style="width:44px;height:44px;flex-shrink:0;border-radius:12px;background:${row.style.color};display:flex;align-items:center;justify-content:center;box-shadow:inset 0 1px 0 rgba(255,255,255,0.22)">
+                  ${iconHTML}
+                </div>
+                <!-- Name -->
+                <span style="flex:1;font-size:17px;font-weight:600;color:rgba(255,255,255,0.9);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(row.name)}</span>
+                <!-- Amount -->
+                <span style="font-size:22px;font-weight:700;color:#fff;direction:ltr;flex-shrink:0">${Currency.fmtILS(row.amount)}</span>
+              </div>
+              <!-- Progress bar (RTL: fills from right) -->
+              <div style="position:relative;height:6px;background:rgba(255,255,255,0.07);border-radius:99px;overflow:hidden">
+                <div style="position:absolute;right:0;top:0;height:6px;border-radius:99px;background:${row.style.color};width:${Math.max(0,Math.min(100,row.pct))}%;box-shadow:0 0 8px ${row.style.color}99"></div>
+              </div>
             </div>
-            <span style="flex:1;font-size:14px;font-weight:700;color:rgba(255,255,255,0.88);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(row.name)}</span>
-            <span style="font-size:14px;font-weight:800;color:#fff;direction:ltr;flex-shrink:0">${Currency.fmtILS(row.amount)}</span>
-            <div style="flex-shrink:0;min-width:36px;text-align:left">
-              <p style="font-size:12px;font-weight:700;color:${row.style.color};line-height:1">${row.pct.toFixed(1)}%</p>
-              <p style="font-size:9px;color:rgba(255,255,255,0.28);margin-top:1px">מהסך הכל</p>
+
+            <!-- LEFT column: percentage + subtitle (last in RTL = leftmost) -->
+            <div style="flex-shrink:0;min-width:52px;text-align:left">
+              <p style="font-size:22px;font-weight:700;color:${row.style.color};line-height:1.1">${row.pct.toFixed(1)}%</p>
+              <p style="font-size:12px;color:rgba(255,255,255,0.32);margin-top:3px">מהסך הכל</p>
             </div>
-          </div>
-          <div style="height:2px;background:rgba(255,255,255,0.06);border-radius:99px;margin-top:8px;margin-right:46px">
-            <div style="height:2px;border-radius:99px;background:${row.style.color};width:${Math.max(0,Math.min(100,row.pct))}%;box-shadow:0 0 7px ${row.style.color}80"></div>
+
           </div>
         </div>`;
     }).join('');
