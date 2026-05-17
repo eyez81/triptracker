@@ -145,6 +145,8 @@ const Expenses = {
     this._editing = expense;
     document.getElementById('modal-expense-title').textContent = expense ? 'עריכת הוצאה' : 'הוצאה חדשה';
 
+    this._receiptFile = null;
+
     // Reset
     document.getElementById('exp-name').value = expense?.name || '';
     document.getElementById('exp-amount').value = expense?.amount || '';
@@ -164,9 +166,8 @@ const Expenses = {
     document.getElementById('exp-balance-date').value = expense?.balance_date?.slice(0,10) || '';
 
     // Category
-    document.querySelectorAll('input[name="exp-cat"]').forEach(r => {
-      r.checked = r.value === (expense?.category || '');
-    });
+    this._rebuildCategoryPills();
+    this._setCategoryValue(expense?.category || '');
 
     // Payment type
     document.querySelectorAll('input[name="payment_type"]').forEach(r => {
@@ -180,7 +181,10 @@ const Expenses = {
     });
 
     // Receipt
+    document.getElementById('exp-receipt-camera').value = '';
+    document.getElementById('exp-receipt-gallery').value = '';
     document.getElementById('receipt-preview').classList.add('hidden');
+    document.getElementById('receipt-pdf-badge')?.classList.add('hidden');
     if (expense?.receipt) {
       const img = document.getElementById('receipt-preview');
       img.src = pb.fileUrl(expense, expense.receipt);
@@ -224,7 +228,7 @@ const Expenses = {
   async save() {
     const name = document.getElementById('exp-name').value.trim();
     const amount = parseFloat(document.getElementById('exp-amount').value);
-    const category = document.querySelector('input[name="exp-cat"]:checked')?.value;
+    const category = document.getElementById('exp-cat').value;
     const paymentType = document.querySelector('input[name="payment_type"]:checked')?.value || 'חד פעמי';
     const paymentMethod = document.querySelector('input[name="payment_method"]:checked')?.value || 'אשראי';
 
@@ -259,7 +263,7 @@ const Expenses = {
     };
 
     try {
-      const file = document.getElementById('exp-receipt').files[0];
+      const file = this._receiptFile || document.getElementById('exp-receipt-camera')?.files?.[0] || document.getElementById('exp-receipt-gallery')?.files?.[0];
       if (file) {
         const fd = new FormData();
         Object.entries(data).forEach(([k,v]) => { if (v != null) fd.append(k, v); });
@@ -401,10 +405,35 @@ const Expenses = {
         </div>
       </div>
     `;
-    if (exp.location) html += `<div class="pt-2"><h4 class="font-bold text-on-surface mb-1">מיקום</h4><div class="glass-card rounded-xl p-3 text-sm text-on-surface">${esc(exp.location)}</div></div>`;
+    if (exp.location) {
+      const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(exp.location)}`;
+      html += `<div class="pt-2"><h4 class="font-bold text-on-surface mb-1">מיקום</h4><a href="${mapsUrl}" target="_blank" rel="noopener noreferrer" class="glass-card rounded-xl p-3 text-sm text-on-surface flex items-center justify-between gap-3 hover:bg-surface-variant/30 active:scale-[0.99] transition cursor-pointer"><span class="inline-flex items-center gap-2 min-w-0"><span class="material-symbols-outlined text-primary text-base">location_on</span><span class="truncate">${esc(exp.location)}</span></span><span class="material-symbols-outlined text-on-surface-variant text-base">open_in_new</span></a></div>`;
+    }
     if (exp.notes) html += `<div class="pt-2"><h4 class="font-bold text-on-surface mb-1">הערות</h4><div class="glass-card rounded-xl p-3 text-sm text-on-surface whitespace-pre-wrap">${esc(exp.notes)}</div></div>`;
     if (exp.contact_name || exp.contact_phone) {
-      html += `<div class="pt-2"><h4 class="font-bold text-on-surface mb-1">איש קשר</h4><div class="glass-card rounded-xl p-3 text-sm text-on-surface space-y-1">${exp.contact_name ? `<p>${esc(exp.contact_name)}</p>` : ''}${exp.contact_phone ? `<p dir=\"ltr\" class=\"text-on-surface-variant\">${esc(exp.contact_phone)}</p>` : ''}</div></div>`;
+      const rawPhone = (exp.contact_phone || '').trim();
+      const sanitizedPhone = rawPhone.replace(/[^\d+]/g, '');
+      const digitsOnly = sanitizedPhone.replace(/\D/g, '');
+      let waPhone = digitsOnly;
+      if (waPhone.startsWith('0')) waPhone = `972${waPhone.slice(1)}`;
+      if (sanitizedPhone.startsWith('+972')) waPhone = digitsOnly;
+      const callHref = sanitizedPhone ? `tel:${sanitizedPhone}` : '';
+      const waHref = waPhone ? `https://wa.me/${waPhone}` : '';
+
+      html += `<div class="pt-2"><h4 class="font-bold text-on-surface mb-2">איש קשר</h4>
+        <div class="glass-card rounded-xl p-3.5 space-y-3 text-sm text-on-surface">
+          ${exp.contact_name ? `<div><p class="text-xs text-on-surface-variant mb-1">שם</p><p class="font-semibold">${esc(exp.contact_name)}</p></div>` : ''}
+          ${rawPhone ? `<div><p class="text-xs text-on-surface-variant mb-1">טלפון</p><p dir="ltr" class="font-medium">${esc(rawPhone)}</p></div>` : ''}
+          ${rawPhone ? `<div class="grid grid-cols-2 gap-2 pt-1">
+            <a href="${callHref}" class="inline-flex items-center justify-center gap-1.5 rounded-full px-3 py-2 bg-primary-container text-on-primary-container font-semibold hover:opacity-90 active:scale-95 transition">
+              <span class="material-symbols-outlined text-base">call</span><span>התקשר</span>
+            </a>
+            <a href="${waHref}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center gap-1.5 rounded-full px-3 py-2 bg-secondary-container text-on-secondary-container font-semibold hover:opacity-90 active:scale-95 transition">
+              <span class="material-symbols-outlined text-base">chat</span><span>WhatsApp</span>
+            </a>
+          </div>` : ''}
+        </div>
+      </div>`;
     }
     if (exp.receipt) html += `<div class="pt-2"><h4 class="font-bold text-on-surface mb-1">קבלה</h4><img src="${pb.fileUrl(exp, exp.receipt)}" class="w-full rounded-xl max-h-48 object-contain mt-1 glass-card p-2" alt="קבלה"/></div>`;
 
@@ -533,14 +562,63 @@ const Expenses = {
     }).join('');
     App.openModal('modal-forecast');
   },
+
+  _setCategoryValue(value) {
+    const input = document.getElementById('exp-cat');
+    const label = document.getElementById('exp-cat-label');
+    const safeValue = value || '';
+    if (input) input.value = safeValue;
+    if (label) {
+      if (!safeValue) {
+        label.textContent = 'בחר קטגוריה';
+        label.classList.add('text-on-surface-variant');
+      } else {
+        label.textContent = `${CATEGORIES[safeValue]?.icon || '📦'} ${safeValue}`;
+        label.classList.remove('text-on-surface-variant');
+      }
+    }
+  },
+
   _rebuildCategoryPills() {
     const container = document.getElementById('category-pills');
-    if (!container) return;
-    container.innerHTML = Object.entries(CATEGORIES).map(([name, def]) => `
-      <label class="cursor-pointer">
-        <input class="peer sr-only" name="exp-cat" type="radio" value="${name}"/>
-        <div class="px-3 py-1.5 rounded-full border border-outline/30 bg-surface-variant/20 text-on-surface-variant text-sm peer-checked:bg-primary-container peer-checked:text-on-primary-container peer-checked:border-primary transition-all">${def.icon} ${name}</div>
-      </label>`).join('');
+    const input = document.getElementById('exp-cat');
+    const trigger = document.getElementById('exp-cat-trigger');
+    const menu = document.getElementById('exp-cat-menu');
+    if (!container || !input || !trigger || !menu) return;
+
+    const current = input.value;
+    menu.innerHTML = Object.entries(CATEGORIES).map(([name, def]) => `
+      <button type="button" class="cat-option w-full px-4 py-2.5 text-sm text-right text-on-surface hover:bg-surface-variant/40 transition-colors" data-value="${name}" role="option">
+        <span class="inline-flex items-center gap-2"><span>${def.icon}</span><span>${name}</span></span>
+      </button>`).join('');
+
+    menu.querySelectorAll('.cat-option').forEach(btn => {
+      btn.addEventListener('click', () => {
+        this._setCategoryValue(btn.dataset.value || '');
+        menu.classList.add('hidden');
+        trigger.setAttribute('aria-expanded', 'false');
+      });
+    });
+
+    if (!trigger.dataset.bound) {
+      trigger.addEventListener('click', () => {
+        const isOpen = menu.classList.toggle('hidden') === false;
+        trigger.setAttribute('aria-expanded', String(isOpen));
+      });
+      trigger.dataset.bound = '1';
+    }
+
+    if (!container.dataset.bound) {
+      document.addEventListener('click', (e) => {
+        if (!container.contains(e.target)) {
+          menu.classList.add('hidden');
+          trigger.setAttribute('aria-expanded', 'false');
+        }
+      });
+      container.dataset.bound = '1';
+    }
+
+    this._setCategoryValue(current || '');
   },
 
 };
