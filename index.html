@@ -260,51 +260,56 @@
   <main class="flex-1 px-5 pt-6 max-w-2xl mx-auto w-full space-y-5">
     <!-- Budget card -->
     <div class="rounded-2xl overflow-hidden relative" style="background:linear-gradient(150deg,#0d1f45 0%,#0a2438 45%,#082e22 100%)">
-      <!-- Decorative glow layers -->
-      <div style="position:absolute;inset:0;background:radial-gradient(ellipse 70% 90% at 15% 50%,rgba(0,180,140,0.18) 0%,transparent 60%),radial-gradient(ellipse 50% 60% at 85% 10%,rgba(37,99,235,0.16) 0%,transparent 55%);pointer-events:none"></div>
-      <div class="relative p-5 space-y-3">
-        <!-- Top row: text + donut -->
-        <div class="flex items-center gap-4">
-          <div class="flex-1 min-w-0">
-            <p style="font-size:12px;font-weight:500;color:rgba(255,255,255,0.48);letter-spacing:0.03em">מעקב תקציב</p>
-            <h2 id="sum-spent" style="font-size:38px;font-weight:800;color:#fff;line-height:1.1;margin-top:4px">₪0</h2>
-            <span id="sum-budget" style="font-size:13px;color:rgba(255,255,255,0.42)">מתוך ₪0</span>
+      <div style="position:absolute;inset:0;background:radial-gradient(ellipse 70% 90% at 12% 50%,rgba(0,180,140,0.2) 0%,transparent 60%),radial-gradient(ellipse 55% 60% at 88% 5%,rgba(37,99,235,0.18) 0%,transparent 55%);pointer-events:none"></div>
+      <div class="relative p-5">
+        <!-- Top row -->
+        <div class="flex items-start gap-3">
+          <!-- RIGHT column: title + big amount -->
+          <div class="flex-1 min-w-0 pt-1">
+            <p style="font-size:12px;font-weight:500;color:rgba(255,255,255,0.46)">מעקב תקציב</p>
+            <h2 id="sum-spent" style="font-size:42px;font-weight:800;color:#fff;line-height:1.05;margin-top:6px;letter-spacing:-0.01em">₪0</h2>
           </div>
-          <div class="relative flex-shrink-0" style="width:96px;height:96px">
-            <svg class="w-full h-full -rotate-90" viewBox="0 0 120 120">
-              <defs>
-                <linearGradient id="budgetGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                  <stop offset="0%" stop-color="#2563eb"/>
-                  <stop offset="100%" stop-color="#4edea3"/>
-                </linearGradient>
-              </defs>
-              <circle cx="60" cy="60" r="50" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="10"/>
-              <circle id="budget-circle-progress" cx="60" cy="60" r="50" fill="none"
-                stroke="url(#budgetGrad)" stroke-width="10" stroke-linecap="round"
-                stroke-dasharray="0 314" style="transition:stroke-dasharray 0.7s ease"/>
-            </svg>
-            <div class="absolute inset-0 flex items-center justify-center">
-              <span id="budget-pct" style="font-size:19px;font-weight:800;color:#fff">0%</span>
+          <!-- LEFT column: budget text + donut -->
+          <div class="flex flex-col items-center gap-1 flex-shrink-0">
+            <span id="sum-budget" style="font-size:12px;color:rgba(255,255,255,0.42);white-space:nowrap">מתוך ₪0</span>
+            <div class="relative" style="width:108px;height:108px">
+              <svg class="w-full h-full -rotate-90" viewBox="0 0 120 120">
+                <defs>
+                  <linearGradient id="budgetGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stop-color="#2563eb"/>
+                    <stop offset="100%" stop-color="#4edea3"/>
+                  </linearGradient>
+                </defs>
+                <circle cx="60" cy="60" r="50" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="10"/>
+                <circle id="budget-circle-progress" cx="60" cy="60" r="50" fill="none"
+                  stroke="url(#budgetGrad)" stroke-width="10" stroke-linecap="round"
+                  stroke-dasharray="0 314" style="transition:stroke-dasharray 0.7s ease"/>
+              </svg>
+              <div class="absolute inset-0 flex items-center justify-center">
+                <span id="budget-pct" style="font-size:20px;font-weight:800;color:#fff">0%</span>
+              </div>
             </div>
           </div>
         </div>
-        <!-- Progress bar -->
-        <div class="rounded-full overflow-hidden" style="height:5px;background:rgba(255,255,255,0.1)">
-          <div id="budget-bar-fill" class="h-full rounded-full" style="width:0%;background:linear-gradient(to left,#4edea3,#2563eb);transition:width 0.7s ease"></div>
+        <!-- Progress bar with thumb -->
+        <div class="mt-4" style="position:relative;height:5px;background:rgba(255,255,255,0.12);border-radius:999px">
+          <div id="budget-bar-fill" style="position:absolute;right:0;top:0;height:5px;border-radius:999px;width:0%;transition:width 0.7s ease;background:linear-gradient(to left,#4edea3,#2563eb)">
+            <div style="position:absolute;left:0;top:50%;transform:translate(-50%,-50%);width:13px;height:13px;border-radius:50%;background:#fff;box-shadow:0 1px 6px rgba(0,0,0,0.35)"></div>
+          </div>
         </div>
-        <!-- Stats row -->
-        <div class="flex gap-6 pt-1">
+        <!-- Stats -->
+        <div class="flex gap-6 mt-4">
           <div>
-            <p style="font-size:11px;font-weight:500;color:rgba(255,255,255,0.42)">נוצל</p>
-            <p id="sum-used" style="font-size:16px;font-weight:700;color:#fff;margin-top:2px">₪0</p>
+            <p style="font-size:11px;font-weight:500;color:rgba(255,255,255,0.4)">נוצל</p>
+            <p id="sum-used" style="font-size:17px;font-weight:700;color:#fff;margin-top:2px">₪0</p>
           </div>
           <div>
-            <p style="font-size:11px;font-weight:500;color:rgba(255,255,255,0.42)">נותר</p>
-            <p id="sum-remaining" style="font-size:16px;font-weight:700;color:#fff;margin-top:2px">₪0</p>
+            <p style="font-size:11px;font-weight:500;color:rgba(255,255,255,0.4)">נותר</p>
+            <p id="sum-remaining" style="font-size:17px;font-weight:700;color:#fff;margin-top:2px">₪0</p>
           </div>
         </div>
         <!-- Date -->
-        <div id="sum-dates" class="flex items-center gap-1.5" style="font-size:12px;color:rgba(255,255,255,0.4)">
+        <div id="sum-dates" class="flex items-center gap-1.5 mt-3" style="font-size:12px;color:rgba(255,255,255,0.38)">
           <span class="material-symbols-outlined" style="font-size:15px">calendar_month</span>
         </div>
       </div>
