@@ -344,15 +344,15 @@
     </button>
 
     <!-- CENTER: logo -->
-    <div style="display:flex;align-items:center;justify-content:center;overflow:hidden;padding:0 8px">
-      <!-- Primary: triptracker-logo.png — shows once the file is added to repo -->
+    <div style="display:flex;align-items:center;justify-content:center;padding:0 8px">
+      <!-- Primary: triptracker-logo.png (transparent, no background) -->
       <img id="trip-logo-img" src="./triptracker-logo.png" alt="Trip Tracker"
-           style="height:36px;max-width:190px;object-fit:contain;display:block;background:transparent"
+           style="height:44px;max-width:220px;width:100%;object-fit:contain;display:block"
            onerror="document.getElementById('trip-logo-img').style.display='none';document.getElementById('trip-logo-fallback').style.display='flex'">
-      <!-- Fallback: inline brand (shows when PNG is missing) -->
-      <div id="trip-logo-fallback" style="display:flex;align-items:center;gap:8px">
-        <img src="./icon.svg" style="width:32px;height:32px;border-radius:9px;flex-shrink:0" alt="">
-        <span style="font-size:19px;font-weight:800;letter-spacing:-0.025em;white-space:nowrap;background:linear-gradient(135deg,#93c5fd 0%,#2dd4bf 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">Trip Tracker</span>
+      <!-- Fallback: shown only if PNG fails to load (display:none by default) -->
+      <div id="trip-logo-fallback" style="display:none;align-items:center;gap:8px">
+        <img src="./icon.svg" style="width:34px;height:34px;border-radius:9px;flex-shrink:0" alt="">
+        <span style="font-size:20px;font-weight:800;letter-spacing:-0.025em;white-space:nowrap;background:linear-gradient(135deg,#93c5fd 0%,#2dd4bf 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">Trip Tracker</span>
       </div>
     </div>
 
@@ -369,35 +369,35 @@
     <div style="position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(to right,transparent,rgba(45,212,191,0.45),rgba(96,165,250,0.45),transparent);pointer-events:none"></div>
 
     <!-- Share (hidden when not owner) -->
-    <button id="btn-share-trip" class="hidden w-full flex items-center gap-3 px-5 py-4 active:bg-white/5 transition-colors" style="border-bottom:1px solid rgba(255,255,255,0.05)">
-      <div style="width:36px;height:36px;flex-shrink:0;border-radius:10px;background:rgba(96,165,250,0.1);border:1px solid rgba(96,165,250,0.2);display:flex;align-items:center;justify-content:center">
-        <span class="material-symbols-outlined" style="font-size:18px;color:#60a5fa;font-variation-settings:'FILL' 1">group_add</span>
+    <button id="btn-share-trip" class="hidden w-full flex items-center gap-3 px-4 py-2.5 active:bg-white/5 transition-colors" style="border-bottom:1px solid rgba(255,255,255,0.05)">
+      <div style="width:32px;height:32px;flex-shrink:0;border-radius:9px;background:rgba(96,165,250,0.1);border:1px solid rgba(96,165,250,0.2);display:flex;align-items:center;justify-content:center">
+        <span class="material-symbols-outlined" style="font-size:17px;color:#60a5fa;font-variation-settings:'FILL' 1">group_add</span>
       </div>
-      <span style="font-size:15px;font-weight:600;color:rgba(255,255,255,0.88)">שיתוף טיול</span>
+      <span style="font-size:14px;font-weight:600;color:rgba(255,255,255,0.88)">שיתוף טיול</span>
     </button>
 
     <!-- Edit -->
-    <button id="btn-edit-trip" class="w-full flex items-center gap-3 px-5 py-4 active:bg-white/5 transition-colors" style="border-bottom:1px solid rgba(255,255,255,0.05)">
-      <div style="width:36px;height:36px;flex-shrink:0;border-radius:10px;background:rgba(45,212,191,0.1);border:1px solid rgba(45,212,191,0.18);display:flex;align-items:center;justify-content:center">
-        <span class="material-symbols-outlined" style="font-size:18px;color:#2dd4bf;font-variation-settings:'FILL' 1">edit</span>
+    <button id="btn-edit-trip" class="w-full flex items-center gap-3 px-4 py-2.5 active:bg-white/5 transition-colors" style="border-bottom:1px solid rgba(255,255,255,0.05)">
+      <div style="width:32px;height:32px;flex-shrink:0;border-radius:9px;background:rgba(45,212,191,0.1);border:1px solid rgba(45,212,191,0.18);display:flex;align-items:center;justify-content:center">
+        <span class="material-symbols-outlined" style="font-size:17px;color:#2dd4bf;font-variation-settings:'FILL' 1">edit</span>
       </div>
-      <span style="font-size:15px;font-weight:600;color:rgba(255,255,255,0.88)">עריכת טיול</span>
+      <span style="font-size:14px;font-weight:600;color:rgba(255,255,255,0.88)">עריכת טיול</span>
     </button>
 
     <!-- Export -->
-    <button id="btn-export-excel" class="w-full flex items-center gap-3 px-5 py-4 active:bg-white/5 transition-colors" style="border-bottom:1px solid rgba(255,255,255,0.05)">
-      <div style="width:36px;height:36px;flex-shrink:0;border-radius:10px;background:rgba(139,92,246,0.1);border:1px solid rgba(139,92,246,0.18);display:flex;align-items:center;justify-content:center">
-        <span class="material-symbols-outlined" style="font-size:18px;color:#a78bfa;font-variation-settings:'FILL' 1">download</span>
+    <button id="btn-export-excel" class="w-full flex items-center gap-3 px-4 py-2.5 active:bg-white/5 transition-colors" style="border-bottom:1px solid rgba(255,255,255,0.05)">
+      <div style="width:32px;height:32px;flex-shrink:0;border-radius:9px;background:rgba(139,92,246,0.1);border:1px solid rgba(139,92,246,0.18);display:flex;align-items:center;justify-content:center">
+        <span class="material-symbols-outlined" style="font-size:17px;color:#a78bfa;font-variation-settings:'FILL' 1">download</span>
       </div>
-      <span style="font-size:15px;font-weight:600;color:rgba(255,255,255,0.88)">ייצוא / הורדה</span>
+      <span style="font-size:14px;font-weight:600;color:rgba(255,255,255,0.88)">ייצוא / הורדה</span>
     </button>
 
     <!-- Delete (red) -->
-    <button id="btn-delete-trip" class="w-full flex items-center gap-3 px-5 py-4 active:bg-red-500/5 transition-colors">
-      <div style="width:36px;height:36px;flex-shrink:0;border-radius:10px;background:rgba(248,113,113,0.1);border:1px solid rgba(248,113,113,0.2);display:flex;align-items:center;justify-content:center">
-        <span class="material-symbols-outlined" style="font-size:18px;color:#f87171;font-variation-settings:'FILL' 1">delete</span>
+    <button id="btn-delete-trip" class="w-full flex items-center gap-3 px-4 py-2.5 active:bg-red-500/5 transition-colors">
+      <div style="width:32px;height:32px;flex-shrink:0;border-radius:9px;background:rgba(248,113,113,0.1);border:1px solid rgba(248,113,113,0.2);display:flex;align-items:center;justify-content:center">
+        <span class="material-symbols-outlined" style="font-size:17px;color:#f87171;font-variation-settings:'FILL' 1">delete</span>
       </div>
-      <span style="font-size:15px;font-weight:600;color:#f87171">מחיקת טיול</span>
+      <span style="font-size:14px;font-weight:600;color:#f87171">מחיקת טיול</span>
     </button>
   </div>
 
