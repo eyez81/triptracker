@@ -67,6 +67,92 @@ const Lightbox = {
   },
 };
 
+const CategorySync = {
+  _records: {}, // { name: pbRecordId }
+  _meta: {},    // { name: { icon, color } } — icon/color for all categories
+
+  _loadMeta() {
+    try { this._meta = JSON.parse(localStorage.getItem('cat_meta') || '{}'); }
+    catch { this._meta = {}; }
+  },
+
+  _saveMeta() {
+    localStorage.setItem('cat_meta', JSON.stringify(this._meta));
+  },
+
+  async load() {
+    this._loadMeta();
+    // Reset to defaults, apply any locally overridden icon/color
+    Object.keys(CATEGORIES).forEach(k => delete CATEGORIES[k]);
+    Object.assign(CATEGORIES, DEFAULT_CATEGORIES);
+    Object.entries(this._meta).forEach(([name, m]) => {
+      if (CATEGORIES[name]) Object.assign(CATEGORIES[name], m);
+    });
+    // Fetch custom categories from PocketBase
+    try {
+      const res = await pb.list('categories', { filter: `user="${pb.userId}"`, perPage: 200 });
+      this._records = {};
+      for (const rec of res.items) {
+        this._records[rec.name] = rec.id;
+        const m = this._meta[rec.name] || {};
+        CATEGORIES[rec.name] = { icon: m.icon || '📦', color: m.color || '#9e9e9e' };
+      }
+    } catch (e) {
+      console.warn('Category sync unavailable:', e.message);
+    }
+  },
+
+  async save(name, icon, color, previousName = null) {
+    const isDefault = n => Object.prototype.hasOwnProperty.call(DEFAULT_CATEGORIES, n);
+    const wasCustom = previousName && !isDefault(previousName);
+    const isNowCustom = !isDefault(name);
+
+    // Persist icon/color locally for all categories
+    this._meta[name] = { icon, color };
+    if (previousName && previousName !== name) delete this._meta[previousName];
+    this._saveMeta();
+
+    if (wasCustom && previousName !== name) {
+      // Renamed a custom category
+      const id = this._records[previousName];
+      if (id) {
+        try { await pb.update('categories', id, { name }); } catch {}
+        this._records[name] = id;
+        delete this._records[previousName];
+      }
+    } else if (isNowCustom && !this._records[name]) {
+      // New custom category
+      try {
+        const rec = await pb.create('categories', { name, user: pb.userId });
+        this._records[name] = rec.id;
+      } catch (e) { showToast('שגיאה בשמירת קטגוריה: ' + e.message); }
+    }
+
+    if (previousName && previousName !== name) delete CATEGORIES[previousName];
+    CATEGORIES[name] = { icon, color };
+  },
+
+  async remove(name) {
+    const id = this._records[name];
+    if (id) {
+      try { await pb.delete('categories', id); } catch {}
+      delete this._records[name];
+    }
+    delete this._meta[name];
+    this._saveMeta();
+    delete CATEGORIES[name];
+  },
+
+  async reset() {
+    await Promise.all(Object.values(this._records).map(id => pb.delete('categories', id).catch(() => {})));
+    this._records = {};
+    this._meta = {};
+    this._saveMeta();
+    Object.keys(CATEGORIES).forEach(k => delete CATEGORIES[k]);
+    Object.assign(CATEGORIES, DEFAULT_CATEGORIES);
+  },
+};
+
 const App = {
   _prevScreen: 'trips',
   _theme: localStorage.getItem('theme') || 'dark',
@@ -129,6 +215,7 @@ const App = {
   async goToTrips() {
     this._prevScreen = 'trips';
     this.showScreen('trips');
+    await CategorySync.load();
     await Trips.load();
   },
 
@@ -299,10 +386,9 @@ const App = {
       </div>`;
     }).join('');
     el.querySelectorAll('.cat-edit-btn').forEach(b => b.addEventListener('click', () => this._openCategoryModal(b.dataset.name)));
-    el.querySelectorAll('.cat-del-btn').forEach(b => b.addEventListener('click', () => {
+    el.querySelectorAll('.cat-del-btn').forEach(b => b.addEventListener('click', async () => {
       if (!confirm(`למחוק "${b.dataset.name}"?`)) return;
-      delete CATEGORIES[b.dataset.name];
-      saveCategories(CATEGORIES);
+      await CategorySync.remove(b.dataset.name);
       this._renderCategoriesSettings();
       Expenses._rebuildCategoryPills?.();
       showToast('קטגוריה נמחקה');
@@ -340,23 +426,16 @@ const App = {
     const previousName = this._editingCatName;
     const existingColor = previousName ? CATEGORIES[previousName]?.color : null;
 
-    if (previousName && previousName !== name) {
-      delete CATEGORIES[previousName];
-    }
-
-    CATEGORIES[name] = { icon, color: existingColor || '#9e9e9e' };
-    saveCategories(CATEGORIES);
+    CategorySync.save(name, icon, existingColor || '#9e9e9e', previousName);
     this.closeModal('modal-category');
     this._renderCategoriesSettings();
     Expenses._rebuildCategoryPills?.();
     showToast('קטגוריה נשמרה ✓');
   },
 
-  _resetCategories() {
+  async _resetCategories() {
     if (!confirm('לאפס לקטגוריות ברירת מחדל?')) return;
-    Object.keys(CATEGORIES).forEach(k => delete CATEGORIES[k]);
-    Object.assign(CATEGORIES, DEFAULT_CATEGORIES);
-    saveCategories(CATEGORIES);
+    await CategorySync.reset();
     this._renderCategoriesSettings();
     Expenses._rebuildCategoryPills?.();
     showToast('קטגוריות אופסו');
