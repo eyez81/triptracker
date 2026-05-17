@@ -34,15 +34,16 @@ const Expenses = {
       el.innerHTML = `<div class="text-center py-12 text-on-surface-variant">
         <span class="material-symbols-outlined text-5xl block mb-3">receipt_long</span>
         <p>אין הוצאות להצגה</p></div>`;
+      el.onclick = null;
       return;
     }
     el.innerHTML = `<div class="glass-card rounded-2xl overflow-hidden">${this._filtered.map(e => this._itemHTML(e)).join('')}</div>`;
-    el.querySelectorAll('.expense-item').forEach(item => {
-      item.addEventListener('click', () => {
-        const exp = this._list.find(e => e.id === item.dataset.id);
-        if (exp) this.openView(exp);
-      });
-    });
+    el.onclick = (ev) => {
+      const item = ev.target.closest('.expense-item');
+      if (!item) return;
+      const exp = this._list.find(e => e.id === item.dataset.id);
+      if (exp) this.openView(exp);
+    };
   },
 
   _itemHTML(e) {
@@ -85,21 +86,20 @@ const Expenses = {
     const sub = [esc(e.category || 'אחר'), e.payment_date ? fmtDate(e.payment_date) : ''].filter(Boolean).join(' • ');
 
     return `
-      <div class="expense-item flex items-center gap-3 px-4 cursor-pointer active:bg-white/5 transition-colors"
-           data-id="${e.id}" style="padding-top:14px;padding-bottom:14px;border-bottom:1px solid rgba(255,255,255,0.06)">
+      <div class="expense-item flex items-center gap-3 px-4 cursor-pointer"
+           data-id="${e.id}"
+           style="padding-top:16px;padding-bottom:16px;border-bottom:1px solid rgba(255,255,255,0.06);font-family:'Heebo',sans-serif;-webkit-tap-highlight-color:rgba(255,255,255,0.05)">
         <div class="flex-shrink-0 flex items-center justify-center" style="width:46px;height:46px;border-radius:50%;background:${cat.color}">${iconHTML}</div>
         <div class="flex-1 min-w-0">
-          <p style="font-size:17px;font-weight:700;color:rgba(255,255,255,0.95);line-height:1.25">${esc(e.name)}</p>
-          <p style="font-size:13px;color:rgba(255,255,255,0.42);margin-top:3px">${sub}</p>
+          <p style="font-size:17px;font-weight:700;color:rgba(255,255,255,0.95);line-height:1.25;font-family:'Heebo',sans-serif">${esc(e.name)}</p>
+          <p style="font-size:13px;font-weight:400;color:rgba(255,255,255,0.42);margin-top:3px;font-family:'Heebo',sans-serif">${sub}</p>
         </div>
         ${badge}
-        <div class="flex-shrink-0 flex items-center gap-0.5" style="direction:ltr">
-          <div style="text-align:right">
-            <div style="font-size:17px;font-weight:700;color:rgba(255,255,255,0.95)">${Currency.fmtILS(e.amount_ils)}</div>
-            ${origStr}
-          </div>
-          <span class="material-symbols-outlined" style="font-size:18px;color:rgba(255,255,255,0.22)">chevron_left</span>
+        <div class="flex-shrink-0 text-left" style="direction:ltr">
+          <div style="font-size:17px;font-weight:700;color:rgba(255,255,255,0.95);font-family:'Heebo',sans-serif">${Currency.fmtILS(e.amount_ils)}</div>
+          ${origStr}
         </div>
+        <span class="material-symbols-outlined flex-shrink-0" style="font-size:16px;color:rgba(255,255,255,0.22)">chevron_left</span>
       </div>`;
   },
 
