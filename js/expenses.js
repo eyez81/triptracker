@@ -63,159 +63,56 @@ const Expenses = {
       ? `<span class="material-symbols-outlined" style="font-size:20px;color:#fff;font-variation-settings:'FILL' 1">${msIcon}</span>`
       : `<span style="font-size:20px;line-height:1">${cat.icon}</span>`;
 
-    const origStr = e.currency !== 'ILS'
-      ? `<p style="font-size:10px;color:rgba(255,255,255,0.3);direction:ltr;margin-top:1px">${Currency.fmt(e.amount, e.currency, 2)}</p>`
-      : '';
-    const sub = [esc(e.category || 'אחר'), e.payment_date ? fmtDate(e.payment_date) : ''].filter(Boolean).join(' · ');
-
-    // ── INSTALLMENT / ADVANCE CARD (accordion) ──────────────────────────────
-    if (isTracking) {
-      const sum = this._getExpensePaymentSummary(e);
-      const paidCount  = sum.rows.filter(r => sum.paidSet.has(r.idx)).length;
-      const totalCount = sum.rows.length;
-      const paidPct    = sum.total > 0 ? Math.min(Math.round((sum.paid / sum.total) * 100), 100) : 0;
-
-      const sColor = sum.status === 'שולם במלואו' ? '#4ade80' : sum.status === 'שולם חלקית' ? '#2dd4bf' : '#f87171';
-      const sBg    = sum.status === 'שולם במלואו' ? 'rgba(74,222,128,0.13)' : sum.status === 'שולם חלקית' ? 'rgba(45,212,191,0.13)' : 'rgba(248,113,113,0.13)';
-
-      const statusBadge = `<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:${sBg};color:${sColor};border:1px solid ${sColor}20;white-space:nowrap">${sum.status}</span>`;
-
-      const scheduleRows = sum.rows.map((r, i) => {
-        const paid   = sum.paidSet.has(r.idx);
-        const isLast = i === sum.rows.length - 1;
-        const rowType = e.payment_type === 'מקדמה+יתרה' ? ` · ${r.type}` : '';
-        return `
-          <div style="display:flex;align-items:center;gap:8px;padding:7px 0${isLast ? '' : ';border-bottom:1px solid rgba(255,255,255,0.05)'}">
-            <div style="flex:1;min-width:0">
-              <span style="font-size:12px;font-weight:600;color:rgba(255,255,255,0.85)">תשלום ${r.idx}${rowType}</span>
-              ${r.date ? `<span style="font-size:11px;color:rgba(255,255,255,0.32);margin-right:4px"> · ${fmtDate(r.date)}</span>` : ''}
-            </div>
-            <span style="font-size:13px;font-weight:700;color:${paid ? '#2dd4bf' : 'rgba(255,255,255,0.65)'};direction:ltr;flex-shrink:0">${Currency.fmtILS(r.amount)}</span>
-            ${paid
-              ? `<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:rgba(45,212,191,0.1);color:#2dd4bf;flex-shrink:0;white-space:nowrap">✓ שולם</span>`
-              : `<button onclick="event.stopPropagation();Expenses._markFromCard('${e.id}',${r.idx})" style="font-size:10px;font-weight:700;padding:2px 10px;border-radius:20px;background:rgba(45,212,191,0.08);color:#2dd4bf;border:1px solid rgba(45,212,191,0.18);flex-shrink:0;white-space:nowrap;cursor:pointer">סמן כשולם</button>`
-            }
-          </div>`;
-      }).join('');
-
-      const typeLabel = e.payment_type === 'מקדמה+יתרה'
-        ? 'מקדמה + יתרה'
-        : `${totalCount} תשלומים`;
-
-      return `
-        <div class="relative rounded-2xl overflow-hidden" data-id="${e.id}"
-             style="background:linear-gradient(135deg,rgba(255,255,255,0.065) 0%,rgba(255,255,255,0.022) 100%);border:1px solid rgba(255,255,255,0.08);box-shadow:0 2px 12px rgba(0,0,0,0.28),inset 0 1px 0 rgba(255,255,255,0.08)">
-
-          <div style="position:absolute;top:0;right:0;width:65%;height:100%;background:radial-gradient(ellipse 100% 140% at 95% 0%,${cat.color}1a 0%,transparent 60%);pointer-events:none"></div>
-
-          <!-- Header: click opens full view -->
-          <div class="relative" onclick="Expenses._click('${e.id}')"
-               style="padding:12px 14px 10px;cursor:pointer;transition:opacity 0.1s"
-               onpointerdown="this.style.opacity='0.85'" onpointerup="this.style.opacity=''" onpointerleave="this.style.opacity=''">
-
-            <div style="display:flex;align-items:center;gap:10px">
-              <div style="width:40px;height:40px;flex-shrink:0;border-radius:12px;background:${cat.color};display:flex;align-items:center;justify-content:center;box-shadow:inset 0 1px 0 rgba(255,255,255,0.22)">
-                ${iconHTML}
-              </div>
-              <div style="flex:1;min-width:0">
-                <p style="font-size:15px;font-weight:700;color:rgba(255,255,255,0.95);line-height:1.2">${esc(e.name)}</p>
-                <p style="font-size:11px;color:rgba(255,255,255,0.38);margin-top:2px">${sub}</p>
-              </div>
-              <div style="flex-shrink:0;display:flex;flex-direction:column;align-items:flex-end;gap:4px">
-                <p style="font-size:16px;font-weight:800;color:rgba(255,255,255,0.95);direction:ltr;letter-spacing:-0.01em">${Currency.fmtILS(e.amount_ils)}</p>
-                ${origStr}
-                ${statusBadge}
-              </div>
-            </div>
-
-            <!-- Progress row -->
-            <div style="margin-top:9px;margin-right:50px">
-              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px">
-                <span style="font-size:10px;color:rgba(255,255,255,0.35)">${paidCount} / ${totalCount} תשלומים · ${paidPct}%</span>
-                <div>
-                  <span style="font-size:10px;color:#4ade80">שולם ${Currency.fmtILS(sum.paid)}</span>
-                  ${sum.remaining > 0.01 ? `<span style="font-size:10px;color:rgba(255,255,255,0.25)"> · </span><span style="font-size:10px;color:#f87171">נותר ${Currency.fmtILS(sum.remaining)}</span>` : ''}
-                </div>
-              </div>
-              <div style="height:3px;background:rgba(255,255,255,0.07);border-radius:99px;overflow:hidden">
-                <div style="height:3px;border-radius:99px;background:${sColor};width:${paidPct}%;box-shadow:0 0 6px ${sColor}88;transition:width 0.4s ease"></div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Schedule toggle button -->
-          <div onclick="event.stopPropagation();Expenses._toggleSchedule('${e.id}')"
-               style="border-top:1px solid rgba(255,255,255,0.06);padding:7px 14px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none">
-            <div style="display:flex;align-items:center;gap:5px">
-              <span class="material-symbols-outlined" style="font-size:13px;color:rgba(255,255,255,0.3);font-variation-settings:'FILL' 1">event_note</span>
-              <span style="font-size:11px;color:rgba(255,255,255,0.42)">לוח תשלומים · ${typeLabel}</span>
-            </div>
-            <span id="schedule-chevron-${e.id}" class="material-symbols-outlined"
-                  style="font-size:16px;color:rgba(255,255,255,0.28);transition:transform 0.25s ease">expand_more</span>
-          </div>
-
-          <!-- Schedule panel (collapsed) -->
-          <div id="schedule-${e.id}" style="display:none;border-top:1px solid rgba(255,255,255,0.05);padding:6px 14px 12px">
-            ${scheduleRows}
-          </div>
-        </div>`;
-    }
-
-    // ── REGULAR / ONE-TIME EXPENSE CARD ──────────────────────────────────────
     let badge = '';
     if (e.payment_type === 'עתידי') {
       badge = `<span style="background:rgba(139,92,246,0.18);color:#c4b5fd;border:1px solid rgba(139,92,246,0.25);font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;white-space:nowrap;letter-spacing:0.03em">עתידי</span>`;
     } else if (isInstantPaid) {
       badge = `<span style="background:rgba(74,222,128,0.14);color:#4ade80;border:1px solid rgba(74,222,128,0.22);font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;white-space:nowrap;letter-spacing:0.03em">שולם</span>`;
+    } else if (isTracking) {
+      const sum = this._getExpensePaymentSummary(e);
+      const isFullyPaid = sum.remaining <= 0.01;
+      const isPartial = sum.paid > 0 && !isFullyPaid;
+      if (isFullyPaid) {
+        badge = `<span style="background:rgba(74,222,128,0.14);color:#4ade80;border:1px solid rgba(74,222,128,0.22);font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;white-space:nowrap;letter-spacing:0.03em">שולם</span>`;
+      } else if (isPartial) {
+        badge = `<span style="background:rgba(45,212,191,0.14);color:#2dd4bf;border:1px solid rgba(45,212,191,0.22);font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;white-space:nowrap;letter-spacing:0.03em">תשלום חלקי</span>`;
+      } else {
+        badge = `<span style="background:rgba(239,68,68,0.14);color:#f87171;border:1px solid rgba(239,68,68,0.22);font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;white-space:nowrap;letter-spacing:0.03em">טרם שולם</span>`;
+      }
     }
+
+    const origStr = e.currency !== 'ILS'
+      ? `<p style="font-size:10px;color:rgba(255,255,255,0.3);direction:ltr;margin-top:1px">${Currency.fmt(e.amount, e.currency, 2)}</p>`
+      : '';
+
+    const sub = [esc(e.category || 'אחר'), e.payment_date ? fmtDate(e.payment_date) : ''].filter(Boolean).join(' · ');
 
     return `
       <div class="relative rounded-2xl overflow-hidden cursor-pointer"
            data-id="${e.id}" onclick="Expenses._click(this.dataset.id)"
-           style="background:linear-gradient(135deg,rgba(255,255,255,0.065) 0%,rgba(255,255,255,0.022) 100%);border:1px solid rgba(255,255,255,0.08);box-shadow:0 2px 12px rgba(0,0,0,0.28),inset 0 1px 0 rgba(255,255,255,0.08);padding:13px 14px 12px;transition:transform 0.1s ease,opacity 0.1s ease"
-           onpointerdown="this.style.transform='scale(0.99)';this.style.opacity='0.9'"
-           onpointerup="this.style.transform='';this.style.opacity=''"
-           onpointerleave="this.style.transform='';this.style.opacity=''">
+           style="background:linear-gradient(135deg,rgba(255,255,255,0.065) 0%,rgba(255,255,255,0.022) 100%);border:1px solid rgba(255,255,255,0.08);box-shadow:0 2px 12px rgba(0,0,0,0.28),inset 0 1px 0 rgba(255,255,255,0.08);padding:13px 14px 12px;font-family:'Heebo',sans-serif;transition:transform 0.1s ease,opacity 0.1s ease" onpointerdown="this.style.transform='scale(0.99)';this.style.opacity='0.9'" onpointerup="this.style.transform='';this.style.opacity=''" onpointerleave="this.style.transform='';this.style.opacity=''">
 
         <div style="position:absolute;top:0;right:0;width:65%;height:100%;background:radial-gradient(ellipse 100% 140% at 95% 0%,${cat.color}1a 0%,transparent 60%);pointer-events:none"></div>
 
         <div class="relative flex items-center gap-3">
+
           <div style="width:42px;height:42px;flex-shrink:0;border-radius:13px;background:${cat.color};display:flex;align-items:center;justify-content:center;box-shadow:inset 0 1px 0 rgba(255,255,255,0.22)">
             ${iconHTML}
           </div>
+
           <div style="flex:1;min-width:0">
             <p style="font-size:15px;font-weight:700;color:rgba(255,255,255,0.95);line-height:1.2">${esc(e.name)}</p>
             <p style="font-size:11px;color:rgba(255,255,255,0.38);margin-top:3px">${sub}</p>
           </div>
+
           <div style="flex-shrink:0;display:flex;flex-direction:column;align-items:flex-end;gap:5px">
             <p style="font-size:16px;font-weight:800;color:rgba(255,255,255,0.95);direction:ltr;letter-spacing:-0.01em">${Currency.fmtILS(e.amount_ils)}</p>
             ${origStr}
             ${badge}
           </div>
+
         </div>
       </div>`;
-  },
-
-  _toggleSchedule(id) {
-    const panel   = document.getElementById(`schedule-${id}`);
-    const chevron = document.getElementById(`schedule-chevron-${id}`);
-    if (!panel) return;
-    const isOpen = panel.style.display !== 'none';
-    panel.style.display  = isOpen ? 'none' : 'block';
-    if (chevron) chevron.style.transform = isOpen ? '' : 'rotate(180deg)';
-  },
-
-  _markFromCard(expenseId, paymentIdx) {
-    const set = this._getPaidRowsSet(expenseId);
-    set.add(paymentIdx);
-    this._setPaidRowsSet(expenseId, set);
-    // Re-render list, then restore the open schedule panel
-    this._render();
-    this._renderSummary();
-    const panel   = document.getElementById(`schedule-${expenseId}`);
-    const chevron = document.getElementById(`schedule-chevron-${expenseId}`);
-    if (panel)   { panel.style.display = 'block'; }
-    if (chevron) { chevron.style.transform = 'rotate(180deg)'; }
   },
 
   _renderSummary() {
