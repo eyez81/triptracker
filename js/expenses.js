@@ -497,8 +497,14 @@ const Expenses = {
       </div>
 
       <div>
-        <h4 style="font-size:13px;font-weight:700;color:rgba(255,255,255,0.85);margin-bottom:8px;text-align:right">לוח תשלומים</h4>
-        <div class="space-y-2">
+        <button id="schedule-toggle-${exp.id}" class="w-full flex items-center justify-between gap-2" style="background:none;border:none;cursor:pointer;padding:10px 0;border-top:1px solid rgba(255,255,255,0.07)">
+          <span class="material-symbols-outlined" id="schedule-chevron-${exp.id}" style="font-size:20px;color:rgba(255,255,255,0.4);transition:transform 0.25s">expand_more</span>
+          <span class="flex items-center gap-2" style="font-size:13px;font-weight:700;color:rgba(255,255,255,0.85)">
+            <span class="material-symbols-outlined" style="font-size:16px;color:rgba(255,255,255,0.45);font-variation-settings:'FILL' 1">event_note</span>
+            לוח תשלומים · ${sum.rows.length} תשלומים
+          </span>
+        </button>
+        <div id="schedule-panel-${exp.id}" class="space-y-2" style="display:none;margin-top:4px">
           ${sum.rows.map(r => {
             const paid = sum.paidSet.has(r.idx);
             return `<div class="rounded-2xl p-4" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.07)">
@@ -589,6 +595,17 @@ const Expenses = {
     body.querySelectorAll('.pay-row-btn').forEach(btn => {
       btn.addEventListener('click', () => this.markPaymentAsPaid(btn.dataset.expId, Number(btn.dataset.rowIdx)));
     });
+    const scheduleToggle = body.querySelector('#schedule-toggle-' + exp.id);
+    if (scheduleToggle) {
+      scheduleToggle.addEventListener('click', () => {
+        const panel   = document.getElementById('schedule-panel-'   + exp.id);
+        const chevron = document.getElementById('schedule-chevron-' + exp.id);
+        if (!panel) return;
+        const isOpen = panel.style.display !== 'none';
+        panel.style.display = isOpen ? 'none' : 'block';
+        if (chevron) chevron.style.transform = isOpen ? '' : 'rotate(180deg)';
+      });
+    }
     body.querySelectorAll('.js-open-lightbox').forEach(el => {
       el.addEventListener('click', () => Lightbox.open(el.dataset.lightboxUrl));
     });
