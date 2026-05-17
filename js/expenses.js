@@ -370,9 +370,13 @@ const Expenses = {
         const fd = new FormData();
         Object.entries(data).forEach(([k,v]) => { if (v != null) fd.append(k, v); });
         if (this._editing && this._removeAttachments.size) fd.append('receipt-', [...this._removeAttachments].join(','));
-        chosen.forEach(f => fd.append('receipt+', f));
-        if (this._editing) await pb.updateForm(CONFIG.COLLECTIONS.EXPENSES, this._editing.id, fd);
-        else await pb.createForm(CONFIG.COLLECTIONS.EXPENSES, fd);
+        if (this._editing) {
+          chosen.forEach(f => fd.append('receipt+', f));
+          await pb.updateForm(CONFIG.COLLECTIONS.EXPENSES, this._editing.id, fd);
+        } else {
+          chosen.forEach(f => fd.append('receipt', f));
+          await pb.createForm(CONFIG.COLLECTIONS.EXPENSES, fd);
+        }
       } else {
         if (this._editing) await pb.update(CONFIG.COLLECTIONS.EXPENSES, this._editing.id, data);
         else await pb.create(CONFIG.COLLECTIONS.EXPENSES, data);
