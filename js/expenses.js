@@ -80,9 +80,9 @@ const Expenses = {
     return `
       <div data-id="${e.id}" onclick="Expenses._click(this.dataset.id)"
            style="position:relative;overflow:hidden;cursor:pointer;border-radius:16px;
-                  background:linear-gradient(135deg,rgba(255,255,255,0.065) 0%,rgba(255,255,255,0.022) 100%);
-                  border:1px solid rgba(255,255,255,0.08);
-                  box-shadow:0 2px 12px rgba(0,0,0,0.28),inset 0 1px 0 rgba(255,255,255,0.08);
+                  background:var(--exp-card-bg);
+                  border:1px solid var(--exp-card-border);
+                  box-shadow:var(--exp-card-shadow);
                   padding:14px;display:flex;align-items:center;gap:12px;
                   min-height:72px;box-sizing:border-box;
                   font-family:'Heebo',sans-serif;transition:transform 0.1s ease,opacity 0.1s ease"
@@ -99,13 +99,13 @@ const Expenses = {
 
         <!-- Name + sub -->
         <div style="position:relative;flex:1;min-width:0">
-          <p style="font-size:16px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.2">${esc(e.name)}</p>
-          <p style="font-size:11px;color:rgba(255,255,255,0.38);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${sub}</p>
+          <p style="font-size:16px;font-weight:700;color:var(--exp-name);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.2">${esc(e.name)}</p>
+          <p style="font-size:11px;color:var(--exp-sub);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${sub}</p>
         </div>
 
         <!-- Amount + badge on same row (leftmost in RTL); direction:ltr keeps amount left, badge right -->
         <div style="position:relative;flex-shrink:0;display:flex;align-items:center;gap:8px;direction:ltr">
-          <p style="font-size:19px;font-weight:800;color:#fff;letter-spacing:-0.02em;line-height:1;white-space:nowrap">${Currency.fmtILS(e.amount_ils)}</p>
+          <p style="font-size:19px;font-weight:800;color:var(--exp-amt);letter-spacing:-0.02em;line-height:1;white-space:nowrap">${Currency.fmtILS(e.amount_ils)}</p>
           ${badge}
         </div>
 
@@ -408,39 +408,39 @@ const Expenses = {
         <div style="width:38px;height:38px;border-radius:50%;background:rgba(45,212,191,0.1);border:1px solid rgba(45,212,191,0.18);display:flex;align-items:center;justify-content:center;flex-shrink:0">
           <span class="material-symbols-outlined" style="font-size:18px;color:#2dd4bf;font-variation-settings:'FILL' 1">${icon}</span>
         </div>
-        <span class="flex-1 text-sm" style="color:rgba(255,255,255,0.82);direction:auto;white-space:pre-wrap;word-break:break-word">${text}</span>
-        ${href ? `<span class="material-symbols-outlined flex-shrink-0" style="font-size:15px;color:rgba(255,255,255,0.28)">open_in_new</span>` : ''}
+        <span class="flex-1 text-sm" style="color:var(--vrow-txt);direction:auto;white-space:pre-wrap;word-break:break-word">${text}</span>
+        ${href ? `<span class="material-symbols-outlined flex-shrink-0" style="font-size:15px;color:var(--vrow-ext)">open_in_new</span>` : ''}
       `;
       return href
-        ? `<a href="${href}" target="_blank" rel="noopener noreferrer" class="flex items-center gap-3 rounded-2xl p-3.5 active:scale-[0.99] transition" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.07)">${inner}</a>`
-        : `<div class="flex items-center gap-3 rounded-2xl p-3.5" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.07)">${inner}</div>`;
+        ? `<a href="${href}" target="_blank" rel="noopener noreferrer" class="flex items-center gap-3 rounded-2xl p-3.5 active:scale-[0.99] transition" style="background:var(--vrow-bg);border:1px solid var(--vrow-border)">${inner}</a>`
+        : `<div class="flex items-center gap-3 rounded-2xl p-3.5" style="background:var(--vrow-bg);border:1px solid var(--vrow-border)">${inner}</div>`;
     };
 
-    const secLabel = (text) => `<p style="font-size:11px;font-weight:600;color:rgba(45,212,191,0.75);margin-bottom:6px;text-align:right">${text}</p>`;
+    const secLabel = (text) => `<p style="font-size:11px;font-weight:600;color:var(--vseclbl);margin-bottom:6px;text-align:right">${text}</p>`;
 
     const origAmount = exp.currency !== 'ILS'
-      ? `<p style="font-size:18px;font-weight:600;color:rgba(255,255,255,0.55);margin-top:3px;direction:ltr;letter-spacing:-0.015em">${Currency.fmt(exp.amount, exp.currency, 2)}</p>`
+      ? `<p style="font-size:18px;font-weight:600;color:var(--vorig);margin-top:3px;direction:ltr;letter-spacing:-0.015em">${Currency.fmt(exp.amount, exp.currency, 2)}</p>`
       : '';
 
     const headerCard = `
-      <div class="rounded-2xl overflow-hidden" style="background:linear-gradient(150deg,#0a1628 0%,#0d1f38 60%,#091825 100%)">
+      <div class="rounded-2xl overflow-hidden" style="background:var(--vcard-bg)">
         <div class="p-5 space-y-4">
           <div class="flex items-start justify-between gap-3">
             <div class="min-w-0">
-              <p style="font-size:22px;font-weight:800;color:#fff;line-height:1.2">${esc(exp.name)}</p>
+              <p style="font-size:22px;font-weight:800;color:var(--vname);line-height:1.2">${esc(exp.name)}</p>
               <div class="flex items-center gap-1.5 mt-1">
                 ${catCircle}
-                <span style="font-size:12px;color:rgba(255,255,255,0.42)">${esc(exp.category || 'אחר')}</span>
+                <span style="font-size:12px;color:var(--vcat-txt)">${esc(exp.category || 'אחר')}</span>
               </div>
             </div>
             <span style="font-size:12px;font-weight:700;padding:5px 14px;border-radius:20px;background:rgba(74,222,128,0.15);color:#4ade80;white-space:nowrap;flex-shrink:0">שולם ✓</span>
           </div>
           <div>
-            <p style="font-size:11px;color:rgba(255,255,255,0.36);margin-bottom:3px">סכום</p>
-            <p style="font-size:38px;font-weight:800;color:#fff;line-height:1;letter-spacing:-0.02em">${Currency.fmtILS(sum.total)}</p>
+            <p style="font-size:11px;color:var(--vamt-lbl);margin-bottom:3px">סכום</p>
+            <p style="font-size:38px;font-weight:800;color:var(--vamt);line-height:1;letter-spacing:-0.02em">${Currency.fmtILS(sum.total)}</p>
             ${origAmount}
           </div>
-          <div class="flex flex-wrap items-center gap-x-3 gap-y-1" style="font-size:12px;color:rgba(255,255,255,0.42)">
+          <div class="flex flex-wrap items-center gap-x-3 gap-y-1" style="font-size:12px;color:var(--vmeta)">
             <span class="flex items-center gap-1" style="color:#4ade80">
               <span class="material-symbols-outlined" style="font-size:13px;font-variation-settings:'FILL' 1">check_circle</span>שולם במלואו
             </span>
@@ -457,69 +457,69 @@ const Expenses = {
     const statusColor = sum.status === 'שולם במלואו' ? '#4ade80' : sum.status === 'שולם חלקית' ? '#2dd4bf' : '#f87171';
     const statusBg = sum.status === 'שולם במלואו' ? 'rgba(74,222,128,0.15)' : sum.status === 'שולם חלקית' ? 'rgba(45,212,191,0.15)' : 'rgba(248,113,113,0.15)';
     const trackingCard = `
-      <div class="rounded-2xl overflow-hidden" style="background:linear-gradient(150deg,#0a1628 0%,#0d1f38 60%,#091825 100%)">
+      <div class="rounded-2xl overflow-hidden" style="background:var(--vcard-bg)">
         <div class="p-5 space-y-4">
           <div class="flex items-start justify-between gap-3">
             <div class="min-w-0">
-              <p style="font-size:22px;font-weight:800;color:#fff;line-height:1.2">${esc(exp.name)}</p>
+              <p style="font-size:22px;font-weight:800;color:var(--vname);line-height:1.2">${esc(exp.name)}</p>
               <div class="flex items-center gap-1.5 mt-1">
                 ${catCircle}
-                <span style="font-size:12px;color:rgba(255,255,255,0.42)">${esc(exp.category || 'אחר')}</span>
+                <span style="font-size:12px;color:var(--vcat-txt)">${esc(exp.category || 'אחר')}</span>
               </div>
             </div>
             <span style="font-size:12px;font-weight:700;padding:5px 14px;border-radius:20px;background:${statusBg};color:${statusColor};white-space:nowrap;flex-shrink:0">${sum.status}</span>
           </div>
           <div>
-            <p style="font-size:11px;color:rgba(255,255,255,0.36);margin-bottom:3px">עלות כוללת</p>
-            <p style="font-size:38px;font-weight:800;color:#fff;line-height:1;letter-spacing:-0.02em">${Currency.fmtILS(sum.total)}</p>
+            <p style="font-size:11px;color:var(--vamt-lbl);margin-bottom:3px">עלות כוללת</p>
+            <p style="font-size:38px;font-weight:800;color:var(--vamt);line-height:1;letter-spacing:-0.02em">${Currency.fmtILS(sum.total)}</p>
             ${origAmount}
           </div>
         </div>
       </div>
 
-      <div class="rounded-2xl p-4 space-y-3" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.07)">
+      <div class="rounded-2xl p-4 space-y-3" style="background:var(--vpay-bg);border:1px solid var(--vpay-border)">
         <div class="flex items-center justify-between">
-          <h4 style="font-size:13px;font-weight:700;color:rgba(255,255,255,0.85)">סקירת תשלומים</h4>
+          <h4 style="font-size:13px;font-weight:700;color:var(--vpay-hdrtxt)">סקירת תשלומים</h4>
           <span style="font-size:13px;font-weight:700;color:#2dd4bf">${Math.round(sum.total ? (sum.paid / sum.total) * 100 : 0)}%</span>
         </div>
-        <div style="height:4px;background:rgba(255,255,255,0.1);border-radius:99px;overflow:hidden">
+        <div style="height:4px;background:var(--vbar-track);border-radius:99px;overflow:hidden">
           <div style="height:4px;border-radius:99px;background:linear-gradient(to left,#2dd4bf,#2563eb);width:${Math.max(0,Math.min(100,sum.total?(sum.paid/sum.total)*100:0))}%"></div>
         </div>
         <div class="grid grid-cols-2 gap-3">
           <div class="rounded-xl p-3" style="background:rgba(45,212,191,0.08);border:1px solid rgba(45,212,191,0.12)">
-            <p style="font-size:10px;color:rgba(255,255,255,0.42);font-weight:600">שולם</p>
+            <p style="font-size:10px;color:var(--vpaid-lbl);font-weight:600">שולם</p>
             <p style="font-size:17px;font-weight:800;color:#2dd4bf;margin-top:2px">${Currency.fmtILS(sum.paid)}</p>
           </div>
           <div class="rounded-xl p-3" style="background:rgba(248,113,113,0.08);border:1px solid rgba(248,113,113,0.12)">
-            <p style="font-size:10px;color:rgba(255,255,255,0.42);font-weight:600">נותר</p>
+            <p style="font-size:10px;color:var(--vpaid-lbl);font-weight:600">נותר</p>
             <p style="font-size:17px;font-weight:800;color:#f87171;margin-top:2px">${Currency.fmtILS(sum.remaining)}</p>
           </div>
         </div>
       </div>
 
       <div>
-        <button id="schedule-toggle-${exp.id}" class="w-full flex items-center justify-between gap-2" style="background:none;border:none;cursor:pointer;padding:10px 0;border-top:1px solid rgba(255,255,255,0.07)">
-          <span class="material-symbols-outlined" id="schedule-chevron-${exp.id}" style="font-size:20px;color:rgba(255,255,255,0.4);transition:transform 0.25s">expand_more</span>
-          <span class="flex items-center gap-2" style="font-size:13px;font-weight:700;color:rgba(255,255,255,0.85)">
-            <span class="material-symbols-outlined" style="font-size:16px;color:rgba(255,255,255,0.45);font-variation-settings:'FILL' 1">event_note</span>
+        <button id="schedule-toggle-${exp.id}" class="w-full flex items-center justify-between gap-2" style="background:none;border:none;cursor:pointer;padding:10px 0;border-top:1px solid var(--vsched-sep)">
+          <span class="material-symbols-outlined" id="schedule-chevron-${exp.id}" style="font-size:20px;color:var(--vsched-icon);transition:transform 0.25s">expand_more</span>
+          <span class="flex items-center gap-2" style="font-size:13px;font-weight:700;color:var(--vsched-txt)">
+            <span class="material-symbols-outlined" style="font-size:16px;color:var(--vsched-cal);font-variation-settings:'FILL' 1">event_note</span>
             לוח תשלומים · ${sum.rows.length} תשלומים
           </span>
         </button>
         <div id="schedule-panel-${exp.id}" class="space-y-2" style="display:none;margin-top:4px">
           ${sum.rows.map(r => {
             const paid = sum.paidSet.has(r.idx);
-            return `<div class="rounded-2xl p-4" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.07)">
+            return `<div class="rounded-2xl p-4" style="background:var(--vschedrow-bg);border:1px solid var(--vschedrow-border)">
               <div class="flex items-start justify-between gap-3">
                 <div>
-                  <p style="font-size:14px;font-weight:600;color:rgba(255,255,255,0.9)">תשלום ${r.idx} — ${r.type}</p>
-                  <p style="font-size:12px;color:rgba(255,255,255,0.38);margin-top:2px">${r.date ? fmtDate(r.date) : 'ללא תאריך'}</p>
+                  <p style="font-size:14px;font-weight:600;color:var(--vschedrow-ptxt)">תשלום ${r.idx} — ${r.type}</p>
+                  <p style="font-size:12px;color:var(--vschedrow-dtxt);margin-top:2px">${r.date ? fmtDate(r.date) : 'ללא תאריך'}</p>
                 </div>
                 <span style="font-size:15px;font-weight:800;color:${paid ? '#2dd4bf' : '#f87171'};white-space:nowrap;direction:ltr">${Currency.fmtILS(r.amount)}</span>
               </div>
               <div class="flex items-center justify-between mt-3">
                 <span style="font-size:11px;padding:3px 10px;border-radius:20px;font-weight:600;${paid ? 'background:rgba(45,212,191,0.12);color:#2dd4bf' : 'background:rgba(248,113,113,0.12);color:#f87171'}">${paid ? 'שולם' : 'לא שולם'}</span>
                 <button class="pay-row-btn px-4 py-1.5 rounded-full text-sm font-semibold active:scale-95 transition"
-                  style="${paid ? 'background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.38);cursor:default' : 'background:rgba(45,212,191,0.13);color:#2dd4bf;border:1px solid rgba(45,212,191,0.22)'}"
+                  style="${paid ? 'background:var(--vpay-bg);color:var(--vsched-icon);cursor:default' : 'background:rgba(45,212,191,0.13);color:#2dd4bf;border:1px solid rgba(45,212,191,0.22)'}"
                   data-exp-id="${exp.id}" data-row-idx="${r.idx}" ${paid ? 'disabled' : ''}>${paid ? 'שולם' : 'סמן כשולם'}</button>
               </div>
             </div>`;
@@ -540,23 +540,23 @@ const Expenses = {
     if (exp.cancellation_date || exp.cancellation_policy) {
       html += `<div>
         ${secLabel('מדיניות ביטול')}
-        <div class="rounded-2xl p-4 space-y-3" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.07)">
+        <div class="rounded-2xl p-4 space-y-3" style="background:var(--vpay-bg);border:1px solid var(--vpay-border)">
           ${exp.cancellation_date ? `
             <div class="flex items-center gap-3">
               <div style="width:38px;height:38px;border-radius:50%;background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.2);display:flex;align-items:center;justify-content:center;flex-shrink:0">
                 <span class="material-symbols-outlined" style="font-size:18px;color:#fbbf24;font-variation-settings:'FILL' 1">event_busy</span>
               </div>
               <div>
-                <p style="font-size:11px;color:rgba(255,255,255,0.38);margin-bottom:2px">ביטול אחרון עד</p>
+                <p style="font-size:11px;color:var(--vschedrow-dtxt);margin-bottom:2px">ביטול אחרון עד</p>
                 <p style="font-size:14px;font-weight:600;color:#fbbf24">${fmtDate(exp.cancellation_date)}</p>
               </div>
             </div>` : ''}
           ${exp.cancellation_policy ? `
-            <div class="flex items-start gap-3" ${exp.cancellation_date ? 'style="padding-top:8px;border-top:1px solid rgba(255,255,255,0.06)"' : ''}>
+            <div class="flex items-start gap-3" ${exp.cancellation_date ? `style="padding-top:8px;border-top:1px solid var(--vcan-sep)"` : ''}>
               <div style="width:38px;height:38px;border-radius:50%;background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px">
                 <span class="material-symbols-outlined" style="font-size:18px;color:#fbbf24;font-variation-settings:'FILL' 1">policy</span>
               </div>
-              <p style="font-size:13px;color:rgba(255,255,255,0.75);line-height:1.55;white-space:pre-wrap;word-break:break-word;flex:1">${esc(exp.cancellation_policy)}</p>
+              <p style="font-size:13px;color:var(--vcancel-txt);line-height:1.55;white-space:pre-wrap;word-break:break-word;flex:1">${esc(exp.cancellation_policy)}</p>
             </div>` : ''}
         </div>
       </div>`;
@@ -579,14 +579,14 @@ const Expenses = {
       html += `
         <div>
           ${secLabel('איש קשר')}
-          <div class="rounded-2xl p-4 space-y-3" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.07)">
+          <div class="rounded-2xl p-4 space-y-3" style="background:var(--vcont-bg);border:1px solid var(--vcont-border)">
             <div class="flex items-center gap-3">
               <div style="width:44px;height:44px;border-radius:50%;background:rgba(45,212,191,0.1);border:1px solid rgba(45,212,191,0.18);display:flex;align-items:center;justify-content:center;flex-shrink:0">
                 <span class="material-symbols-outlined" style="font-size:22px;color:#2dd4bf;font-variation-settings:'FILL' 1">person</span>
               </div>
               <div class="flex-1 min-w-0">
-                ${exp.contact_name ? `<p style="font-size:15px;font-weight:700;color:#fff">${esc(exp.contact_name)}</p>` : ''}
-                ${rawPhone ? `<div class="flex items-center gap-1 mt-0.5"><span class="material-symbols-outlined" style="font-size:13px;color:rgba(45,212,191,0.55)">phone</span><p dir="ltr" style="font-size:13px;color:rgba(255,255,255,0.48)">${esc(rawPhone)}</p></div>` : ''}
+                ${exp.contact_name ? `<p style="font-size:15px;font-weight:700;color:var(--vcont-name)">${esc(exp.contact_name)}</p>` : ''}
+                ${rawPhone ? `<div class="flex items-center gap-1 mt-0.5"><span class="material-symbols-outlined" style="font-size:13px;color:var(--vteal-icon)">phone</span><p dir="ltr" style="font-size:13px;color:var(--vcont-phone)">${esc(rawPhone)}</p></div>` : ''}
               </div>
             </div>
             ${rawPhone ? `<div class="grid grid-cols-2 gap-2">
@@ -606,11 +606,11 @@ const Expenses = {
       html += `
         <div>
           ${secLabel('קבלה')}
-          <div class="flex items-center gap-3 rounded-2xl p-3.5 cursor-pointer js-open-lightbox active:scale-[0.99] transition" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.07)" data-lightbox-url="${receiptUrl}">
+          <div class="flex items-center gap-3 rounded-2xl p-3.5 cursor-pointer js-open-lightbox active:scale-[0.99] transition" style="background:var(--vrow-bg);border:1px solid var(--vrow-border)" data-lightbox-url="${receiptUrl}">
             <div style="width:38px;height:38px;border-radius:50%;background:rgba(45,212,191,0.1);border:1px solid rgba(45,212,191,0.18);display:flex;align-items:center;justify-content:center;flex-shrink:0">
               <span class="material-symbols-outlined" style="font-size:18px;color:#2dd4bf;font-variation-settings:'FILL' 1">${isPdf ? 'picture_as_pdf' : 'image'}</span>
             </div>
-            ${isPdf ? `<span style="font-size:13px;color:rgba(255,255,255,0.7)">PDF</span>` : `<img src="${receiptUrl}" alt="קבלה" class="rounded-xl object-cover" style="height:52px;max-width:140px;object-fit:cover"/>`}
+            ${isPdf ? `<span style="font-size:13px;color:var(--vrow-txt)">PDF</span>` : `<img src="${receiptUrl}" alt="קבלה" class="rounded-xl object-cover" style="height:52px;max-width:140px;object-fit:cover"/>`}
           </div>
         </div>`;
     }
