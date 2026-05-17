@@ -15,19 +15,7 @@ const DEFAULT_CATEGORIES = {
   'אחר':          { icon: '📦', color: '#9e9e9e' },
 };
 
-function loadCategories() {
-  try {
-    const s = localStorage.getItem('custom_categories');
-    if (s) return JSON.parse(s);
-  } catch {}
-  return { ...DEFAULT_CATEGORIES };
-}
-
-function saveCategories(cats) {
-  localStorage.setItem('custom_categories', JSON.stringify(cats));
-}
-
-let CATEGORIES = loadCategories();
+let CATEGORIES = { ...DEFAULT_CATEGORIES };
 
 const CURRENCY_SYMBOLS = {
   ILS:'₪', USD:'$', EUR:'€', GBP:'£', JPY:'¥', THB:'฿', TRY:'₺', AED:'د.إ',
