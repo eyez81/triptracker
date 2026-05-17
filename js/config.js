@@ -5,7 +5,7 @@ const CONFIG = {
 
 const DEFAULT_CATEGORIES = {
   'לינה':         { icon: '🏨', color: '#4f8ef7' },
-  'אוכל ושתייה': { icon: '🍽', color: '#38c9a0' },
+  'אוכל ושתייה':  { icon: '🍽', color: '#38c9a0' },
   'קניות':        { icon: '🛍', color: '#f5a623' },
   'אטרקציות':     { icon: '🎡', color: '#7b5ea7' },
   'רכב':           { icon: '🚗', color: '#e05252' },
