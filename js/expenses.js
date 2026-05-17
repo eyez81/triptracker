@@ -417,14 +417,14 @@ const Expenses = {
       <div class="rounded-2xl overflow-hidden" style="background:linear-gradient(150deg,#0a1628 0%,#0d1f38 60%,#091825 100%)">
         <div class="p-5 space-y-4">
           <div class="flex items-start justify-between gap-3">
-            <span style="font-size:12px;font-weight:700;padding:5px 14px;border-radius:20px;background:rgba(74,222,128,0.15);color:#4ade80;white-space:nowrap;flex-shrink:0">שולם ✓</span>
-            <div class="text-right min-w-0">
+            <div class="min-w-0">
               <p style="font-size:22px;font-weight:800;color:#fff;line-height:1.2">${esc(exp.name)}</p>
-              <div class="flex items-center justify-end gap-1.5 mt-1">
-                <span style="font-size:12px;color:rgba(255,255,255,0.42)">${esc(exp.category || 'אחר')}</span>
+              <div class="flex items-center gap-1.5 mt-1">
                 ${catCircle}
+                <span style="font-size:12px;color:rgba(255,255,255,0.42)">${esc(exp.category || 'אחר')}</span>
               </div>
             </div>
+            <span style="font-size:12px;font-weight:700;padding:5px 14px;border-radius:20px;background:rgba(74,222,128,0.15);color:#4ade80;white-space:nowrap;flex-shrink:0">שולם ✓</span>
           </div>
           <div>
             <p style="font-size:11px;color:rgba(255,255,255,0.36);margin-bottom:3px">סכום</p>
@@ -450,14 +450,14 @@ const Expenses = {
       <div class="rounded-2xl overflow-hidden" style="background:linear-gradient(150deg,#0a1628 0%,#0d1f38 60%,#091825 100%)">
         <div class="p-5 space-y-4">
           <div class="flex items-start justify-between gap-3">
-            <span style="font-size:12px;font-weight:700;padding:5px 14px;border-radius:20px;background:${statusBg};color:${statusColor};white-space:nowrap;flex-shrink:0">${sum.status}</span>
-            <div class="text-right min-w-0">
+            <div class="min-w-0">
               <p style="font-size:22px;font-weight:800;color:#fff;line-height:1.2">${esc(exp.name)}</p>
-              <div class="flex items-center justify-end gap-1.5 mt-1">
-                <span style="font-size:12px;color:rgba(255,255,255,0.42)">${esc(exp.category || 'אחר')}</span>
+              <div class="flex items-center gap-1.5 mt-1">
                 ${catCircle}
+                <span style="font-size:12px;color:rgba(255,255,255,0.42)">${esc(exp.category || 'אחר')}</span>
               </div>
             </div>
+            <span style="font-size:12px;font-weight:700;padding:5px 14px;border-radius:20px;background:${statusBg};color:${statusColor};white-space:nowrap;flex-shrink:0">${sum.status}</span>
           </div>
           <div>
             <p style="font-size:11px;color:rgba(255,255,255,0.36);margin-bottom:3px">עלות כוללת</p>
@@ -468,8 +468,8 @@ const Expenses = {
 
       <div class="rounded-2xl p-4 space-y-3" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.07)">
         <div class="flex items-center justify-between">
-          <span style="font-size:13px;font-weight:700;color:#2dd4bf">${Math.round(sum.total ? (sum.paid / sum.total) * 100 : 0)}%</span>
           <h4 style="font-size:13px;font-weight:700;color:rgba(255,255,255,0.85)">סקירת תשלומים</h4>
+          <span style="font-size:13px;font-weight:700;color:#2dd4bf">${Math.round(sum.total ? (sum.paid / sum.total) * 100 : 0)}%</span>
         </div>
         <div style="height:4px;background:rgba(255,255,255,0.1);border-radius:99px;overflow:hidden">
           <div style="height:4px;border-radius:99px;background:linear-gradient(to left,#2dd4bf,#2563eb);width:${Math.max(0,Math.min(100,sum.total?(sum.paid/sum.total)*100:0))}%"></div>
@@ -493,17 +493,17 @@ const Expenses = {
             const paid = sum.paidSet.has(r.idx);
             return `<div class="rounded-2xl p-4" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.07)">
               <div class="flex items-start justify-between gap-3">
-                <span style="font-size:15px;font-weight:800;color:${paid ? '#2dd4bf' : '#f87171'};white-space:nowrap">${Currency.fmtILS(r.amount)}</span>
-                <div class="text-right">
+                <div>
                   <p style="font-size:14px;font-weight:600;color:rgba(255,255,255,0.9)">תשלום ${r.idx} — ${r.type}</p>
                   <p style="font-size:12px;color:rgba(255,255,255,0.38);margin-top:2px">${r.date ? fmtDate(r.date) : 'ללא תאריך'}</p>
                 </div>
+                <span style="font-size:15px;font-weight:800;color:${paid ? '#2dd4bf' : '#f87171'};white-space:nowrap;direction:ltr">${Currency.fmtILS(r.amount)}</span>
               </div>
               <div class="flex items-center justify-between mt-3">
+                <span style="font-size:11px;padding:3px 10px;border-radius:20px;font-weight:600;${paid ? 'background:rgba(45,212,191,0.12);color:#2dd4bf' : 'background:rgba(248,113,113,0.12);color:#f87171'}">${paid ? 'שולם' : 'לא שולם'}</span>
                 <button class="pay-row-btn px-4 py-1.5 rounded-full text-sm font-semibold active:scale-95 transition"
                   style="${paid ? 'background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.38);cursor:default' : 'background:rgba(45,212,191,0.13);color:#2dd4bf;border:1px solid rgba(45,212,191,0.22)'}"
                   data-exp-id="${exp.id}" data-row-idx="${r.idx}" ${paid ? 'disabled' : ''}>${paid ? 'שולם' : 'סמן כשולם'}</button>
-                <span style="font-size:11px;padding:3px 10px;border-radius:20px;font-weight:600;${paid ? 'background:rgba(45,212,191,0.12);color:#2dd4bf' : 'background:rgba(248,113,113,0.12);color:#f87171'}">${paid ? 'שולם' : 'לא שולם'}</span>
               </div>
             </div>`;
           }).join('')}
@@ -540,12 +540,12 @@ const Expenses = {
           ${secLabel('איש קשר')}
           <div class="rounded-2xl p-4 space-y-3" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.07)">
             <div class="flex items-center gap-3">
+              <div class="flex-1 min-w-0">
+                ${exp.contact_name ? `<p style="font-size:15px;font-weight:700;color:#fff">${esc(exp.contact_name)}</p>` : ''}
+                ${rawPhone ? `<div class="flex items-center gap-1 mt-0.5"><span class="material-symbols-outlined" style="font-size:13px;color:rgba(45,212,191,0.55)">phone</span><p dir="ltr" style="font-size:13px;color:rgba(255,255,255,0.48)">${esc(rawPhone)}</p></div>` : ''}
+              </div>
               <div style="width:44px;height:44px;border-radius:50%;background:rgba(45,212,191,0.1);border:1px solid rgba(45,212,191,0.18);display:flex;align-items:center;justify-content:center;flex-shrink:0">
                 <span class="material-symbols-outlined" style="font-size:22px;color:#2dd4bf;font-variation-settings:'FILL' 1">person</span>
-              </div>
-              <div class="flex-1 min-w-0 text-right">
-                ${exp.contact_name ? `<p style="font-size:15px;font-weight:700;color:#fff">${esc(exp.contact_name)}</p>` : ''}
-                ${rawPhone ? `<div class="flex items-center justify-end gap-1 mt-0.5"><p dir="ltr" style="font-size:13px;color:rgba(255,255,255,0.48)">${esc(rawPhone)}</p><span class="material-symbols-outlined" style="font-size:13px;color:rgba(45,212,191,0.55)">phone</span></div>` : ''}
               </div>
             </div>
             ${rawPhone ? `<div class="grid grid-cols-2 gap-2">
