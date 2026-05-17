@@ -335,21 +335,30 @@
 <div id="screen-trip" class="screen flex-col pb-24">
 
   <!-- ── Top header: 3-zone grid ── -->
-  <header style="position:sticky;top:0;z-index:50;width:100%;height:60px;background:rgba(6,12,28,0.90);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-bottom:1px solid rgba(255,255,255,0.07);display:grid;grid-template-columns:52px 1fr 52px;align-items:center;padding:0 14px;box-sizing:border-box">
+  <!-- dir="ltr" forces columns left→right regardless of page RTL -->
+  <header dir="ltr" style="position:sticky;top:0;z-index:50;width:100%;height:64px;background:rgba(6,12,28,0.92);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-bottom:1px solid rgba(255,255,255,0.07);display:grid;grid-template-columns:56px 1fr 56px;align-items:center;padding:0 14px;box-sizing:border-box">
 
     <!-- LEFT: back arrow -->
-    <button id="btn-back-trips" style="width:40px;height:40px;display:flex;align-items:center;justify-content:center;border-radius:50%;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.09);cursor:pointer;transition:background 0.15s" onpointerdown="this.style.background='rgba(255,255,255,0.13)'" onpointerup="this.style.background='rgba(255,255,255,0.06)'" onpointerleave="this.style.background='rgba(255,255,255,0.06)'">
-      <span class="material-symbols-outlined" style="font-size:22px;color:rgba(255,255,255,0.78)">arrow_back</span>
+    <button id="btn-back-trips" style="width:42px;height:42px;display:flex;align-items:center;justify-content:center;border-radius:50%;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.09);cursor:pointer;flex-shrink:0" onpointerdown="this.style.background='rgba(255,255,255,0.14)'" onpointerup="this.style.background='rgba(255,255,255,0.06)'" onpointerleave="this.style.background='rgba(255,255,255,0.06)'">
+      <span class="material-symbols-outlined" style="font-size:22px;color:rgba(255,255,255,0.82)">arrow_back</span>
     </button>
 
-    <!-- CENTER: logo (always perfectly centered) -->
-    <div style="display:flex;align-items:center;justify-content:center;overflow:hidden">
-      <img src="./triptracker-logo.png" alt="Trip Tracker" style="height:26px;max-width:156px;object-fit:contain;display:block">
+    <!-- CENTER: logo -->
+    <div style="display:flex;align-items:center;justify-content:center;overflow:hidden;padding:0 8px">
+      <!-- Primary: triptracker-logo.png — shows once the file is added to repo -->
+      <img id="trip-logo-img" src="./triptracker-logo.png" alt="Trip Tracker"
+           style="height:36px;max-width:190px;object-fit:contain;display:block;background:transparent"
+           onerror="document.getElementById('trip-logo-img').style.display='none';document.getElementById('trip-logo-fallback').style.display='flex'">
+      <!-- Fallback: inline brand (shows when PNG is missing) -->
+      <div id="trip-logo-fallback" style="display:flex;align-items:center;gap:8px">
+        <img src="./icon.svg" style="width:32px;height:32px;border-radius:9px;flex-shrink:0" alt="">
+        <span style="font-size:19px;font-weight:800;letter-spacing:-0.025em;white-space:nowrap;background:linear-gradient(135deg,#93c5fd 0%,#2dd4bf 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">Trip Tracker</span>
+      </div>
     </div>
 
     <!-- RIGHT: hamburger -->
-    <button id="btn-trip-menu" style="width:40px;height:40px;display:flex;align-items:center;justify-content:center;border-radius:50%;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.09);cursor:pointer;transition:background 0.15s;margin-left:auto" onpointerdown="this.style.background='rgba(255,255,255,0.13)'" onpointerup="this.style.background='rgba(255,255,255,0.06)'" onpointerleave="this.style.background='rgba(255,255,255,0.06)'">
-      <span class="material-symbols-outlined" style="font-size:22px;color:rgba(255,255,255,0.78)">menu</span>
+    <button id="btn-trip-menu" style="width:42px;height:42px;display:flex;align-items:center;justify-content:center;border-radius:50%;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.09);cursor:pointer;flex-shrink:0;margin-left:auto" onpointerdown="this.style.background='rgba(255,255,255,0.14)'" onpointerup="this.style.background='rgba(255,255,255,0.06)'" onpointerleave="this.style.background='rgba(255,255,255,0.06)'">
+      <span class="material-symbols-outlined" style="font-size:22px;color:rgba(255,255,255,0.82)">menu</span>
     </button>
 
   </header>
