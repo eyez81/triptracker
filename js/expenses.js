@@ -787,10 +787,14 @@ const Expenses = {
     if (input) input.value = safeValue;
     if (label) {
       if (!safeValue) {
-        label.textContent = 'בחר קטגוריה';
+        label.innerHTML = 'בחר קטגוריה';
         label.classList.add('text-on-surface-variant');
       } else {
-        label.textContent = `${CATEGORIES[safeValue]?.icon || '📦'} ${safeValue}`;
+        const { color, icon, msIcon } = getCatStyle(safeValue);
+        const iconInner = msIcon
+          ? `<span class="material-symbols-outlined" style="font-size:13px;color:#fff;font-variation-settings:'FILL' 1;line-height:1">${msIcon}</span>`
+          : `<span style="font-size:13px;line-height:1">${icon}</span>`;
+        label.innerHTML = `<span style="display:inline-flex;align-items:center;gap:8px"><span style="display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:7px;background:${color};flex-shrink:0;box-shadow:inset 0 1px 0 rgba(255,255,255,0.18)">${iconInner}</span><span>${esc(safeValue)}</span></span>`;
         label.classList.remove('text-on-surface-variant');
       }
     }
@@ -804,10 +808,18 @@ const Expenses = {
     if (!container || !input || !trigger || !menu) return;
 
     const current = input.value;
-    menu.innerHTML = Object.entries(CATEGORIES).map(([name, def]) => `
-      <button type="button" class="cat-option w-full px-4 py-2.5 text-sm text-right text-on-surface hover:bg-surface-variant/40 transition-colors" data-value="${name}" role="option">
-        <span class="inline-flex items-center gap-2"><span>${def.icon}</span><span>${name}</span></span>
-      </button>`).join('');
+    menu.innerHTML = Object.entries(CATEGORIES).map(([name]) => {
+      const { color, icon, msIcon } = getCatStyle(name);
+      const iconInner = msIcon
+        ? `<span class="material-symbols-outlined" style="font-size:16px;color:#fff;font-variation-settings:'FILL' 1">${msIcon}</span>`
+        : `<span style="font-size:16px;line-height:1">${icon}</span>`;
+      return `<button type="button" class="cat-option w-full flex items-center gap-3 px-4 py-3 transition-colors" data-value="${esc(name)}" role="option" style="border-bottom:1px solid rgba(255,255,255,0.05)">
+        <div style="width:32px;height:32px;flex-shrink:0;border-radius:9px;background:${color};display:flex;align-items:center;justify-content:center;box-shadow:inset 0 1px 0 rgba(255,255,255,0.18)">
+          ${iconInner}
+        </div>
+        <span style="font-size:14px;font-weight:500;color:rgba(255,255,255,0.88)">${esc(name)}</span>
+      </button>`;
+    }).join('');
 
     menu.querySelectorAll('.cat-option').forEach(btn => {
       btn.addEventListener('click', () => {
