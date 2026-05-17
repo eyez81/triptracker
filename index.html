@@ -47,7 +47,7 @@
             "DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"
           },
           fontFamily: {
-            sans: ["Plus Jakarta Sans", "sans-serif"],
+            sans: ["Heebo", "sans-serif"],
           }
         }
       }
@@ -112,7 +112,7 @@
       --c-inverse-surface: #1a2238;
       --c-inverse-on-surface: #f7f9ff;
     }
-    body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: var(--c-background); min-height: 100dvh; }
+    body { font-family: 'Heebo', sans-serif; background-color: var(--c-background); min-height: 100dvh; font-size: 15px; }
     .glass-card { background: rgba(45,52,73,0.4); backdrop-filter: blur(24px); border: 1px solid rgba(255,255,255,0.08); }
     .glass-container { background: rgba(23,31,51,0.6); backdrop-filter: blur(24px); border: 1px solid rgba(255,255,255,0.1); }
     .light .glass-card { background: rgba(255,255,255,0.8); border: 1px solid rgba(71,80,106,0.18); }
@@ -235,6 +235,11 @@
       <button id="btn-export-excel" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-variant/50 transition active:scale-95" title="ייצוא Excel">
         <span class="material-symbols-outlined text-on-surface-variant">download</span>
       </button>
+      <button id="btn-share-trip"
+        class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-variant/50 transition active:scale-95 hidden"
+        title="שיתוף טיול">
+        <span class="material-symbols-outlined text-on-surface-variant">group_add</span>
+      </button>
       <button id="btn-edit-trip" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-variant/50 transition active:scale-95" title="עריכת טיול">
         <span class="material-symbols-outlined text-on-surface-variant">edit</span>
       </button>
@@ -242,41 +247,55 @@
   </header>
   <main class="flex-1 px-5 pt-6 max-w-2xl mx-auto w-full space-y-5">
     <!-- Budget card -->
-    <div class="glass-card rounded-lg p-6 space-y-4">
-      <div class="flex justify-between items-end">
-        <div>
+    <div class="rounded-2xl p-5 space-y-4" style="background:linear-gradient(135deg,rgba(37,99,235,0.18) 0%,rgba(78,222,163,0.12) 100%);border:1px solid rgba(255,255,255,0.08)">
+      <div class="flex items-start justify-between gap-4">
+        <div class="flex-1 min-w-0">
           <span class="text-on-surface-variant text-sm font-medium">מעקב תקציב</span>
-          <h2 id="sum-spent" class="text-secondary text-3xl font-bold">₪0</h2>
+          <h2 id="sum-spent" class="text-white text-4xl font-extrabold mt-0.5 leading-none">₪0</h2>
+          <span id="sum-budget" class="text-on-surface-variant text-sm">מתוך ₪0</span>
+          <div class="relative h-2.5 bg-white/8 rounded-full overflow-hidden mt-3">
+            <div id="budget-bar-fill" class="absolute inset-y-0 right-0 h-full rounded-full transition-all duration-700" style="width:0%;background:linear-gradient(to left,#4edea3,#2563eb)"></div>
+          </div>
         </div>
-        <span id="sum-budget" class="text-on-surface-variant text-sm">מתוך ₪0</span>
-      </div>
-      <div class="flex items-center gap-3">
-        <div class="relative h-3 flex-grow bg-surface-container rounded-full overflow-hidden">
-          <div id="budget-bar-fill" class="absolute inset-y-0 right-0 h-full rounded-full transition-all duration-500" style="width:0%"></div>
+        <div class="relative w-24 h-24 flex-shrink-0">
+          <svg class="w-24 h-24 -rotate-90" viewBox="0 0 120 120">
+            <defs>
+              <linearGradient id="budgetGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#2563eb"/>
+                <stop offset="100%" stop-color="#4edea3"/>
+              </linearGradient>
+            </defs>
+            <circle cx="60" cy="60" r="50" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="10"/>
+            <circle id="budget-circle-progress" cx="60" cy="60" r="50" fill="none"
+              stroke="url(#budgetGrad)" stroke-width="10" stroke-linecap="round"
+              stroke-dasharray="0 314" style="transition:stroke-dasharray 0.7s ease"/>
+          </svg>
+          <div class="absolute inset-0 flex items-center justify-center">
+            <span id="budget-pct" class="text-xl font-extrabold text-white">0%</span>
+          </div>
         </div>
-        <span id="budget-pct" class="text-secondary font-semibold text-sm whitespace-nowrap">0%</span>
       </div>
       <div class="grid grid-cols-2 gap-3">
-        <div class="bg-surface-container/50 p-3 rounded-xl">
+        <div class="rounded-xl p-3" style="background:rgba(255,255,255,0.06)">
           <span class="text-on-surface-variant text-xs">נוצל</span>
-          <p id="sum-used" class="text-on-surface font-semibold mt-1">₪0</p>
+          <p id="sum-used" class="text-white font-bold text-base mt-0.5">₪0</p>
         </div>
-        <div class="bg-surface-container/50 p-3 rounded-xl">
+        <div class="rounded-xl p-3" style="background:rgba(255,255,255,0.06)">
           <span class="text-on-surface-variant text-xs">נותר</span>
-          <p id="sum-remaining" class="text-on-surface font-semibold mt-1">₪0</p>
+          <p id="sum-remaining" class="text-white font-bold text-base mt-0.5">₪0</p>
         </div>
       </div>
-      <div id="sum-dates" class="text-on-surface-variant text-xs"></div>
+      <div id="sum-dates" class="text-on-surface-variant text-sm flex items-center gap-1.5">
+        <span class="material-symbols-outlined text-base">calendar_month</span>
+      </div>
     </div>
 
     <!-- Search + Filter -->
-    <div class="flex gap-3">
-      <div class="relative flex-grow">
-        <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-xl">search</span>
-        <input id="expense-search" type="text" placeholder="חיפוש הוצאה..."
-          class="w-full bg-surface-container-high border-none rounded-xl pr-10 pl-4 py-3 text-on-surface placeholder:text-on-surface-variant focus:ring-2 focus:ring-primary outline-none"/>
-      </div>
-      <button id="btn-filter" class="w-12 h-12 flex items-center justify-center bg-surface-container-high rounded-xl text-on-surface-variant hover:text-primary transition">
+    <div class="relative">
+      <span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+      <input id="expense-search" type="text" placeholder="חיפוש הוצאה..."
+        class="w-full bg-surface-container-high border border-white/5 rounded-2xl pr-12 pl-12 py-3.5 text-on-surface placeholder:text-on-surface-variant focus:ring-2 focus:ring-primary outline-none"/>
+      <button id="btn-filter" class="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-primary transition active:scale-90">
         <span class="material-symbols-outlined">filter_list</span>
       </button>
     </div>
@@ -288,13 +307,21 @@
     </div>
 
     <div class="grid grid-cols-2 gap-3">
-      <button id="btn-show-categories" class="glass-card rounded-xl px-4 py-3 flex items-center justify-center gap-2 text-on-surface hover:bg-surface-variant/40 active:scale-95 transition">
-        <span class="material-symbols-outlined text-primary">pie_chart</span>
-        <span class="text-sm font-semibold">סיכום לפי קטגוריות</span>
+      <button id="btn-show-categories" class="rounded-2xl px-4 py-4 flex items-center gap-3 active:scale-95 transition" style="background:linear-gradient(135deg,#3730a3,#6c5ce7)">
+        <span class="material-symbols-outlined text-white text-2xl" style="font-variation-settings:'FILL' 1">pie_chart</span>
+        <div class="text-right flex-1">
+          <p class="text-white font-bold text-sm leading-tight">סיכום לפי</p>
+          <p class="text-white/70 text-xs">קטגוריות</p>
+        </div>
+        <span class="material-symbols-outlined text-white/50">chevron_left</span>
       </button>
-      <button id="btn-show-forecast" class="glass-card rounded-xl px-4 py-3 flex items-center justify-center gap-2 text-on-surface hover:bg-surface-variant/40 active:scale-95 transition">
-        <span class="material-symbols-outlined text-primary">event_upcoming</span>
-        <span class="text-sm font-semibold">תחזית תשלומים עתידיים</span>
+      <button id="btn-show-forecast" class="rounded-2xl px-4 py-4 flex items-center gap-3 active:scale-95 transition" style="background:linear-gradient(135deg,#065f46,#059669)">
+        <span class="material-symbols-outlined text-white text-2xl" style="font-variation-settings:'FILL' 1">event_upcoming</span>
+        <div class="text-right flex-1">
+          <p class="text-white font-bold text-sm leading-tight">תחזית</p>
+          <p class="text-white/70 text-xs">תשלומים עתידיים</p>
+        </div>
+        <span class="material-symbols-outlined text-white/50">chevron_left</span>
       </button>
     </div>
 
@@ -313,8 +340,9 @@
   </main>
 
   <button id="btn-add-expense"
-    class="fixed bottom-24 left-5 z-50 bg-primary-container text-on-primary-container px-6 py-4 rounded-xl shadow-xl flex items-center gap-3 active:scale-95 transition-transform font-semibold">
-    <span class="material-symbols-outlined">add</span> הוצאה חדשה
+    class="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 px-7 py-3.5 rounded-full shadow-2xl flex items-center gap-2 active:scale-95 transition-transform font-bold text-base text-white"
+    style="background:linear-gradient(135deg,#2563eb,#4edea3);box-shadow:0 8px 32px rgba(78,222,163,0.35)">
+    <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1">add</span> הוצאה חדשה
   </button>
 
   <nav class="fixed bottom-0 w-full z-50 bg-surface/80 backdrop-blur-xl border-t border-white/10 rounded-t-lg flex flex-row-reverse justify-around items-center h-20 px-4">
@@ -614,7 +642,7 @@
         </div>
       </div>
       <!-- Payment method -->
-      <div>
+      <div id="payment-method-section">
         <label class="text-xs text-primary font-medium block mb-1 pr-1">אמצעי תשלום</label>
         <div class="flex bg-surface-container-low rounded-full p-1 gap-1">
           <label class="flex-1 cursor-pointer"><input checked class="peer sr-only" name="payment_method" type="radio" value="אשראי"/>
@@ -789,6 +817,48 @@
   </div>
 </div>
 
+<!-- ==================== MODAL: SHARE TRIP ==================== -->
+<div id="modal-share-trip" class="hidden fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-end justify-center">
+  <div class="glass-container w-full max-w-lg rounded-t-2xl p-6 space-y-4 max-h-[80dvh] overflow-y-auto">
+    <div class="flex justify-between items-center">
+      <h3 class="text-xl font-bold text-on-surface">שיתוף טיול</h3>
+      <button data-close="modal-share-trip" class="text-on-surface-variant hover:text-on-surface">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+    <div class="space-y-2">
+      <label class="text-xs text-primary font-medium block pr-1">שם משתמש או אימייל</label>
+      <div class="flex gap-2">
+        <input id="share-email-input" type="email" placeholder="friend@email.com" dir="ltr" autocomplete="off"
+          class="flex-1 bg-surface-container-highest border-none rounded-full px-5 py-3 text-on-surface focus:ring-2 focus:ring-primary-container outline-none"/>
+        <button id="btn-do-share"
+          class="bg-primary-container text-on-primary-container px-5 py-3 rounded-full font-semibold active:scale-95 transition whitespace-nowrap">
+          שתף
+        </button>
+      </div>
+      <p id="share-error" class="hidden text-error text-xs pr-2"></p>
+    </div>
+    <div>
+      <h4 class="text-sm font-semibold text-on-surface-variant mb-2">משתתפים</h4>
+      <div id="share-members-list" class="space-y-1"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== LIGHTBOX ==================== -->
+<div id="lightbox" class="hidden fixed inset-0 z-[300] flex items-center justify-center" role="dialog" aria-modal="true" aria-label="תצוגת קבלה">
+  <div id="lightbox-backdrop" class="absolute inset-0 bg-black/90 backdrop-blur-lg"></div>
+  <button id="lightbox-close" class="absolute top-4 right-4 z-20 w-11 h-11 rounded-full bg-white/10 hover:bg-white/25 active:scale-90 flex items-center justify-center text-white transition-all duration-150 shadow-lg" aria-label="סגור">
+    <span class="material-symbols-outlined text-2xl">close</span>
+  </button>
+  <div id="lightbox-content" class="relative z-10 flex items-center justify-center w-full h-full p-4 md:p-10 select-none overflow-hidden">
+    <img id="lightbox-img" src="" alt="קבלה"
+      class="rounded-2xl shadow-2xl object-contain transition-transform duration-300 ease-out cursor-zoom-in"
+      style="max-width:min(92vw,1200px);max-height:min(88dvh,1000px);transform-origin:center center;"/>
+  </div>
+  <div id="lightbox-zoom-hint" class="absolute bottom-5 left-1/2 -translate-x-1/2 z-20 text-white/50 text-xs pointer-events-none transition-opacity duration-500">לחץ להגדלה • ESC לסגירה</div>
+</div>
+
 <script src="js/config.js"></script>
 <script src="js/api.js"></script>
 <script src="js/currency.js"></script>
@@ -796,5 +866,10 @@
 <script src="js/trips.js"></script>
 <script src="js/expenses.js"></script>
 <script src="js/app.js"></script>
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js').catch(() => {});
+  }
+</script>
 </body>
 </html>

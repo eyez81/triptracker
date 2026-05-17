@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#29b6f6"/>
+      <stop offset="100%" stop-color="#0277bd"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="512" height="512" fill="url(#bg)" rx="80"/>
+
+  <!-- Palm tree trunk -->
+  <path d="M92 410 Q88 370 96 330 Q100 310 90 285" stroke="#0d47a1" stroke-width="14"
+        fill="none" stroke-linecap="round"/>
+  <!-- Palm leaves -->
+  <ellipse cx="78"  cy="272" rx="52" ry="16" fill="#0d47a1" transform="rotate(-35 78 272)"/>
+  <ellipse cx="105" cy="262" rx="52" ry="16" fill="#0d47a1" transform="rotate(15 105 262)"/>
+  <ellipse cx="68"  cy="285" rx="48" ry="14" fill="#0d47a1" transform="rotate(-65 68 285)"/>
+  <ellipse cx="118" cy="278" rx="48" ry="14" fill="#0d47a1" transform="rotate(45 118 278)"/>
+
+  <!-- Mountain -->
+  <polygon points="390,415 455,285 510,415" fill="#0d47a1"/>
+  <polygon points="428,340 455,285 480,340" fill="#b3e5fc"/>
+
+  <!-- Ground blobs -->
+  <ellipse cx="92"  cy="415" rx="55" ry="14" fill="#0d47a1" opacity="0.45"/>
+  <ellipse cx="448" cy="415" rx="58" ry="14" fill="#0d47a1" opacity="0.45"/>
+
+  <!-- Suitcase shadow -->
+  <ellipse cx="258" cy="408" rx="122" ry="14" fill="rgba(0,0,0,0.18)"/>
+
+  <!-- Suitcase body -->
+  <rect x="128" y="138" width="258" height="262" rx="32" fill="white"/>
+
+  <!-- Suitcase handle -->
+  <rect x="204" y="104" width="104" height="48" rx="18" fill="#0d47a1"/>
+  <rect x="216" y="118" width="80" height="22" rx="11" fill="#1565c0"/>
+
+  <!-- Vertical ridges -->
+  <rect x="198" y="158" width="16" height="226" rx="8" fill="rgba(180,200,220,0.45)"/>
+  <rect x="248" y="158" width="16" height="226" rx="8" fill="rgba(180,200,220,0.45)"/>
+  <rect x="298" y="158" width="16" height="226" rx="8" fill="rgba(180,200,220,0.45)"/>
+
+  <!-- Trend line -->
+  <polyline points="162,336 246,270 336,212"
+            stroke="#0d47a1" stroke-width="15" fill="none"
+            stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="162" cy="336" r="14" fill="#0d47a1"/>
+  <circle cx="246" cy="270" r="14" fill="#0d47a1"/>
+  <circle cx="336" cy="212" r="14" fill="#0d47a1"/>
+
+  <!-- Dollar circle -->
+  <circle cx="340" cy="372" r="68" fill="#388e3c"/>
+  <circle cx="340" cy="372" r="56" fill="#43a047"/>
+  <text x="340" y="402" text-anchor="middle" font-size="80" font-weight="bold"
+        fill="white" font-family="Arial,Helvetica,sans-serif">$</text>
+
+  <!-- Airplane body -->
+  <g transform="translate(400,72) rotate(-28)" fill="white">
+    <ellipse cx="0" cy="0" rx="28" ry="9" />
+    <polygon points="0,-9 -6,-24 6,-24" />
+    <polygon points="-12,0 -28,-6 -28,6" />
+    <polygon points="14,2 22,-4 22,8" />
+  </g>
+
+  <!-- Dashed flight path -->
+  <path d="M360,105 Q310,68 415,48" stroke="white" stroke-width="4"
+        fill="none" stroke-dasharray="12,9" opacity="0.75"/>
+</svg>

@@ -10,10 +10,17 @@ const Trips = {
     document.getElementById('trips-upcoming').innerHTML = '';
     document.getElementById('trips-past').innerHTML = '';
     try {
-      const res = await pb.list(CONFIG.COLLECTIONS.TRIPS, { sort: '-start_date', perPage: 50 });
+      const uid = pb.userId;
+      const res = await pb.list(CONFIG.COLLECTIONS.TRIPS, {
+        sort: '-start_date',
+        perPage: 50,
+        filter: `owner_id = "${uid}" || user ~ "${uid}"`,
+      });
+      console.log('[trips.load] filter uid:', uid, 'total returned:', res.items?.length);
       this._list = res.items || [];
       await this._render();
     } catch (e) {
+      console.error('[trips.load] error:', e.message);
       showToast('שגיאה בטעינת טיולים');
     } finally {
       document.getElementById('trips-loading').classList.add('hidden');
@@ -64,11 +71,18 @@ const Trips = {
     const start = trip.start_date ? fmtDate(trip.start_date) : '';
     const end = trip.end_date ? fmtDate(trip.end_date) : '';
     const dates = start && end ? `${start} – ${end}` : start || '';
+    const isOwner = trip.owner_id === pb.userId;
+    const sharedBadge = !isOwner
+      ? `<span class="text-[10px] bg-primary/15 text-primary px-2 py-0.5 rounded-full">שותף</span>`
+      : '';
     return `
       <div class="glass-card rounded-lg p-5 cursor-pointer active:scale-[0.98] transition-transform trip-card" data-id="${trip.id}">
         <div class="flex justify-between items-start mb-3">
           <div>
-            <p class="font-bold text-lg text-on-surface">${esc(trip.name)}</p>
+            <div class="flex items-center gap-2 flex-wrap">
+              <p class="font-bold text-lg text-on-surface">${esc(trip.name)}</p>
+              ${sharedBadge}
+            </div>
             ${trip.destination ? `<p class="text-on-surface-variant text-sm mt-0.5">📍 ${esc(trip.destination)}</p>` : ''}
           </div>
           <div class="flex items-center gap-1 text-on-surface-variant text-xs mt-1">
@@ -113,11 +127,15 @@ const Trips = {
       end_date: document.getElementById('trip-end').value || null,
       budget: Number(document.getElementById('trip-budget').value) || 0,
       destination: document.getElementById('trip-destination').value.trim(),
-      user: pb.userId,
     };
+    if (!this._editing) {
+      data.owner_id = pb.userId;
+      data.user = [pb.userId];
+    }
     try {
       if (this._editing) {
         await pb.update(CONFIG.COLLECTIONS.TRIPS, this._editing.id, data);
+
         if (this._current?.id === this._editing.id) {
           this._current = { ...this._current, ...data };
           document.getElementById('trip-header-title').textContent = data.name;
@@ -136,7 +154,6 @@ const Trips = {
     if (!this._editing) return;
     if (!confirm(`למחוק את הטיול "${this._editing.name}"?\nכל ההוצאות ימחקו גם כן.`)) return;
     try {
-      // מחק קודם את כל ההוצאות של הטיול
       const res = await pb.list(CONFIG.COLLECTIONS.EXPENSES, {
         filter: `trip="${this._editing.id}"`, perPage: 500
       });
@@ -153,6 +170,145 @@ const Trips = {
   setCurrent(trip) {
     this._current = trip;
     document.getElementById('trip-header-title').textContent = trip.name;
+    const isOwner = trip.owner_id === pb.userId;
+    const shareBtn = document.getElementById('btn-share-trip');
+    if (shareBtn) shareBtn.classList.toggle('hidden', !isOwner);
+  },
+
+  async openShareModal() {
+    const trip = this._current;
+    if (!trip) return;
+    document.getElementById('share-email-input').value = '';
+    document.getElementById('share-error').classList.add('hidden');
+    await this._renderMembers();
+    App.openModal('modal-share-trip');
+  },
+
+  async _renderMembers() {
+    const trip = this._current;
+    const el = document.getElementById('share-members-list');
+    el.innerHTML = '<p class="text-xs text-on-surface-variant">טוען...</p>';
+    try {
+      const freshTrip = await pb.get(CONFIG.COLLECTIONS.TRIPS, trip.id);
+      const userIds = (freshTrip.user || []).filter(uid => uid !== freshTrip.owner_id);
+      if (!userIds.length) {
+        el.innerHTML = '<p class="text-xs text-on-surface-variant text-center py-2">אין משתתפים משותפים עדיין</p>';
+        return;
+      }
+      const memberHTMLs = await Promise.all(userIds.map(async uid => {
+        let displayName = uid;
+        try {
+          const u = await pb.get('users', uid);
+          displayName = u.name || u.email || uid;
+        } catch {}
+        return `
+          <div class="flex items-center justify-between py-2 border-b border-white/5">
+            <div class="flex items-center gap-2 min-w-0">
+              <span class="material-symbols-outlined text-on-surface-variant text-base">person</span>
+              <span class="text-sm text-on-surface truncate">${esc(displayName)}</span>
+            </div>
+            <button class="remove-member-btn text-error text-xs px-2 py-1 rounded-full hover:bg-error/10 transition active:scale-95" data-user-id="${uid}">
+              <span class="material-symbols-outlined text-base">person_remove</span>
+            </button>
+          </div>`;
+      }));
+      el.innerHTML = memberHTMLs.join('');
+      el.querySelectorAll('.remove-member-btn').forEach(btn => {
+        btn.addEventListener('click', () => this._removeMember(btn.dataset.userId));
+      });
+    } catch (e) {
+      el.innerHTML = `<p class="text-xs text-error">שגיאה: ${e.message}</p>`;
+    }
+  },
+
+  async shareWithEmail() {
+    const query = document.getElementById('share-email-input').value.trim();
+    const errEl = document.getElementById('share-error');
+    errEl.classList.add('hidden');
+    if (!query) { errEl.textContent = 'נא להזין אימייל'; errEl.classList.remove('hidden'); return; }
+    const btn = document.getElementById('btn-do-share');
+    btn.textContent = 'מחפש...';
+    btn.disabled = true;
+    try {
+      const q = query.toLowerCase();
+      const filter = `email="${q}"`;
+      const fullUrl = `${CONFIG.PB_URL}/api/collections/users/records?page=1&filter=${encodeURIComponent(filter)}&perPage=1`;
+
+      console.log('--- SHARE DEBUG ---');
+      console.log('PocketBase URL:', CONFIG.PB_URL);
+      console.log('Logged-in user id:', pb.userId);
+      console.log('Auth token exists:', !!pb.token);
+      console.log('Search email:', q);
+      console.log('Filter string:', filter);
+      console.log('Full request URL:', fullUrl);
+
+      const res = await pb.list('users', { filter, perPage: 1 });
+
+      console.log('PocketBase response:', JSON.stringify(res));
+      console.log('items length:', res.items?.length);
+
+      const foundUser = res.items?.[0];
+      if (!foundUser) {
+        console.log('No user found for email:', q);
+        errEl.textContent = 'משתמש לא נמצא במערכת';
+        errEl.classList.remove('hidden');
+        return;
+      }
+
+      console.log('Found user:', JSON.stringify(foundUser));
+      const newUserId = foundUser.id;
+      console.log('New user id to add:', newUserId);
+
+      if (newUserId === pb.userId) {
+        errEl.textContent = 'לא ניתן לשתף עם עצמך';
+        errEl.classList.remove('hidden');
+        return;
+      }
+
+      const freshTrip = await pb.get(CONFIG.COLLECTIONS.TRIPS, this._current.id);
+      console.log('Fresh trip user field:', JSON.stringify(freshTrip.user));
+
+      const resolvedIds = (freshTrip.user || []).map(v => (typeof v === 'string' ? v : v.id));
+      console.log('Resolved existing user ids:', JSON.stringify(resolvedIds));
+
+      if (resolvedIds.includes(newUserId)) {
+        errEl.textContent = 'המשתמש כבר שותף בטיול';
+        errEl.classList.remove('hidden');
+        return;
+      }
+
+      const payload = { user: [...resolvedIds, newUserId] };
+      console.log('Payload to send:', JSON.stringify(payload));
+
+      const updateResult = await pb.update(CONFIG.COLLECTIONS.TRIPS, this._current.id, payload);
+      console.log('Update response user field:', JSON.stringify(updateResult.user));
+
+      document.getElementById('share-email-input').value = '';
+      const displayName = foundUser.name || foundUser.email || query;
+      showToast(`הטיול שותף עם ${displayName} ✓`);
+      await this._renderMembers();
+    } catch (e) {
+      console.error('shareWithEmail error:', e.message);
+      errEl.textContent = `שגיאה: ${e.message}`;
+      errEl.classList.remove('hidden');
+    } finally {
+      btn.textContent = 'שתף';
+      btn.disabled = false;
+    }
+  },
+
+  async _removeMember(userId) {
+    if (!confirm('להסיר את המשתתף מהטיול?')) return;
+    try {
+      const freshTrip = await pb.get(CONFIG.COLLECTIONS.TRIPS, this._current.id);
+      const updatedUsers = (freshTrip.user || [])
+        .map(v => (typeof v === 'string' ? v : v.id))
+        .filter(id => id !== userId);
+      console.log('[removeMember] userId:', userId, 'updatedUsers:', JSON.stringify(updatedUsers));
+      await pb.update(CONFIG.COLLECTIONS.TRIPS, this._current.id, { user: updatedUsers });
+      showToast('המשתתף הוסר');
+      await this._renderMembers();
+    } catch (e) { showToast(`שגיאה: ${e.message}`); }
   },
 };
 
