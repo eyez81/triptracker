@@ -1,4 +1,4 @@
-const CACHE = 'triptracker-v29';
+const CACHE = 'triptracker-v30';
 const ASSETS = [
   './',
   './index.html',

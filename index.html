@@ -222,6 +222,31 @@
     [dir="rtl"] select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23b4c5ff'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: left 0.75rem center; background-size: 1.25rem; padding-left: 2.5rem; }
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+    /* ── Responsive app header & logo ── */
+    .app-header { height: 64px; }
+    .app-logo   { height: 40px; max-width: 220px; width: 100%; object-fit: contain; display: block; }
+    .app-logo-fallback-text { font-size: 20px; }
+    .app-logo-fallback-icon { width: 32px; height: 32px; }
+
+    @media (min-width: 640px) {
+      .app-header { height: 72px; }
+      .app-logo   { height: 52px; max-width: 270px; }
+      .app-logo-fallback-text { font-size: 24px; }
+      .app-logo-fallback-icon { width: 40px; height: 40px; }
+    }
+    @media (min-width: 1024px) {
+      .app-header { height: 82px; }
+      .app-logo   { height: 62px; max-width: 340px; }
+      .app-logo-fallback-text { font-size: 29px; }
+      .app-logo-fallback-icon { width: 48px; height: 48px; }
+    }
+    @media (min-width: 1440px) {
+      .app-header { height: 90px; }
+      .app-logo   { height: 70px; max-width: 400px; }
+      .app-logo-fallback-text { font-size: 34px; }
+      .app-logo-fallback-icon { width: 56px; height: 56px; }
+    }
   </style>
 </head>
 <body class="text-on-background pb-safe">
@@ -279,19 +304,18 @@
 
 <!-- ==================== TRIPS SCREEN ==================== -->
 <div id="screen-trips" class="screen flex-col pb-24">
-  <header dir="ltr" style="position:sticky;top:0;z-index:50;width:100%;height:64px;background:rgba(6,12,28,0.92);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-bottom:1px solid rgba(255,255,255,0.07);display:grid;grid-template-columns:56px 1fr 56px;align-items:center;padding:0 14px;box-sizing:border-box">
+  <header dir="ltr" class="app-header" style="position:sticky;top:0;z-index:50;width:100%;background:rgba(6,12,28,0.92);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-bottom:1px solid rgba(255,255,255,0.07);display:grid;grid-template-columns:56px 1fr 56px;align-items:center;padding:0 14px;box-sizing:border-box">
 
     <!-- LEFT: empty balancing cell -->
     <div></div>
 
     <!-- CENTER: logo -->
     <div style="display:flex;align-items:center;justify-content:center;padding:0 8px">
-      <img id="trips-logo-img" src="./triptracker-logo.png" alt="Trip Tracker"
-           style="height:44px;max-width:220px;width:100%;object-fit:contain;display:block"
+      <img id="trips-logo-img" src="./triptracker-logo.png" alt="Trip Tracker" class="app-logo"
            onerror="document.getElementById('trips-logo-img').style.display='none';document.getElementById('trips-logo-fallback').style.display='flex'">
       <div id="trips-logo-fallback" style="display:none;align-items:center;gap:8px">
-        <img src="./icon.svg" style="width:34px;height:34px;border-radius:9px;flex-shrink:0" alt="">
-        <span style="font-size:20px;font-weight:800;letter-spacing:-0.025em;white-space:nowrap;background:linear-gradient(135deg,#93c5fd 0%,#2dd4bf 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">Trip Tracker</span>
+        <img src="./icon.svg" class="app-logo-fallback-icon" style="border-radius:9px;flex-shrink:0" alt="">
+        <span class="app-logo-fallback-text" style="font-weight:800;letter-spacing:-0.025em;white-space:nowrap;background:linear-gradient(135deg,#93c5fd 0%,#2dd4bf 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">Trip Tracker</span>
       </div>
     </div>
 
@@ -352,7 +376,7 @@
 
   <!-- ── Top header: 3-zone grid ── -->
   <!-- dir="ltr" forces columns left→right regardless of page RTL -->
-  <header dir="ltr" style="position:sticky;top:0;z-index:50;width:100%;height:64px;background:rgba(6,12,28,0.92);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-bottom:1px solid rgba(255,255,255,0.07);display:grid;grid-template-columns:56px 1fr 56px;align-items:center;padding:0 14px;box-sizing:border-box">
+  <header dir="ltr" class="app-header" style="position:sticky;top:0;z-index:50;width:100%;background:rgba(6,12,28,0.92);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-bottom:1px solid rgba(255,255,255,0.07);display:grid;grid-template-columns:56px 1fr 56px;align-items:center;padding:0 14px;box-sizing:border-box">
 
     <!-- LEFT: back arrow -->
     <button id="btn-back-trips" style="width:42px;height:42px;display:flex;align-items:center;justify-content:center;border-radius:50%;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.09);cursor:pointer;flex-shrink:0" onpointerdown="this.style.background='rgba(255,255,255,0.14)'" onpointerup="this.style.background='rgba(255,255,255,0.06)'" onpointerleave="this.style.background='rgba(255,255,255,0.06)'">
@@ -361,14 +385,11 @@
 
     <!-- CENTER: logo -->
     <div style="display:flex;align-items:center;justify-content:center;padding:0 8px">
-      <!-- Primary: triptracker-logo.png (transparent, no background) -->
-      <img id="trip-logo-img" src="./triptracker-logo.png" alt="Trip Tracker"
-           style="height:44px;max-width:220px;width:100%;object-fit:contain;display:block"
+      <img id="trip-logo-img" src="./triptracker-logo.png" alt="Trip Tracker" class="app-logo"
            onerror="document.getElementById('trip-logo-img').style.display='none';document.getElementById('trip-logo-fallback').style.display='flex'">
-      <!-- Fallback: shown only if PNG fails to load (display:none by default) -->
       <div id="trip-logo-fallback" style="display:none;align-items:center;gap:8px">
-        <img src="./icon.svg" style="width:34px;height:34px;border-radius:9px;flex-shrink:0" alt="">
-        <span style="font-size:20px;font-weight:800;letter-spacing:-0.025em;white-space:nowrap;background:linear-gradient(135deg,#93c5fd 0%,#2dd4bf 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">Trip Tracker</span>
+        <img src="./icon.svg" class="app-logo-fallback-icon" style="border-radius:9px;flex-shrink:0" alt="">
+        <span class="app-logo-fallback-text" style="font-weight:800;letter-spacing:-0.025em;white-space:nowrap;background:linear-gradient(135deg,#93c5fd 0%,#2dd4bf 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">Trip Tracker</span>
       </div>
     </div>
 
