@@ -4,6 +4,15 @@
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
   <title>מעקב הוצאות</title>
+  <meta name="description" content="מעקב הוצאות וניהול תקציב לטיולים"/>
+  <meta name="theme-color" content="#0b1326"/>
+  <meta name="mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <meta name="apple-mobile-web-app-title" content="טיולים"/>
+  <link rel="manifest" href="/manifest.json"/>
+  <link rel="icon" href="/icon.svg" type="image/svg+xml"/>
+  <link rel="apple-touch-icon" href="/icon.svg"/>
   <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
   <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
@@ -864,5 +873,10 @@
 <script src="js/trips.js"></script>
 <script src="js/expenses.js"></script>
 <script src="js/app.js"></script>
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js').catch(() => {});
+  }
+</script>
 </body>
 </html>
