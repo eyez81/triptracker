@@ -390,91 +390,120 @@ const Expenses = {
     const METHOD_ICON = { 'אשראי':'credit_card', 'מזומן':'payments', 'העברה':'account_balance', 'ביט':'smartphone' };
     const methodIcon = METHOD_ICON[exp.payment_method] || 'payments';
 
+    const CAT_MS_V = {
+      'לינה':'hotel','אוכל ושתייה':'restaurant','קניות':'shopping_bag',
+      'אטרקציות':'attractions','רכב שכור':'directions_car','תחבורה':'directions_bus',
+      'טיסות':'flight','ביטוח':'shield','אחר':'category',
+    };
+    const catMs = CAT_MS_V[exp.category] || (/^[a-z][a-z_]+$/.test(cat.icon) ? cat.icon : null);
+    const catCircle = `<div style="width:22px;height:22px;border-radius:50%;background:${cat.color};display:inline-flex;align-items:center;justify-content:center;flex-shrink:0">${catMs ? `<span class="material-symbols-outlined" style="font-size:12px;color:#fff;font-variation-settings:'FILL' 1">${catMs}</span>` : `<span style="font-size:10px">${cat.icon}</span>`}</div>`;
+
+    const infoRow = (icon, text, href = null) => {
+      const inner = `
+        <div style="width:38px;height:38px;border-radius:50%;background:rgba(45,212,191,0.1);border:1px solid rgba(45,212,191,0.18);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <span class="material-symbols-outlined" style="font-size:18px;color:#2dd4bf;font-variation-settings:'FILL' 1">${icon}</span>
+        </div>
+        <span class="flex-1 text-sm" style="color:rgba(255,255,255,0.82);direction:auto;white-space:pre-wrap;word-break:break-word">${text}</span>
+        ${href ? `<span class="material-symbols-outlined flex-shrink-0" style="font-size:15px;color:rgba(255,255,255,0.28)">open_in_new</span>` : ''}
+      `;
+      return href
+        ? `<a href="${href}" target="_blank" rel="noopener noreferrer" class="flex items-center gap-3 rounded-2xl p-3.5 active:scale-[0.99] transition" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.07)">${inner}</a>`
+        : `<div class="flex items-center gap-3 rounded-2xl p-3.5" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.07)">${inner}</div>`;
+    };
+
+    const secLabel = (text) => `<p style="font-size:11px;font-weight:600;color:rgba(45,212,191,0.75);margin-bottom:6px;text-align:right">${text}</p>`;
+
     const headerCard = `
-      <div class="rounded-2xl p-5 md:p-6 space-y-4 bg-gradient-to-br from-surface-container-high/80 via-surface-container/80 to-surface-container-low/90 border border-white/10 shadow-xl">
-        <div class="flex items-start justify-between gap-3">
-          <div class="min-w-0">
-            <p class="text-2xl font-bold text-on-surface leading-tight truncate">${esc(exp.name)}</p>
-            <div class="mt-2 inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-surface-container-highest/70 text-on-surface-variant text-sm">
-              <span class="text-base">${cat.icon}</span>
-              <span>${esc(exp.category || 'אחר')}</span>
+      <div class="rounded-2xl overflow-hidden" style="background:linear-gradient(150deg,#0a1628 0%,#0d1f38 60%,#091825 100%)">
+        <div class="p-5 space-y-4">
+          <div class="flex items-start justify-between gap-3">
+            <span style="font-size:12px;font-weight:700;padding:5px 14px;border-radius:20px;background:rgba(74,222,128,0.15);color:#4ade80;white-space:nowrap;flex-shrink:0">שולם ✓</span>
+            <div class="text-right min-w-0">
+              <p style="font-size:22px;font-weight:800;color:#fff;line-height:1.2">${esc(exp.name)}</p>
+              <div class="flex items-center justify-end gap-1.5 mt-1">
+                <span style="font-size:12px;color:rgba(255,255,255,0.42)">${esc(exp.category || 'אחר')}</span>
+                ${catCircle}
+              </div>
             </div>
           </div>
-          <span class="text-xs px-3 py-1.5 rounded-full font-semibold bg-secondary/15 text-secondary">שולם</span>
-        </div>
-        <div>
-          <p class="text-xs text-on-surface-variant mb-1">סכום</p>
-          <p class="text-3xl md:text-4xl font-extrabold text-on-surface tracking-tight">${Currency.fmtILS(sum.total)}</p>
-        </div>
-        <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-on-surface-variant">
-          <span class="inline-flex items-center gap-1 text-secondary font-medium">
-            <span class="material-symbols-outlined text-base">check_circle</span>שולם במלואו
-          </span>
-          <span>•</span>
-          <span class="inline-flex items-center gap-1">
-            <span class="material-symbols-outlined text-base">${methodIcon}</span>${esc(exp.payment_method || '')}
-          </span>
-          <span>•</span>
-          <span>חד פעמי</span>
+          <div>
+            <p style="font-size:11px;color:rgba(255,255,255,0.36);margin-bottom:3px">סכום</p>
+            <p style="font-size:38px;font-weight:800;color:#fff;line-height:1;letter-spacing:-0.02em">${Currency.fmtILS(sum.total)}</p>
+          </div>
+          <div class="flex flex-wrap items-center gap-x-3 gap-y-1" style="font-size:12px;color:rgba(255,255,255,0.42)">
+            <span class="flex items-center gap-1" style="color:#4ade80">
+              <span class="material-symbols-outlined" style="font-size:13px;font-variation-settings:'FILL' 1">check_circle</span>שולם במלואו
+            </span>
+            <span>•</span>
+            <span class="flex items-center gap-1">
+              <span class="material-symbols-outlined" style="font-size:13px">${methodIcon}</span>${esc(exp.payment_method || '')}
+            </span>
+            <span>•</span>
+            <span>חד פעמי</span>
+          </div>
         </div>
       </div>`;
 
-    const statusClass = sum.status === 'שולם במלואו' ? 'bg-secondary/15 text-secondary' : sum.status === 'שולם חלקית' ? 'bg-tertiary/15 text-tertiary' : 'bg-error/15 text-error';
+    const statusColor = sum.status === 'שולם במלואו' ? '#4ade80' : sum.status === 'שולם חלקית' ? '#2dd4bf' : '#f87171';
+    const statusBg = sum.status === 'שולם במלואו' ? 'rgba(74,222,128,0.15)' : sum.status === 'שולם חלקית' ? 'rgba(45,212,191,0.15)' : 'rgba(248,113,113,0.15)';
     const trackingCard = `
-      <div class="rounded-2xl p-5 md:p-6 space-y-4 bg-gradient-to-br from-surface-container-high/80 via-surface-container/80 to-surface-container-low/90 border border-white/10 shadow-xl">
-        <div class="flex items-start justify-between gap-3">
-          <div class="min-w-0">
-            <p class="text-2xl font-bold text-on-surface leading-tight truncate">${esc(exp.name)}</p>
-            <div class="mt-2 inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-surface-container-highest/70 text-on-surface-variant text-sm">
-              <span class="text-base">${cat.icon}</span>
-              <span>${esc(exp.category || 'אחר')}</span>
+      <div class="rounded-2xl overflow-hidden" style="background:linear-gradient(150deg,#0a1628 0%,#0d1f38 60%,#091825 100%)">
+        <div class="p-5 space-y-4">
+          <div class="flex items-start justify-between gap-3">
+            <span style="font-size:12px;font-weight:700;padding:5px 14px;border-radius:20px;background:${statusBg};color:${statusColor};white-space:nowrap;flex-shrink:0">${sum.status}</span>
+            <div class="text-right min-w-0">
+              <p style="font-size:22px;font-weight:800;color:#fff;line-height:1.2">${esc(exp.name)}</p>
+              <div class="flex items-center justify-end gap-1.5 mt-1">
+                <span style="font-size:12px;color:rgba(255,255,255,0.42)">${esc(exp.category || 'אחר')}</span>
+                ${catCircle}
+              </div>
             </div>
           </div>
-          <span class="text-xs px-3 py-1.5 rounded-full font-semibold ${statusClass}">${sum.status}</span>
-        </div>
-        <div>
-          <p class="text-xs text-on-surface-variant mb-1">עלות כוללת</p>
-          <p class="text-3xl md:text-4xl font-extrabold text-on-surface tracking-tight">${Currency.fmtILS(sum.total)}</p>
+          <div>
+            <p style="font-size:11px;color:rgba(255,255,255,0.36);margin-bottom:3px">עלות כוללת</p>
+            <p style="font-size:38px;font-weight:800;color:#fff;line-height:1;letter-spacing:-0.02em">${Currency.fmtILS(sum.total)}</p>
+          </div>
         </div>
       </div>
 
-      <div class="glass-card rounded-2xl p-4 space-y-3">
+      <div class="rounded-2xl p-4 space-y-3" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.07)">
         <div class="flex items-center justify-between">
-          <h4 class="font-bold text-on-surface text-base">סקירת תשלומים</h4>
-          <span class="text-sm font-semibold text-on-surface-variant">${Math.round(sum.total ? (sum.paid / sum.total) * 100 : 0)}%</span>
+          <span style="font-size:13px;font-weight:700;color:#2dd4bf">${Math.round(sum.total ? (sum.paid / sum.total) * 100 : 0)}%</span>
+          <h4 style="font-size:13px;font-weight:700;color:rgba(255,255,255,0.85)">סקירת תשלומים</h4>
         </div>
-        <div class="h-2.5 bg-surface-container rounded-full overflow-hidden">
-          <div class="h-full rounded-full bg-secondary-container" style="width:${Math.max(0, Math.min(100, sum.total ? (sum.paid / sum.total) * 100 : 0))}%"></div>
+        <div style="height:4px;background:rgba(255,255,255,0.1);border-radius:99px;overflow:hidden">
+          <div style="height:4px;border-radius:99px;background:linear-gradient(to left,#2dd4bf,#2563eb);width:${Math.max(0,Math.min(100,sum.total?(sum.paid/sum.total)*100:0))}%"></div>
         </div>
-        <div class="grid grid-cols-2 gap-3 text-sm">
-          <div class="rounded-xl p-3 bg-secondary/10">
-            <p class="text-xs text-on-surface-variant">שולם</p>
-            <p class="font-bold text-secondary text-lg">${Currency.fmtILS(sum.paid)}</p>
+        <div class="grid grid-cols-2 gap-3">
+          <div class="rounded-xl p-3" style="background:rgba(45,212,191,0.08);border:1px solid rgba(45,212,191,0.12)">
+            <p style="font-size:10px;color:rgba(255,255,255,0.42);font-weight:600">שולם</p>
+            <p style="font-size:17px;font-weight:800;color:#2dd4bf;margin-top:2px">${Currency.fmtILS(sum.paid)}</p>
           </div>
-          <div class="rounded-xl p-3 bg-error/10">
-            <p class="text-xs text-on-surface-variant">נותר</p>
-            <p class="font-bold text-error text-lg">${Currency.fmtILS(sum.remaining)}</p>
+          <div class="rounded-xl p-3" style="background:rgba(248,113,113,0.08);border:1px solid rgba(248,113,113,0.12)">
+            <p style="font-size:10px;color:rgba(255,255,255,0.42);font-weight:600">נותר</p>
+            <p style="font-size:17px;font-weight:800;color:#f87171;margin-top:2px">${Currency.fmtILS(sum.remaining)}</p>
           </div>
         </div>
       </div>
 
-      <div class="pt-1">
-        <h4 class="font-bold text-on-surface mb-3 text-base">לוח תשלומים</h4>
-        <div class="space-y-3">
+      <div>
+        <h4 style="font-size:13px;font-weight:700;color:rgba(255,255,255,0.85);margin-bottom:8px;text-align:right">לוח תשלומים</h4>
+        <div class="space-y-2">
           ${sum.rows.map(r => {
             const paid = sum.paidSet.has(r.idx);
-            return `<div class="relative rounded-2xl p-4 bg-surface-container/70 border border-white/5">
-              <div class="absolute top-4 right-[-10px] w-2.5 h-2.5 rounded-full ${paid ? 'bg-secondary' : 'bg-error'}"></div>
+            return `<div class="rounded-2xl p-4" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.07)">
               <div class="flex items-start justify-between gap-3">
-                <div>
-                  <p class="font-semibold text-on-surface">תשלום ${r.idx} — ${r.type}</p>
-                  <p class="text-xs text-on-surface-variant mt-1">${r.date ? fmtDate(r.date) : 'ללא תאריך'}</p>
+                <span style="font-size:15px;font-weight:800;color:${paid ? '#2dd4bf' : '#f87171'};white-space:nowrap">${Currency.fmtILS(r.amount)}</span>
+                <div class="text-right">
+                  <p style="font-size:14px;font-weight:600;color:rgba(255,255,255,0.9)">תשלום ${r.idx} — ${r.type}</p>
+                  <p style="font-size:12px;color:rgba(255,255,255,0.38);margin-top:2px">${r.date ? fmtDate(r.date) : 'ללא תאריך'}</p>
                 </div>
-                <span class="font-bold text-on-surface whitespace-nowrap">${Currency.fmtILS(r.amount)}</span>
               </div>
-              <div class="mt-3 flex items-center justify-between">
-                <span class="text-xs px-2.5 py-1 rounded-full font-medium ${paid ? 'bg-secondary/15 text-secondary' : 'bg-error/15 text-error'}">${paid ? 'שולם' : 'לא שולם'}</span>
-                <button class="pay-row-btn px-3 py-1.5 rounded-full text-sm font-semibold ${paid ? 'bg-surface-container-high text-on-surface-variant cursor-default' : 'bg-primary-container text-on-primary-container active:scale-95 transition'}" data-exp-id="${exp.id}" data-row-idx="${r.idx}" ${paid ? 'disabled' : ''}>${paid ? 'שולם' : 'סמן כשולם'}</button>
+              <div class="flex items-center justify-between mt-3">
+                <button class="pay-row-btn px-4 py-1.5 rounded-full text-sm font-semibold active:scale-95 transition"
+                  style="${paid ? 'background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.38);cursor:default' : 'background:rgba(45,212,191,0.13);color:#2dd4bf;border:1px solid rgba(45,212,191,0.22)'}"
+                  data-exp-id="${exp.id}" data-row-idx="${r.idx}" ${paid ? 'disabled' : ''}>${paid ? 'שולם' : 'סמן כשולם'}</button>
+                <span style="font-size:11px;padding:3px 10px;border-radius:20px;font-weight:600;${paid ? 'background:rgba(45,212,191,0.12);color:#2dd4bf' : 'background:rgba(248,113,113,0.12);color:#f87171'}">${paid ? 'שולם' : 'לא שולם'}</span>
               </div>
             </div>`;
           }).join('')}
@@ -486,13 +515,15 @@ const Expenses = {
 
     if (exp.location) {
       const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(exp.location)}`;
-      html += `<div class="pt-2"><h4 class="font-bold text-on-surface mb-1">מיקום</h4><a href="${mapsUrl}" target="_blank" rel="noopener noreferrer" class="glass-card rounded-xl p-3 text-sm text-on-surface flex items-center justify-between gap-3 hover:bg-surface-variant/30 active:scale-[0.99] transition cursor-pointer"><span class="inline-flex items-center gap-2 min-w-0"><span class="material-symbols-outlined text-primary text-base">location_on</span><span class="truncate">${esc(exp.location)}</span></span><span class="material-symbols-outlined text-on-surface-variant text-base">open_in_new</span></a></div>`;
+      html += `<div>${secLabel('מיקום')}${infoRow('location_on', esc(exp.location), mapsUrl)}</div>`;
     }
-    if (exp.notes) html += `<div class="pt-2"><h4 class="font-bold text-on-surface mb-1">הערות</h4><div class="glass-card rounded-xl p-3 text-sm text-on-surface whitespace-pre-wrap">${esc(exp.notes)}</div></div>`;
+    if (exp.notes) {
+      html += `<div>${secLabel('הערות')}${infoRow('chat', esc(exp.notes))}</div>`;
+    }
     if (exp.link) {
       let displayUrl;
       try { displayUrl = new URL(exp.link).hostname.replace(/^www\./, ''); } catch { displayUrl = exp.link; }
-      html += `<div class="pt-2"><h4 class="font-bold text-on-surface mb-1">קישור</h4><a href="${esc(exp.link)}" target="_blank" rel="noopener noreferrer" class="glass-card rounded-xl p-3 text-sm text-on-surface flex items-center justify-between gap-3 hover:bg-surface-variant/30 active:scale-[0.99] transition cursor-pointer"><span class="inline-flex items-center gap-2 min-w-0"><span class="material-symbols-outlined text-primary text-base">link</span><span class="truncate">${esc(displayUrl)}</span></span><span class="material-symbols-outlined text-on-surface-variant text-base">open_in_new</span></a></div>`;
+      html += `<div>${secLabel('קישור')}${infoRow('link', esc(displayUrl), esc(exp.link))}</div>`;
     }
     if (exp.contact_name || exp.contact_phone) {
       const rawPhone = (exp.contact_phone || '').trim();
@@ -504,20 +535,43 @@ const Expenses = {
       const callHref = sanitizedPhone ? `tel:${sanitizedPhone}` : '';
       const waHref = waPhone ? `https://wa.me/${waPhone}` : '';
 
-      html += `<div class="pt-2"><h4 class="font-bold text-on-surface mb-2">איש קשר</h4>
-        <div class="glass-card rounded-xl p-3.5 space-y-3 text-sm text-on-surface">
-          ${exp.contact_name ? `<div><p class="text-xs text-on-surface-variant mb-1">שם</p><p class="font-semibold">${esc(exp.contact_name)}</p></div>` : ''}
-          ${rawPhone ? `<div><p class="text-xs text-on-surface-variant mb-1">טלפון</p><p dir="ltr" class="font-medium">${esc(rawPhone)}</p></div>` : ''}
-          ${rawPhone ? `<div class="grid grid-cols-2 gap-2 pt-1">
-            <a href="${callHref}" class="inline-flex items-center justify-center gap-1.5 rounded-full px-3 py-2 bg-primary-container text-on-primary-container font-semibold hover:opacity-90 active:scale-95 transition">
-              <span class="material-symbols-outlined text-base">call</span><span>התקשר</span>
-            </a>
-            <a href="${waHref}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center gap-1.5 rounded-full px-3 py-2 bg-secondary-container text-on-secondary-container font-semibold hover:opacity-90 active:scale-95 transition">
-              <span class="material-symbols-outlined text-base">chat</span><span>WhatsApp</span>
-            </a>
-          </div>` : ''}
-        </div>
-      </div>`;
+      html += `
+        <div>
+          ${secLabel('איש קשר')}
+          <div class="rounded-2xl p-4 space-y-3" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.07)">
+            <div class="flex items-center gap-3">
+              <div style="width:44px;height:44px;border-radius:50%;background:rgba(45,212,191,0.1);border:1px solid rgba(45,212,191,0.18);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                <span class="material-symbols-outlined" style="font-size:22px;color:#2dd4bf;font-variation-settings:'FILL' 1">person</span>
+              </div>
+              <div class="flex-1 min-w-0 text-right">
+                ${exp.contact_name ? `<p style="font-size:15px;font-weight:700;color:#fff">${esc(exp.contact_name)}</p>` : ''}
+                ${rawPhone ? `<div class="flex items-center justify-end gap-1 mt-0.5"><p dir="ltr" style="font-size:13px;color:rgba(255,255,255,0.48)">${esc(rawPhone)}</p><span class="material-symbols-outlined" style="font-size:13px;color:rgba(45,212,191,0.55)">phone</span></div>` : ''}
+              </div>
+            </div>
+            ${rawPhone ? `<div class="grid grid-cols-2 gap-2">
+              <a href="${waHref}" target="_blank" rel="noopener noreferrer" class="flex items-center justify-center gap-2 rounded-full py-2.5 font-semibold active:scale-95 transition" style="background:rgba(37,211,102,0.12);color:#25d366;border:1px solid rgba(37,211,102,0.2)">
+                <span class="material-symbols-outlined" style="font-size:17px">chat</span>ווטסאפ
+              </a>
+              <a href="${callHref}" class="flex items-center justify-center gap-2 rounded-full py-2.5 font-semibold active:scale-95 transition" style="background:rgba(96,165,250,0.12);color:#60a5fa;border:1px solid rgba(96,165,250,0.2)">
+                <span class="material-symbols-outlined" style="font-size:17px">call</span>חייג
+              </a>
+            </div>` : ''}
+          </div>
+        </div>`;
+    }
+    if (exp.receipt) {
+      const receiptUrl = pb.fileUrl(exp, exp.receipt);
+      const isPdf = exp.receipt.toLowerCase().endsWith('.pdf');
+      html += `
+        <div>
+          ${secLabel('קבלה')}
+          <div class="flex items-center gap-3 rounded-2xl p-3.5 cursor-pointer js-open-lightbox active:scale-[0.99] transition" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.07)" data-lightbox-url="${receiptUrl}">
+            <div style="width:38px;height:38px;border-radius:50%;background:rgba(45,212,191,0.1);border:1px solid rgba(45,212,191,0.18);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+              <span class="material-symbols-outlined" style="font-size:18px;color:#2dd4bf;font-variation-settings:'FILL' 1">${isPdf ? 'picture_as_pdf' : 'image'}</span>
+            </div>
+            ${isPdf ? `<span style="font-size:13px;color:rgba(255,255,255,0.7)">PDF</span>` : `<img src="${receiptUrl}" alt="קבלה" class="rounded-xl object-cover" style="height:52px;max-width:140px;object-fit:cover"/>`}
+          </div>
+        </div>`;
     }
 
     const body = document.getElementById('view-expense-body');
