@@ -36,7 +36,7 @@ const Expenses = {
         <p>אין הוצאות להצגה</p></div>`;
       return;
     }
-    el.innerHTML = this._filtered.map(e => this._itemHTML(e)).join('');
+    el.innerHTML = `<div class="glass-card rounded-2xl overflow-hidden">${this._filtered.map(e => this._itemHTML(e)).join('')}</div>`;
     el.querySelectorAll('.expense-item').forEach(item => {
       item.addEventListener('click', () => {
         const exp = this._list.find(e => e.id === item.dataset.id);
@@ -50,83 +50,44 @@ const Expenses = {
     const isInstantPaid = e.payment_type === 'חד פעמי' && ['מזומן', 'אשראי', 'העברה', 'ביט'].includes(e.payment_method);
     const isTracking = e.payment_type === 'תשלומים' || e.payment_type === 'מקדמה+יתרה';
 
-    // For עתידי we skip the type chip since the status badge says "צפוי" already
-    const showTypeChip = e.payment_type !== 'עתידי';
-    const TYPE_LABELS = { 'חד פעמי':'חד פעמי', 'תשלומים':'תשלומים', 'מקדמה+יתרה':'מקדמה+יתרה' };
-    const typeChip = showTypeChip
-      ? `<span class="text-xs text-on-surface-variant bg-surface-container-high px-2 py-0.5 rounded-full">${TYPE_LABELS[e.payment_type] || e.payment_type}</span>`
-      : '';
-
-    let accentColor = 'rgba(255,255,255,0.08)';
-    let statusHTML = '';
-    let progressHTML = '';
-
-    if (isInstantPaid) {
-      accentColor = 'rgba(111,207,151,0.5)';
-      statusHTML = `<span class="inline-flex items-center gap-1 text-xs font-semibold bg-secondary/20 text-secondary px-2 py-0.5 rounded-full"><span class="material-symbols-outlined text-xs" style="font-variation-settings:'FILL' 1">check_circle</span>שולם • ${esc(e.payment_method)}</span>`;
-    } else if (e.payment_type === 'עתידי') {
-      accentColor = 'rgba(100,130,220,0.5)';
-      statusHTML = `<span class="text-xs font-semibold bg-primary/15 text-primary px-2 py-0.5 rounded-full">צפוי</span>`;
+    let badge = '';
+    if (e.payment_type === 'עתידי') {
+      badge = `<span style="background:rgba(139,92,246,0.2);color:#a78bfa;font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;white-space:nowrap">עתידי</span>`;
+    } else if (isInstantPaid) {
+      badge = `<span style="background:rgba(74,222,128,0.2);color:#4ade80;font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;white-space:nowrap">שולם</span>`;
     } else if (isTracking) {
       const sum = this._getExpensePaymentSummary(e);
-      const pct = sum.total > 0 ? Math.round((sum.paid / sum.total) * 100) : 0;
       const isFullyPaid = sum.remaining <= 0.01;
       const isPartial = sum.paid > 0 && !isFullyPaid;
-      accentColor = isFullyPaid ? 'rgba(111,207,151,0.5)' : isPartial ? 'rgba(242,153,74,0.5)' : 'rgba(239,68,68,0.4)';
-      const statusLabel = isFullyPaid ? 'שולם במלואו' : isPartial ? 'שולם חלקית' : 'טרם שולם';
-      const statusCls = isFullyPaid ? 'bg-secondary/20 text-secondary' : isPartial ? 'bg-tertiary/20 text-tertiary' : 'bg-error/15 text-error';
-      const ringCls = isFullyPaid ? 'text-secondary' : isPartial ? 'text-tertiary' : 'text-on-surface-variant';
-      const dash = Math.min(pct, 100);
-      statusHTML = `<span class="text-xs font-semibold ${statusCls} px-2 py-0.5 rounded-full">${statusLabel}</span>`;
-      progressHTML = `
-        <div class="flex items-center gap-2.5 mt-2">
-          <div class="relative w-9 h-9 flex-shrink-0 ${ringCls}">
-            <svg class="w-9 h-9 -rotate-90" viewBox="0 0 36 36">
-              <circle cx="18" cy="18" r="15.9" fill="none" stroke="currentColor" stroke-width="3" opacity="0.25"/>
-              <circle cx="18" cy="18" r="15.9" fill="none" stroke="currentColor" stroke-width="3"
-                stroke-dasharray="${dash} ${100 - dash}" stroke-linecap="round"/>
-            </svg>
-            <span class="absolute inset-0 flex items-center justify-center font-bold leading-none" style="font-size:8px">${pct}%</span>
-          </div>
-          <span class="text-sm text-on-surface-variant">שולם <span class="font-bold text-on-surface">${Currency.fmtILS(sum.paid)}</span> מתוך ${Currency.fmtILS(sum.total)}</span>
-        </div>`;
+      if (isFullyPaid) {
+        badge = `<span style="background:rgba(74,222,128,0.2);color:#4ade80;font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;white-space:nowrap">שולם</span>`;
+      } else if (isPartial) {
+        badge = `<span style="background:rgba(45,212,191,0.2);color:#2dd4bf;font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;white-space:nowrap">תשלום חלקי</span>`;
+      } else {
+        badge = `<span style="background:rgba(239,68,68,0.18);color:#f87171;font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;white-space:nowrap">טרם שולם</span>`;
+      }
     }
 
-    // Meta icons — sit on a dedicated compact row only if any exist
-    const metaList = [
-      e.receipt                           ? `<span class="material-symbols-outlined text-base" title="קבלה">receipt_long</span>` : '',
-      e.link                              ? `<span class="material-symbols-outlined text-base" title="קישור">link</span>` : '',
-      e.location                          ? `<span class="material-symbols-outlined text-base" title="מיקום">location_on</span>` : '',
-      (e.contact_name || e.contact_phone) ? `<span class="material-symbols-outlined text-base" title="איש קשר">contact_phone</span>` : '',
-    ].filter(Boolean);
-    const metaHTML = metaList.length
-      ? `<div class="flex items-center gap-2 mt-1.5 text-on-surface-variant/60">${metaList.join('')}</div>`
+    const origStr = e.currency !== 'ILS'
+      ? `<div style="font-size:11px;color:rgba(255,255,255,0.4);text-align:left;direction:ltr">${Currency.fmt(e.amount, e.currency, 2)}</div>`
       : '';
-
-    const origStr = e.currency !== 'ILS' ? `<span class="text-xs text-on-surface-variant">${Currency.fmt(e.amount, e.currency, 2)}</span>` : '';
+    const sub = [esc(e.category || 'אחר'), e.payment_date ? fmtDate(e.payment_date) : ''].filter(Boolean).join(' • ');
 
     return `
-      <div class="glass-card rounded-2xl active:scale-[0.99] transition-transform cursor-pointer expense-item overflow-hidden"
-           data-id="${e.id}" style="border-right: 3px solid ${accentColor}">
-        <div class="flex items-start gap-3 px-4 py-3.5">
-          <div class="w-11 h-11 rounded-xl flex items-center justify-center text-xl flex-shrink-0 mt-0.5" style="background:${cat.color}22">${cat.icon}</div>
-          <div class="flex-1 min-w-0">
-            <div class="flex items-baseline justify-between gap-2">
-              <p class="font-bold text-base text-on-surface leading-snug truncate">${esc(e.name)}</p>
-              <div class="text-left flex-shrink-0 ml-1">
-                <p class="font-extrabold text-error text-lg leading-tight">${Currency.fmtILS(e.amount_ils)}-</p>
-                ${origStr}
-              </div>
-            </div>
-            <div class="flex items-center gap-1.5 mt-1.5 flex-wrap">
-              <span class="text-sm text-on-surface-variant">${esc(e.category || 'אחר')}</span>
-              ${e.payment_date ? `<span class="text-sm text-on-surface-variant">• ${fmtDate(e.payment_date)}</span>` : ''}
-              ${typeChip}
-              ${statusHTML}
-            </div>
-            ${metaHTML}
-            ${progressHTML}
+      <div class="expense-item flex items-center gap-3 px-4 py-3.5 cursor-pointer active:bg-white/5 transition-colors"
+           data-id="${e.id}" style="border-bottom:1px solid rgba(255,255,255,0.05)">
+        <div class="w-11 h-11 rounded-full flex items-center justify-center text-xl flex-shrink-0" style="background:${cat.color}33">${cat.icon}</div>
+        <div class="flex-1 min-w-0">
+          <p style="font-size:15px;font-weight:600;color:rgba(255,255,255,0.92);line-height:1.3">${esc(e.name)}</p>
+          <p style="font-size:12px;color:rgba(255,255,255,0.4);margin-top:2px">${sub}</p>
+        </div>
+        ${badge}
+        <div class="flex-shrink-0 flex items-center gap-0.5" style="text-align:left;direction:ltr">
+          <div>
+            <div style="font-size:15px;font-weight:700;color:rgba(255,255,255,0.92)">${Currency.fmtILS(e.amount_ils)}</div>
+            ${origStr}
           </div>
+          <span class="material-symbols-outlined" style="font-size:18px;color:rgba(255,255,255,0.25)">chevron_left</span>
         </div>
       </div>`;
   },
