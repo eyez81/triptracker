@@ -279,13 +279,29 @@
 
 <!-- ==================== TRIPS SCREEN ==================== -->
 <div id="screen-trips" class="screen flex-col pb-24">
-  <header class="w-full top-0 sticky z-50 bg-surface/80 backdrop-blur-xl border-b border-white/10 flex flex-row-reverse justify-between items-center px-5 h-16">
-    <span class="font-bold text-xl text-primary">מעקב הוצאות</span>
-    <div class="flex items-center gap-2">
-      <button id="btn-logout" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-variant/50 transition active:scale-95">
-        <span class="material-symbols-outlined text-on-surface-variant">logout</span>
+  <header dir="ltr" style="position:sticky;top:0;z-index:50;width:100%;height:64px;background:rgba(6,12,28,0.92);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-bottom:1px solid rgba(255,255,255,0.07);display:grid;grid-template-columns:56px 1fr 56px;align-items:center;padding:0 14px;box-sizing:border-box">
+
+    <!-- LEFT: empty balancing cell -->
+    <div></div>
+
+    <!-- CENTER: logo -->
+    <div style="display:flex;align-items:center;justify-content:center;padding:0 8px">
+      <img id="trips-logo-img" src="./triptracker-logo.png" alt="Trip Tracker"
+           style="height:44px;max-width:220px;width:100%;object-fit:contain;display:block"
+           onerror="document.getElementById('trips-logo-img').style.display='none';document.getElementById('trips-logo-fallback').style.display='flex'">
+      <div id="trips-logo-fallback" style="display:none;align-items:center;gap:8px">
+        <img src="./icon.svg" style="width:34px;height:34px;border-radius:9px;flex-shrink:0" alt="">
+        <span style="font-size:20px;font-weight:800;letter-spacing:-0.025em;white-space:nowrap;background:linear-gradient(135deg,#93c5fd 0%,#2dd4bf 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">Trip Tracker</span>
+      </div>
+    </div>
+
+    <!-- RIGHT: logout -->
+    <div style="display:flex;justify-content:flex-end">
+      <button id="btn-logout" style="width:42px;height:42px;display:flex;align-items:center;justify-content:center;border-radius:50%;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.09);cursor:pointer" onpointerdown="this.style.background='rgba(255,255,255,0.14)'" onpointerup="this.style.background='rgba(255,255,255,0.06)'" onpointerleave="this.style.background='rgba(255,255,255,0.06)'">
+        <span class="material-symbols-outlined" style="font-size:20px;color:rgba(255,255,255,0.72)">logout</span>
       </button>
     </div>
+
   </header>
   <main class="flex-1 px-5 pt-6 max-w-2xl mx-auto w-full space-y-6">
     <div>
