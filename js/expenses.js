@@ -481,6 +481,9 @@ const Expenses = {
         </div>
       </div>
     `;
+
+    let html = sum.isInstantPaid ? headerCard : trackingCard;
+
     if (exp.location) {
       const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(exp.location)}`;
       html += `<div class="pt-2"><h4 class="font-bold text-on-surface mb-1">מיקום</h4><a href="${mapsUrl}" target="_blank" rel="noopener noreferrer" class="glass-card rounded-xl p-3 text-sm text-on-surface flex items-center justify-between gap-3 hover:bg-surface-variant/30 active:scale-[0.99] transition cursor-pointer"><span class="inline-flex items-center gap-2 min-w-0"><span class="material-symbols-outlined text-primary text-base">location_on</span><span class="truncate">${esc(exp.location)}</span></span><span class="material-symbols-outlined text-on-surface-variant text-base">open_in_new</span></a></div>`;
