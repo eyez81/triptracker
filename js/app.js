@@ -274,10 +274,20 @@ const App = {
   _renderCategoriesSettings() {
     const el = document.getElementById('categories-list');
     if (!el) return;
-    el.innerHTML = Object.entries(CATEGORIES).map(([name, def]) => `
+    const CAT_MS = {
+      'לינה':'hotel','אוכל ושתייה':'restaurant','קניות':'shopping_bag',
+      'אטרקציות':'attractions','רכב שכור':'directions_car','תחבורה':'directions_bus',
+      'טיסות':'flight','ביטוח':'shield','אחר':'category',
+    };
+    el.innerHTML = Object.entries(CATEGORIES).map(([name, def]) => {
+      const ms = CAT_MS[name];
+      const iconHTML = ms
+        ? `<span class="material-symbols-outlined" style="font-size:20px;color:#fff;font-variation-settings:'FILL' 1">${ms}</span>`
+        : `<span style="font-size:18px;line-height:1">${def.icon}</span>`;
+      return `
       <div class="flex items-center justify-between py-2.5 border-b border-white/5">
         <div class="flex items-center gap-3">
-          <span class="text-2xl">${def.icon}</span>
+          <div class="flex-shrink-0 flex items-center justify-center" style="width:40px;height:40px;border-radius:50%;background:${def.color}">${iconHTML}</div>
           <span class="font-medium text-on-surface">${esc(name)}</span>
         </div>
         <div class="flex gap-2">
@@ -286,7 +296,8 @@ const App = {
             `<button class="text-error text-sm px-3 py-1.5 glass-card rounded-full active:scale-95 transition cat-del-btn" data-name="${esc(name)}">מחק</button>`
           }
         </div>
-      </div>`).join('');
+      </div>`;
+    }).join('');
     el.querySelectorAll('.cat-edit-btn').forEach(b => b.addEventListener('click', () => this._openCategoryModal(b.dataset.name)));
     el.querySelectorAll('.cat-del-btn').forEach(b => b.addEventListener('click', () => {
       if (!confirm(`למחוק "${b.dataset.name}"?`)) return;
