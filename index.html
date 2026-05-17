@@ -1139,6 +1139,38 @@
         <input type="file" id="exp-receipt-camera" accept="image/*" capture="environment" class="hidden"/>
         <!-- גלריה + PDF -->
         <input type="file" id="exp-receipt-gallery" accept="image/*,application/pdf" class="hidden"/>
+        <!-- Existing attachment (shown in edit mode) -->
+        <div id="receipt-existing-section" class="hidden mt-3">
+          <div id="receipt-existing-img-wrap" class="hidden relative rounded-xl overflow-hidden cursor-pointer active:opacity-90 transition"
+               onclick="Lightbox.open(document.getElementById('receipt-existing-img').src,'image','קבלה')">
+            <img id="receipt-existing-img" class="w-full object-cover" style="max-height:160px" alt="קבלה קיימת"/>
+            <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,0.4),transparent 55%);pointer-events:none"></div>
+            <div style="position:absolute;bottom:8px;right:10px;pointer-events:none">
+              <span style="font-size:11px;font-weight:600;color:rgba(255,255,255,0.8)">קבלה קיימת · לחץ להגדלה</span>
+            </div>
+            <button type="button" onclick="event.stopPropagation();Expenses._removeExistingReceipt()"
+              class="absolute top-2 left-2 w-7 h-7 z-10 rounded-full flex items-center justify-center active:scale-90 transition"
+              style="background:rgba(0,0,0,0.55);backdrop-filter:blur(6px)">
+              <span class="material-symbols-outlined" style="font-size:16px;color:#fff">close</span>
+            </button>
+          </div>
+          <div id="receipt-existing-pdf-wrap" class="hidden glass-card rounded-xl overflow-hidden">
+            <div class="flex items-center gap-3 px-3 py-2.5">
+              <div style="width:40px;height:40px;border-radius:10px;background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.2);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                <span class="material-symbols-outlined" style="font-size:22px;color:#f87171;font-variation-settings:'FILL' 1">picture_as_pdf</span>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p id="receipt-existing-pdf-name" class="text-sm font-semibold text-on-surface truncate"></p>
+                <p class="text-xs text-on-surface-variant mt-0.5">קבלה קיימת</p>
+              </div>
+              <button type="button" onclick="Expenses._removeExistingReceipt()"
+                class="w-8 h-8 rounded-full flex items-center justify-center active:scale-90 transition"
+                style="background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.2)">
+                <span class="material-symbols-outlined" style="font-size:16px;color:#f87171">close</span>
+              </button>
+            </div>
+          </div>
+        </div>
         <img id="receipt-preview" class="hidden mt-3 w-full rounded-xl max-h-52 object-contain cursor-zoom-in active:opacity-80 transition" alt="קבלה" onclick="Lightbox.open(this.src,'image','תמונה')"/>
         <div id="receipt-pdf-badge" class="hidden mt-3 glass-card rounded-xl overflow-hidden">
           <div class="flex items-center gap-3 px-3 py-2.5">
@@ -1303,17 +1335,20 @@
       style="max-width:min(92vw,1200px);max-height:min(calc(100dvh - 100px),1000px);transform-origin:center center;"/>
   </div>
 
-  <!-- PDF viewer -->
-  <div id="lightbox-pdf-wrap" class="hidden relative z-10 flex-1" style="min-height:0">
-    <iframe id="lightbox-pdf-frame" src="" title="PDF viewer"
-            style="width:100%;height:100%;border:none;display:block;background:#525659"
-            allow="fullscreen"></iframe>
+  <!-- PDF viewer (PDF.js canvas renderer — works on all platforms) -->
+  <div id="lightbox-pdf-wrap" class="hidden relative z-10 flex-1 overflow-y-auto" style="min-height:0;background:#525659">
+    <div id="lightbox-pdf-loading" class="flex flex-col items-center justify-center gap-3 py-16">
+      <div class="w-8 h-8 border-2 border-white/30 border-t-white/80 rounded-full animate-spin"></div>
+      <span style="font-size:13px;color:rgba(255,255,255,0.55)">טוען PDF...</span>
+    </div>
+    <div id="lightbox-pdf-pages" class="flex flex-col items-center gap-4 py-4 px-2"></div>
   </div>
 
   <!-- Zoom hint (image only) -->
   <div id="lightbox-zoom-hint" class="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 text-white/45 text-xs pointer-events-none transition-opacity duration-500 bg-black/30 px-3 py-1 rounded-full">לחץ להגדלה • ESC לסגירה</div>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="js/config.js"></script>
 <script src="js/api.js"></script>
 <script src="js/currency.js"></script>

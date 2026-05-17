@@ -185,6 +185,7 @@ const Expenses = {
     document.getElementById('modal-expense-title').textContent = expense ? 'עריכת הוצאה' : 'הוצאה חדשה';
 
     this._receiptFile = null;
+    this._removeReceipt = false;
 
     // Reset
     document.getElementById('exp-name').value = expense?.name || '';
@@ -226,15 +227,40 @@ const Expenses = {
     document.getElementById('exp-receipt-gallery').value = '';
     document.getElementById('receipt-preview').classList.add('hidden');
     document.getElementById('receipt-pdf-badge')?.classList.add('hidden');
+    const existingSection = document.getElementById('receipt-existing-section');
+    const existingImgWrap = document.getElementById('receipt-existing-img-wrap');
+    const existingPdfWrap = document.getElementById('receipt-existing-pdf-wrap');
+    if (existingSection) existingSection.classList.add('hidden');
+    if (existingImgWrap) existingImgWrap.classList.add('hidden');
+    if (existingPdfWrap) existingPdfWrap.classList.add('hidden');
     if (expense?.receipt) {
-      const img = document.getElementById('receipt-preview');
-      img.src = pb.fileUrl(expense, expense.receipt);
-      img.classList.remove('hidden');
+      const fileUrl = pb.fileUrl(expense, expense.receipt);
+      const isPdf   = expense.receipt.toLowerCase().endsWith('.pdf');
+      const cleanName = expense.receipt.replace(/^[a-z0-9]+_/i, '') || expense.receipt;
+      if (existingSection) existingSection.classList.remove('hidden');
+      if (isPdf) {
+        if (existingPdfWrap) {
+          existingPdfWrap.classList.remove('hidden');
+          const nameEl = document.getElementById('receipt-existing-pdf-name');
+          if (nameEl) nameEl.textContent = cleanName;
+        }
+      } else {
+        if (existingImgWrap) {
+          existingImgWrap.classList.remove('hidden');
+          const img = document.getElementById('receipt-existing-img');
+          if (img) img.src = fileUrl;
+        }
+      }
     }
 
     this._updateCurrencyUI(expense?.currency || defaultCurrency);
     this._rebuildCategoryPills();
     App.openModal('modal-expense');
+  },
+
+  _removeExistingReceipt() {
+    this._removeReceipt = true;
+    document.getElementById('receipt-existing-section')?.classList.add('hidden');
   },
 
   _updatePaymentTypeUI(type) {
@@ -315,6 +341,8 @@ const Expenses = {
         fd.append('receipt', file);
         if (this._editing) await pb.updateForm(CONFIG.COLLECTIONS.EXPENSES, this._editing.id, fd);
         else await pb.createForm(CONFIG.COLLECTIONS.EXPENSES, fd);
+      } else if (this._removeReceipt && this._editing) {
+        await pb.update(CONFIG.COLLECTIONS.EXPENSES, this._editing.id, { ...data, receipt: null });
       } else {
         if (this._editing) await pb.update(CONFIG.COLLECTIONS.EXPENSES, this._editing.id, data);
         else await pb.create(CONFIG.COLLECTIONS.EXPENSES, data);
