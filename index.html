@@ -1335,13 +1335,40 @@
       style="max-width:min(92vw,1200px);max-height:min(calc(100dvh - 100px),1000px);transform-origin:center center;"/>
   </div>
 
-  <!-- PDF viewer (PDF.js canvas renderer — works on all platforms) -->
-  <div id="lightbox-pdf-wrap" class="hidden relative z-10 flex-1 overflow-y-auto" style="min-height:0;background:#525659">
-    <div id="lightbox-pdf-loading" class="flex flex-col items-center justify-center gap-3 py-16">
+  <!-- PDF viewer (PDF.js — full Hebrew/RTL/embedded-font support) -->
+  <div id="lightbox-pdf-wrap" class="hidden relative z-10 flex-1 flex flex-col" style="min-height:0;background:#525659">
+
+    <!-- PDF sub-toolbar: zoom + page counter -->
+    <div id="lightbox-pdf-toolbar" class="hidden flex-shrink-0 flex items-center justify-between px-4 py-2"
+         style="background:rgba(0,0,0,0.35);border-bottom:1px solid rgba(255,255,255,0.08)">
+      <div class="flex items-center gap-1">
+        <button id="pdf-zoom-out" title="הקטן"
+          class="w-8 h-8 rounded-full flex items-center justify-center text-white/80 active:scale-90 transition"
+          style="background:rgba(255,255,255,0.1)">
+          <span class="material-symbols-outlined" style="font-size:18px">remove</span>
+        </button>
+        <span id="pdf-zoom-level" class="text-white/70 text-xs font-medium select-none"
+              style="min-width:38px;text-align:center">100%</span>
+        <button id="pdf-zoom-in" title="הגדל"
+          class="w-8 h-8 rounded-full flex items-center justify-center text-white/80 active:scale-90 transition"
+          style="background:rgba(255,255,255,0.1)">
+          <span class="material-symbols-outlined" style="font-size:18px">add</span>
+        </button>
+      </div>
+      <span id="pdf-page-indicator" class="text-white/50 text-xs select-none"></span>
+    </div>
+
+    <!-- Loading spinner -->
+    <div id="lightbox-pdf-loading" class="flex flex-col items-center justify-center gap-3 py-20 flex-shrink-0">
       <div class="w-8 h-8 border-2 border-white/30 border-t-white/80 rounded-full animate-spin"></div>
       <span style="font-size:13px;color:rgba(255,255,255,0.55)">טוען PDF...</span>
     </div>
-    <div id="lightbox-pdf-pages" class="flex flex-col items-center gap-4 py-4 px-2"></div>
+
+    <!-- Scrollable pages area -->
+    <div id="lightbox-pdf-scroll" class="hidden flex-1 overflow-y-auto" style="min-height:0">
+      <div id="lightbox-pdf-pages" class="flex flex-col items-center gap-4 py-4 px-2"></div>
+    </div>
+
   </div>
 
   <!-- Zoom hint (image only) -->

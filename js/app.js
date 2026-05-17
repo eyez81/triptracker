@@ -3,7 +3,11 @@ const Lightbox = {
   _hintTimer: null,
   _type: 'image',
   _url: '',
-  _pdfRendering: false,
+
+  /* PDF state */
+  _pdfDoc: null,
+  _pdfZoomIdx: 2,              // index into _PDF_ZOOMS, starts at 100%
+  _PDF_ZOOMS: [0.5, 0.75, 1.0, 1.25, 1.5, 2.0],
 
   /* type: 'image' | 'pdf' */
   open(url, type = 'image', filename = '') {
@@ -21,11 +25,13 @@ const Lightbox = {
       imgWrap.classList.add('hidden');
       pdfWrap.classList.remove('hidden');
       if (hint) hint.style.opacity = '0';
-      const pagesEl   = document.getElementById('lightbox-pdf-pages');
-      const loadingEl = document.getElementById('lightbox-pdf-loading');
-      if (pagesEl) pagesEl.innerHTML = '';
-      if (loadingEl) { loadingEl.style.display = 'flex'; }
-      this._renderPDF(url);
+      this._pdfZoomIdx = 2; // reset to 100%
+      this._pdfDoc = null;
+      document.getElementById('lightbox-pdf-pages').innerHTML = '';
+      document.getElementById('lightbox-pdf-scroll').classList.add('hidden');
+      document.getElementById('lightbox-pdf-toolbar').classList.add('hidden');
+      document.getElementById('lightbox-pdf-loading').style.display = 'flex';
+      this._loadPDF(url);
     } else {
       pdfWrap.classList.add('hidden');
       imgWrap.classList.remove('hidden');
@@ -47,35 +53,140 @@ const Lightbox = {
     });
   },
 
-  async _renderPDF(url) {
-    const pagesEl   = document.getElementById('lightbox-pdf-pages');
+  async _loadPDF(url) {
     const loadingEl = document.getElementById('lightbox-pdf-loading');
+    const scrollEl  = document.getElementById('lightbox-pdf-scroll');
+    const toolbar   = document.getElementById('lightbox-pdf-toolbar');
+    const pagesEl   = document.getElementById('lightbox-pdf-pages');
     try {
       if (typeof pdfjsLib === 'undefined') throw new Error('PDF.js לא נטען');
       pdfjsLib.GlobalWorkerOptions.workerSrc =
         'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-      const pdf = await pdfjsLib.getDocument(url).promise;
+      /*
+       * cMapUrl + cMapPacked: required for Hebrew/Arabic/CJK — maps character
+       * codes to Unicode so text renders correctly instead of garbled/mirrored.
+       * standardFontDataUrl: supplies the 14 standard PDF fonts so embedded-
+       * font PDFs fall back gracefully when a font isn't fully embedded.
+       */
+      this._pdfDoc = await pdfjsLib.getDocument({
+        url,
+        cMapUrl: 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/cmaps/',
+        cMapPacked: true,
+        standardFontDataUrl: 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/standard_fonts/',
+      }).promise;
       if (loadingEl) loadingEl.style.display = 'none';
-      const containerWidth = (pagesEl.parentElement?.clientWidth || 360) - 16;
-      for (let i = 1; i <= pdf.numPages; i++) {
-        /* stop if lightbox was closed mid-render */
-        if (document.getElementById('lightbox').classList.contains('hidden')) return;
-        const page     = await pdf.getPage(i);
-        const vp0      = page.getViewport({ scale: 1 });
-        const scale    = Math.min(containerWidth / vp0.width, 3);
-        const viewport = page.getViewport({ scale });
-        const canvas   = document.createElement('canvas');
-        canvas.width   = viewport.width;
-        canvas.height  = viewport.height;
-        canvas.style.cssText = 'max-width:100%;border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,0.5);display:block';
-        pagesEl.appendChild(canvas);
-        await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
-      }
+      if (scrollEl)  scrollEl.classList.remove('hidden');
+      if (toolbar)   toolbar.classList.remove('hidden');
+      await this._renderPDFPages();
     } catch (err) {
       if (loadingEl) loadingEl.style.display = 'none';
       if (pagesEl) pagesEl.innerHTML =
-        `<div style="color:rgba(255,255,255,0.55);text-align:center;padding:32px 16px;font-size:14px">שגיאה בטעינת PDF<br><span style="font-size:11px;opacity:0.6">${err.message}</span></div>`;
+        `<div style="color:rgba(255,255,255,0.55);text-align:center;padding:40px 16px;font-size:14px">
+           שגיאה בטעינת PDF
+           <br><span style="font-size:11px;opacity:0.6">${err.message}</span>
+         </div>`;
+      if (scrollEl) scrollEl.classList.remove('hidden');
+      console.error('[PDF.js]', err);
     }
+  },
+
+  async _renderPDFPages() {
+    const pagesEl  = document.getElementById('lightbox-pdf-pages');
+    const scrollEl = document.getElementById('lightbox-pdf-scroll');
+    if (!pagesEl || !this._pdfDoc) return;
+    pagesEl.innerHTML = '';
+
+    const dpr           = window.devicePixelRatio || 1;
+    const containerW    = (scrollEl?.clientWidth || 360) - 16; // subtract px padding
+    const zoom          = this._PDF_ZOOMS[this._pdfZoomIdx];
+    const savedScrollTop = scrollEl?.scrollTop || 0;
+
+    for (let i = 1; i <= this._pdfDoc.numPages; i++) {
+      /* abort if the lightbox was closed while rendering */
+      if (document.getElementById('lightbox').classList.contains('hidden')) return;
+
+      const page     = await this._pdfDoc.getPage(i);
+      const vp1      = page.getViewport({ scale: 1 });
+      const baseScale = containerW / vp1.width;
+      const viewport  = page.getViewport({ scale: baseScale * zoom });
+
+      /* Outer wrapper carries the page number for scroll tracking */
+      const wrap = document.createElement('div');
+      wrap.dataset.pageNum = i;
+      wrap.style.cssText = 'position:relative;max-width:100%';
+
+      /*
+       * Render at physical pixels (width × dpr, height × dpr) then CSS-scale
+       * back down — this gives crisp text on retina / high-DPI screens.
+       */
+      const canvas = document.createElement('canvas');
+      canvas.width  = Math.round(viewport.width  * dpr);
+      canvas.height = Math.round(viewport.height * dpr);
+      canvas.style.cssText =
+        `width:${viewport.width}px;height:${viewport.height}px;` +
+        `max-width:100%;border-radius:8px;` +
+        `box-shadow:0 4px 20px rgba(0,0,0,0.5);display:block`;
+
+      const ctx = canvas.getContext('2d');
+      ctx.scale(dpr, dpr);
+
+      /* Page number badge */
+      if (this._pdfDoc.numPages > 1) {
+        const badge = document.createElement('div');
+        badge.textContent = i;
+        badge.style.cssText =
+          'position:absolute;bottom:8px;right:8px;' +
+          'background:rgba(0,0,0,0.45);color:rgba(255,255,255,0.7);' +
+          'font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;' +
+          'pointer-events:none;backdrop-filter:blur(4px)';
+        wrap.appendChild(badge);
+      }
+
+      wrap.insertBefore(canvas, wrap.firstChild);
+      pagesEl.appendChild(wrap);
+
+      await page.render({ canvasContext: ctx, viewport }).promise;
+    }
+
+    /* Restore scroll position after re-render (zoom change) */
+    if (scrollEl && savedScrollTop) scrollEl.scrollTop = savedScrollTop;
+    this._updatePDFToolbar();
+  },
+
+  _pdfZoomIn() {
+    if (!this._pdfDoc || this._pdfZoomIdx >= this._PDF_ZOOMS.length - 1) return;
+    this._pdfZoomIdx++;
+    this._renderPDFPages();
+    document.getElementById('pdf-zoom-level').textContent =
+      Math.round(this._PDF_ZOOMS[this._pdfZoomIdx] * 100) + '%';
+  },
+
+  _pdfZoomOut() {
+    if (!this._pdfDoc || this._pdfZoomIdx <= 0) return;
+    this._pdfZoomIdx--;
+    this._renderPDFPages();
+    document.getElementById('pdf-zoom-level').textContent =
+      Math.round(this._PDF_ZOOMS[this._pdfZoomIdx] * 100) + '%';
+  },
+
+  _updatePDFToolbar() {
+    const zoomEl = document.getElementById('pdf-zoom-level');
+    if (zoomEl) zoomEl.textContent = Math.round(this._PDF_ZOOMS[this._pdfZoomIdx] * 100) + '%';
+    this._updatePDFPageIndicator();
+  },
+
+  _updatePDFPageIndicator() {
+    if (!this._pdfDoc) return;
+    const scrollEl = document.getElementById('lightbox-pdf-scroll');
+    const pagesEl  = document.getElementById('lightbox-pdf-pages');
+    const indEl    = document.getElementById('pdf-page-indicator');
+    if (!indEl || !scrollEl || !pagesEl) return;
+    const midY = scrollEl.scrollTop + scrollEl.clientHeight / 2;
+    let current = 1;
+    pagesEl.querySelectorAll('[data-page-num]').forEach(p => {
+      if (p.offsetTop <= midY) current = Number(p.dataset.pageNum);
+    });
+    indEl.textContent = `${current} / ${this._pdfDoc.numPages}`;
   },
 
   close() {
@@ -86,6 +197,9 @@ const Lightbox = {
       document.getElementById('lightbox-img').src = '';
       const pagesEl = document.getElementById('lightbox-pdf-pages');
       if (pagesEl) pagesEl.innerHTML = '';
+      document.getElementById('lightbox-pdf-scroll')?.classList.add('hidden');
+      document.getElementById('lightbox-pdf-toolbar')?.classList.add('hidden');
+      this._pdfDoc = null;
       document.body.style.overflow = '';
     }, 200);
   },
@@ -143,6 +257,9 @@ const Lightbox = {
       e.stopPropagation();
       this._download();
     });
+    document.getElementById('pdf-zoom-in')?.addEventListener('click', () => this._pdfZoomIn());
+    document.getElementById('pdf-zoom-out')?.addEventListener('click', () => this._pdfZoomOut());
+    document.getElementById('lightbox-pdf-scroll')?.addEventListener('scroll', () => this._updatePDFPageIndicator());
     document.addEventListener('keydown', e => {
       if (e.key === 'Escape' && !document.getElementById('lightbox').classList.contains('hidden')) {
         e.stopImmediatePropagation();
