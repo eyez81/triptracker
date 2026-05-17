@@ -1,14 +1,38 @@
 const Lightbox = {
   _zoomed: false,
   _hintTimer: null,
+  _type: 'image',
+  _url: '',
 
-  open(url) {
-    const lb = document.getElementById('lightbox');
-    const img = document.getElementById('lightbox-img');
-    this._zoomed = false;
-    img.style.transform = 'scale(1)';
-    img.classList.replace('cursor-zoom-out', 'cursor-zoom-in');
-    img.src = url;
+  /* type: 'image' | 'pdf' */
+  open(url, type = 'image', filename = '') {
+    this._url = url;
+    this._type = type;
+    const lb  = document.getElementById('lightbox');
+    const titleEl = document.getElementById('lightbox-title');
+    const imgWrap = document.getElementById('lightbox-image-wrap');
+    const pdfWrap = document.getElementById('lightbox-pdf-wrap');
+    const hint    = document.getElementById('lightbox-zoom-hint');
+
+    if (titleEl) titleEl.textContent = filename || (type === 'pdf' ? 'PDF' : 'תמונה');
+
+    if (type === 'pdf') {
+      imgWrap.classList.add('hidden');
+      pdfWrap.classList.remove('hidden');
+      if (hint) hint.style.opacity = '0';
+      document.getElementById('lightbox-pdf-frame').src = url;
+    } else {
+      pdfWrap.classList.add('hidden');
+      imgWrap.classList.remove('hidden');
+      const img = document.getElementById('lightbox-img');
+      this._zoomed = false;
+      img.style.transform = 'scale(1)';
+      img.style.transformOrigin = 'center center';
+      img.classList.replace('cursor-zoom-out', 'cursor-zoom-in');
+      img.src = url;
+      this._showHint();
+    }
+
     lb.classList.remove('hidden');
     lb.style.opacity = '0';
     document.body.style.overflow = 'hidden';
@@ -16,7 +40,6 @@ const Lightbox = {
       lb.style.transition = 'opacity 0.2s ease';
       lb.style.opacity = '1';
     });
-    this._showHint();
   },
 
   close() {
@@ -25,6 +48,7 @@ const Lightbox = {
     setTimeout(() => {
       lb.classList.add('hidden');
       document.getElementById('lightbox-img').src = '';
+      document.getElementById('lightbox-pdf-frame').src = '';
       document.body.style.overflow = '';
     }, 200);
   },
@@ -54,10 +78,34 @@ const Lightbox = {
     this._hintTimer = setTimeout(() => { hint.style.opacity = '0'; }, 2500);
   },
 
+  _download() {
+    const url = this._url;
+    if (!url) return;
+    /* Attempt fetch→blob for proper download; fall back to new tab */
+    fetch(url)
+      .then(r => r.blob())
+      .then(blob => {
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        const ext = url.split('?')[0].split('.').pop() || 'bin';
+        const name = url.split('/').pop()?.split('?')[0] || `attachment.${ext}`;
+        a.download = name;
+        a.click();
+        setTimeout(() => URL.revokeObjectURL(a.href), 60000);
+      })
+      .catch(() => window.open(url, '_blank'));
+  },
+
   _bind() {
     document.getElementById('lightbox-backdrop').addEventListener('click', () => this.close());
     document.getElementById('lightbox-close').addEventListener('click', () => this.close());
-    document.getElementById('lightbox-img').addEventListener('click', e => { e.stopPropagation(); this.toggleZoom(e); });
+    document.getElementById('lightbox-img').addEventListener('click', e => {
+      if (this._type === 'image') { e.stopPropagation(); this.toggleZoom(e); }
+    });
+    document.getElementById('lightbox-download').addEventListener('click', e => {
+      e.stopPropagation();
+      this._download();
+    });
     document.addEventListener('keydown', e => {
       if (e.key === 'Escape' && !document.getElementById('lightbox').classList.contains('hidden')) {
         e.stopImmediatePropagation();
@@ -339,23 +387,35 @@ const App = {
       document.getElementById('exp-receipt-gallery').click();
     });
 
+    const fmtSize = bytes => {
+      if (bytes < 1024) return bytes + ' B';
+      if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+      return (bytes / 1024 / 1024).toFixed(1) + ' MB';
+    };
+
     const handleFile = (e) => {
       const file = e.target.files?.[0];
       if (!file) return;
       Expenses._receiptFile = file;
-      const preview = document.getElementById('receipt-preview');
+      const preview  = document.getElementById('receipt-preview');
       const pdfBadge = document.getElementById('receipt-pdf-badge');
       if (file.type === 'application/pdf') {
         preview.classList.add('hidden');
+        preview.src = '';
         if (pdfBadge) {
           pdfBadge.classList.remove('hidden');
-          const nameEl = pdfBadge.querySelector('span.pdf-name');
+          const nameEl = pdfBadge.querySelector('.pdf-name');
+          const sizeEl = pdfBadge.querySelector('.pdf-size');
           if (nameEl) nameEl.textContent = file.name;
+          if (sizeEl) sizeEl.textContent = fmtSize(file.size);
         }
       } else {
         if (pdfBadge) pdfBadge.classList.add('hidden');
         const reader = new FileReader();
-        reader.onload = ev => { preview.src = ev.target?.result || ''; preview.classList.remove('hidden'); };
+        reader.onload = ev => {
+          preview.src = ev.target?.result || '';
+          preview.classList.remove('hidden');
+        };
         reader.readAsDataURL(file);
       }
     };
