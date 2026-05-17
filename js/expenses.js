@@ -54,58 +54,61 @@ const Expenses = {
     const isTracking = e.payment_type === 'תשלומים' || e.payment_type === 'מקדמה+יתרה';
 
     const iconHTML = msIcon
-      ? `<span class="material-symbols-outlined" style="font-size:20px;color:#fff;font-variation-settings:'FILL' 1">${msIcon}</span>`
-      : `<span style="font-size:20px;line-height:1">${catIcon}</span>`;
+      ? `<span class="material-symbols-outlined" style="font-size:22px;color:#fff;font-variation-settings:'FILL' 1">${msIcon}</span>`
+      : `<span style="font-size:22px;line-height:1">${catIcon}</span>`;
 
     let badge = '';
     if (e.payment_type === 'עתידי') {
-      badge = `<span style="background:rgba(139,92,246,0.18);color:#c4b5fd;border:1px solid rgba(139,92,246,0.25);font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;white-space:nowrap;letter-spacing:0.03em">עתידי</span>`;
+      badge = `<span style="background:rgba(139,92,246,0.18);color:#c4b5fd;border:1px solid rgba(139,92,246,0.25);font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;white-space:nowrap">עתידי</span>`;
     } else if (isInstantPaid) {
-      badge = `<span style="background:rgba(74,222,128,0.14);color:#4ade80;border:1px solid rgba(74,222,128,0.22);font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;white-space:nowrap;letter-spacing:0.03em">שולם</span>`;
+      badge = `<span style="background:rgba(74,222,128,0.14);color:#4ade80;border:1px solid rgba(74,222,128,0.22);font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;white-space:nowrap">✓ שולם</span>`;
     } else if (isTracking) {
       const sum = this._getExpensePaymentSummary(e);
       const isFullyPaid = sum.remaining <= 0.01;
       const isPartial = sum.paid > 0 && !isFullyPaid;
       if (isFullyPaid) {
-        badge = `<span style="background:rgba(74,222,128,0.14);color:#4ade80;border:1px solid rgba(74,222,128,0.22);font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;white-space:nowrap;letter-spacing:0.03em">שולם</span>`;
+        badge = `<span style="background:rgba(74,222,128,0.14);color:#4ade80;border:1px solid rgba(74,222,128,0.22);font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;white-space:nowrap">✓ שולם</span>`;
       } else if (isPartial) {
-        badge = `<span style="background:rgba(45,212,191,0.14);color:#2dd4bf;border:1px solid rgba(45,212,191,0.22);font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;white-space:nowrap;letter-spacing:0.03em">תשלום חלקי</span>`;
+        badge = `<span style="background:rgba(45,212,191,0.14);color:#2dd4bf;border:1px solid rgba(45,212,191,0.22);font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;white-space:nowrap">תשלום חלקי</span>`;
       } else {
-        badge = `<span style="background:rgba(239,68,68,0.14);color:#f87171;border:1px solid rgba(239,68,68,0.22);font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;white-space:nowrap;letter-spacing:0.03em">טרם שולם</span>`;
+        badge = `<span style="background:rgba(239,68,68,0.14);color:#f87171;border:1px solid rgba(239,68,68,0.22);font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;white-space:nowrap">טרם שולם</span>`;
       }
     }
-
-    const origStr = e.currency !== 'ILS'
-      ? `<p style="font-size:10px;color:rgba(255,255,255,0.3);direction:ltr;margin-top:1px">${Currency.fmt(e.amount, e.currency, 2)}</p>`
-      : '';
 
     const sub = [esc(e.category || 'אחר'), e.payment_date ? fmtDate(e.payment_date) : ''].filter(Boolean).join(' · ');
 
     return `
-      <div class="relative rounded-2xl overflow-hidden cursor-pointer"
-           data-id="${e.id}" onclick="Expenses._click(this.dataset.id)"
-           style="background:linear-gradient(135deg,rgba(255,255,255,0.065) 0%,rgba(255,255,255,0.022) 100%);border:1px solid rgba(255,255,255,0.08);box-shadow:0 2px 12px rgba(0,0,0,0.28),inset 0 1px 0 rgba(255,255,255,0.08);padding:13px 14px 12px;font-family:'Heebo',sans-serif;transition:transform 0.1s ease,opacity 0.1s ease" onpointerdown="this.style.transform='scale(0.99)';this.style.opacity='0.9'" onpointerup="this.style.transform='';this.style.opacity=''" onpointerleave="this.style.transform='';this.style.opacity=''">
+      <div data-id="${e.id}" onclick="Expenses._click(this.dataset.id)"
+           style="position:relative;overflow:hidden;cursor:pointer;border-radius:16px;
+                  background:linear-gradient(135deg,rgba(255,255,255,0.065) 0%,rgba(255,255,255,0.022) 100%);
+                  border:1px solid rgba(255,255,255,0.08);
+                  box-shadow:0 2px 12px rgba(0,0,0,0.28),inset 0 1px 0 rgba(255,255,255,0.08);
+                  padding:14px;display:flex;align-items:center;gap:12px;
+                  min-height:72px;box-sizing:border-box;
+                  font-family:'Heebo',sans-serif;transition:transform 0.1s ease,opacity 0.1s ease"
+           onpointerdown="this.style.transform='scale(0.99)';this.style.opacity='0.9'"
+           onpointerup="this.style.transform='';this.style.opacity=''"
+           onpointerleave="this.style.transform='';this.style.opacity=''">
 
-        <div style="position:absolute;top:0;right:0;width:65%;height:100%;background:radial-gradient(ellipse 100% 140% at 95% 0%,${catColor}1a 0%,transparent 60%);pointer-events:none"></div>
+        <div style="position:absolute;top:0;right:0;width:60%;height:100%;background:radial-gradient(ellipse 100% 140% at 95% 0%,${catColor}18 0%,transparent 65%);pointer-events:none"></div>
 
-        <div class="relative flex items-center gap-3">
-
-          <div style="width:42px;height:42px;flex-shrink:0;border-radius:13px;background:${catColor};display:flex;align-items:center;justify-content:center;box-shadow:inset 0 1px 0 rgba(255,255,255,0.22)">
-            ${iconHTML}
-          </div>
-
-          <div style="flex:1;min-width:0">
-            <p style="font-size:15px;font-weight:700;color:rgba(255,255,255,0.95);line-height:1.2">${esc(e.name)}</p>
-            <p style="font-size:11px;color:rgba(255,255,255,0.38);margin-top:3px">${sub}</p>
-          </div>
-
-          <div style="flex-shrink:0;display:flex;flex-direction:column;align-items:flex-end;gap:5px">
-            <p style="font-size:16px;font-weight:800;color:rgba(255,255,255,0.95);direction:ltr;letter-spacing:-0.01em">${Currency.fmtILS(e.amount_ils)}</p>
-            ${origStr}
-            ${badge}
-          </div>
-
+        <!-- Icon (rightmost in RTL) -->
+        <div style="position:relative;width:44px;height:44px;flex-shrink:0;border-radius:12px;background:${catColor};display:flex;align-items:center;justify-content:center;box-shadow:inset 0 1px 0 rgba(255,255,255,0.22)">
+          ${iconHTML}
         </div>
+
+        <!-- Name + sub -->
+        <div style="position:relative;flex:1;min-width:0">
+          <p style="font-size:16px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.2">${esc(e.name)}</p>
+          <p style="font-size:11px;color:rgba(255,255,255,0.38);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${sub}</p>
+        </div>
+
+        <!-- Amount + badge on same row (leftmost in RTL); direction:ltr keeps amount left, badge right -->
+        <div style="position:relative;flex-shrink:0;display:flex;align-items:center;gap:8px;direction:ltr">
+          <p style="font-size:19px;font-weight:800;color:#fff;letter-spacing:-0.02em;line-height:1;white-space:nowrap">${Currency.fmtILS(e.amount_ils)}</p>
+          ${badge}
+        </div>
+
       </div>`;
   },
 
