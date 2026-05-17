@@ -302,6 +302,24 @@ const App = {
     this._bindEl('exp-currency', 'change', e => { Expenses._updateCurrencyUI(e.target.value); });
     this._bindEl('btn-fetch-rate', 'click', () => Expenses.fetchRate());
     this._bindEl('exp-amount', 'input', () => Expenses._updateILSPreview());
+    this._bindEl('btn-trip-menu', 'click', (e) => {
+      e.stopPropagation();
+      const panel = document.getElementById('trip-menu-panel');
+      if (!panel) return;
+      const isOpen = panel.style.display !== 'none';
+      panel.style.display = isOpen ? 'none' : 'block';
+    });
+    document.addEventListener('click', () => {
+      const panel = document.getElementById('trip-menu-panel');
+      if (panel) panel.style.display = 'none';
+    });
+    const menuPanel = document.getElementById('trip-menu-panel');
+    if (menuPanel) {
+      menuPanel.addEventListener('click', e => {
+        e.stopPropagation();
+        setTimeout(() => { menuPanel.style.display = 'none'; }, 90);
+      });
+    }
     this._bindEl('exp-rate', 'input', () => Expenses._updateILSPreview());
 
     document.querySelectorAll('input[name="payment_type"]').forEach(r => {

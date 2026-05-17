@@ -333,27 +333,69 @@
 
 <!-- ==================== TRIP DETAIL SCREEN ==================== -->
 <div id="screen-trip" class="screen flex-col pb-24">
-  <header class="w-full top-0 sticky z-50 bg-surface/80 backdrop-blur-xl border-b border-white/10 flex flex-row-reverse justify-between items-center px-5 h-16">
-    <div class="flex items-center gap-2">
-      <button id="btn-back-trips" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-variant/50 transition active:scale-95">
-        <span class="material-symbols-outlined text-on-surface-variant">arrow_forward</span>
-      </button>
-      <span id="trip-header-title" class="font-bold text-lg text-primary"></span>
+
+  <!-- ── Top header: 3-zone grid ── -->
+  <header style="position:sticky;top:0;z-index:50;width:100%;height:60px;background:rgba(6,12,28,0.90);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-bottom:1px solid rgba(255,255,255,0.07);display:grid;grid-template-columns:52px 1fr 52px;align-items:center;padding:0 14px;box-sizing:border-box">
+
+    <!-- LEFT: back arrow -->
+    <button id="btn-back-trips" style="width:40px;height:40px;display:flex;align-items:center;justify-content:center;border-radius:50%;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.09);cursor:pointer;transition:background 0.15s" onpointerdown="this.style.background='rgba(255,255,255,0.13)'" onpointerup="this.style.background='rgba(255,255,255,0.06)'" onpointerleave="this.style.background='rgba(255,255,255,0.06)'">
+      <span class="material-symbols-outlined" style="font-size:22px;color:rgba(255,255,255,0.78)">arrow_back</span>
+    </button>
+
+    <!-- CENTER: logo (always perfectly centered) -->
+    <div style="display:flex;align-items:center;justify-content:center;overflow:hidden">
+      <img src="./triptracker-logo.png" alt="Trip Tracker" style="height:26px;max-width:156px;object-fit:contain;display:block">
     </div>
-    <div class="flex items-center gap-1">
-      <button id="btn-export-excel" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-variant/50 transition active:scale-95" title="ייצוא Excel">
-        <span class="material-symbols-outlined text-on-surface-variant">download</span>
-      </button>
-      <button id="btn-share-trip"
-        class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-variant/50 transition active:scale-95 hidden"
-        title="שיתוף טיול">
-        <span class="material-symbols-outlined text-on-surface-variant">group_add</span>
-      </button>
-      <button id="btn-edit-trip" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-variant/50 transition active:scale-95" title="עריכת טיול">
-        <span class="material-symbols-outlined text-on-surface-variant">edit</span>
-      </button>
-    </div>
+
+    <!-- RIGHT: hamburger -->
+    <button id="btn-trip-menu" style="width:40px;height:40px;display:flex;align-items:center;justify-content:center;border-radius:50%;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.09);cursor:pointer;transition:background 0.15s;margin-left:auto" onpointerdown="this.style.background='rgba(255,255,255,0.13)'" onpointerup="this.style.background='rgba(255,255,255,0.06)'" onpointerleave="this.style.background='rgba(255,255,255,0.06)'">
+      <span class="material-symbols-outlined" style="font-size:22px;color:rgba(255,255,255,0.78)">menu</span>
+    </button>
+
   </header>
+
+  <!-- ── Hamburger dropdown panel ── -->
+  <div id="trip-menu-panel" style="display:none;position:fixed;top:68px;left:16px;right:16px;z-index:200;border-radius:20px;overflow:hidden;background:rgba(7,13,28,0.97);backdrop-filter:blur(32px);-webkit-backdrop-filter:blur(32px);border:1px solid rgba(255,255,255,0.1);box-shadow:0 32px 80px rgba(0,0,0,0.7),inset 0 1px 0 rgba(255,255,255,0.09)">
+    <!-- top glow accent line -->
+    <div style="position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(to right,transparent,rgba(45,212,191,0.45),rgba(96,165,250,0.45),transparent);pointer-events:none"></div>
+
+    <!-- Share (hidden when not owner) -->
+    <button id="btn-share-trip" class="hidden w-full flex items-center gap-3 px-5 py-4 active:bg-white/5 transition-colors" style="border-bottom:1px solid rgba(255,255,255,0.05)">
+      <div style="width:36px;height:36px;flex-shrink:0;border-radius:10px;background:rgba(96,165,250,0.1);border:1px solid rgba(96,165,250,0.2);display:flex;align-items:center;justify-content:center">
+        <span class="material-symbols-outlined" style="font-size:18px;color:#60a5fa;font-variation-settings:'FILL' 1">group_add</span>
+      </div>
+      <span style="font-size:15px;font-weight:600;color:rgba(255,255,255,0.88)">שיתוף טיול</span>
+    </button>
+
+    <!-- Edit -->
+    <button id="btn-edit-trip" class="w-full flex items-center gap-3 px-5 py-4 active:bg-white/5 transition-colors" style="border-bottom:1px solid rgba(255,255,255,0.05)">
+      <div style="width:36px;height:36px;flex-shrink:0;border-radius:10px;background:rgba(45,212,191,0.1);border:1px solid rgba(45,212,191,0.18);display:flex;align-items:center;justify-content:center">
+        <span class="material-symbols-outlined" style="font-size:18px;color:#2dd4bf;font-variation-settings:'FILL' 1">edit</span>
+      </div>
+      <span style="font-size:15px;font-weight:600;color:rgba(255,255,255,0.88)">עריכת טיול</span>
+    </button>
+
+    <!-- Export -->
+    <button id="btn-export-excel" class="w-full flex items-center gap-3 px-5 py-4 active:bg-white/5 transition-colors" style="border-bottom:1px solid rgba(255,255,255,0.05)">
+      <div style="width:36px;height:36px;flex-shrink:0;border-radius:10px;background:rgba(139,92,246,0.1);border:1px solid rgba(139,92,246,0.18);display:flex;align-items:center;justify-content:center">
+        <span class="material-symbols-outlined" style="font-size:18px;color:#a78bfa;font-variation-settings:'FILL' 1">download</span>
+      </div>
+      <span style="font-size:15px;font-weight:600;color:rgba(255,255,255,0.88)">ייצוא / הורדה</span>
+    </button>
+
+    <!-- Delete (red) -->
+    <button id="btn-delete-trip" class="w-full flex items-center gap-3 px-5 py-4 active:bg-red-500/5 transition-colors">
+      <div style="width:36px;height:36px;flex-shrink:0;border-radius:10px;background:rgba(248,113,113,0.1);border:1px solid rgba(248,113,113,0.2);display:flex;align-items:center;justify-content:center">
+        <span class="material-symbols-outlined" style="font-size:18px;color:#f87171;font-variation-settings:'FILL' 1">delete</span>
+      </div>
+      <span style="font-size:15px;font-weight:600;color:#f87171">מחיקת טיול</span>
+    </button>
+  </div>
+
+  <!-- ── Trip title below header ── -->
+  <div style="padding:22px 20px 0;text-align:center">
+    <h1 id="trip-header-title" style="font-size:22px;font-weight:800;color:#fff;line-height:1.2;letter-spacing:-0.015em"></h1>
+  </div>
   <main class="flex-1 px-5 pt-6 max-w-2xl mx-auto w-full space-y-5">
     <!-- Budget card -->
     <div class="rounded-2xl relative" style="background:linear-gradient(145deg,#0c1528 0%,#0e2040 55%,#091e2c 100%);box-shadow:0 20px 50px rgba(0,0,0,0.55),0 0 0 1px rgba(255,255,255,0.06);overflow:hidden">
