@@ -639,22 +639,69 @@ const Expenses = {
       App.openModal('modal-category-summary');
       return;
     }
-    body.innerHTML = data.map(row => `
-      <div class="glass-card rounded-xl p-4 space-y-2">
-        <div class="flex items-center justify-between gap-2">
-          <div class="flex items-center gap-2 min-w-0">
-            <span class="w-9 h-9 rounded-full flex items-center justify-center text-lg" style="background:${row.style.color}22">${row.style.icon}</span>
-            <span class="font-semibold text-on-surface truncate">${esc(row.name)}</span>
+
+    const CAT_MS = {
+      'לינה':'hotel','אוכל ושתייה':'restaurant','קניות':'shopping_bag',
+      'אטרקציות':'attractions','רכב שכור':'directions_car','תחבורה':'directions_bus',
+      'טיסות':'flight','ביטוח':'shield','אחר':'category',
+    };
+
+    const total = data.reduce((s, r) => s + r.amount, 0);
+    const avg = data.length ? total / data.length : 0;
+
+    const summaryHeader = `
+      <div style="background:linear-gradient(135deg,rgba(255,255,255,0.06) 0%,rgba(255,255,255,0.02) 100%);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:14px 16px;margin-bottom:2px">
+        <div class="flex items-center justify-between gap-3">
+          <div>
+            <p style="font-size:10px;font-weight:700;color:rgba(255,255,255,0.32);letter-spacing:0.07em;margin-bottom:3px">סה"כ הוצאות</p>
+            <p style="font-size:22px;font-weight:800;color:#fff;letter-spacing:-0.02em;direction:ltr">${Currency.fmtILS(total)}</p>
           </div>
-          <div class="text-left">
-            <div class="font-bold text-on-surface">${Currency.fmtILS(row.amount)}</div>
-            <div class="text-xs text-on-surface-variant">${row.pct.toFixed(1)}%</div>
+          <div class="flex items-center gap-4">
+            <div style="text-align:center">
+              <p style="font-size:10px;color:rgba(255,255,255,0.32);margin-bottom:2px">קטגוריות</p>
+              <p style="font-size:20px;font-weight:800;color:#fff">${data.length}</p>
+            </div>
+            <div style="width:1px;height:32px;background:rgba(255,255,255,0.08)"></div>
+            <div style="text-align:center">
+              <p style="font-size:10px;color:rgba(255,255,255,0.32);margin-bottom:2px">ממוצע</p>
+              <p style="font-size:16px;font-weight:800;color:rgba(255,255,255,0.75);direction:ltr">${Currency.fmtILS(avg)}</p>
+            </div>
           </div>
         </div>
-        <div class="h-2 bg-surface-container rounded-full overflow-hidden">
-          <div class="h-full rounded-full" style="width:${Math.max(0, Math.min(100, row.pct))}%; background:${row.style.color}"></div>
-        </div>
-      </div>`).join('');
+      </div>`;
+
+    const rows = data.map((row, i) => {
+      const msIcon = CAT_MS[row.name] || (/^[a-z][a-z_]+$/.test(row.style.icon) ? row.style.icon : null);
+      const iconHTML = msIcon
+        ? `<span class="material-symbols-outlined" style="font-size:19px;color:#fff;font-variation-settings:'FILL' 1">${msIcon}</span>`
+        : `<span style="font-size:17px;line-height:1">${row.style.icon}</span>`;
+
+      const isTop = i === 0;
+      const glowBorder = isTop
+        ? `border:1px solid ${row.style.color}40;box-shadow:inset 0 1px 0 rgba(255,255,255,0.06),0 0 0 1px ${row.style.color}18`
+        : `border:1px solid rgba(255,255,255,0.06)`;
+
+      return `
+        <div style="background:rgba(255,255,255,0.04);${glowBorder};border-radius:13px;padding:10px 12px 8px;position:relative;overflow:hidden">
+          ${isTop ? `<div style="position:absolute;inset:0;background:radial-gradient(ellipse 80% 130% at 90% 0%,${row.style.color}15 0%,transparent 60%);pointer-events:none"></div>` : ''}
+          <div style="display:flex;align-items:center;gap:10px;position:relative">
+            <div style="width:36px;height:36px;flex-shrink:0;border-radius:10px;background:${row.style.color};display:flex;align-items:center;justify-content:center;box-shadow:inset 0 1px 0 rgba(255,255,255,0.22)">
+              ${iconHTML}
+            </div>
+            <span style="flex:1;font-size:14px;font-weight:700;color:rgba(255,255,255,0.88);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(row.name)}</span>
+            <span style="font-size:14px;font-weight:800;color:#fff;direction:ltr;flex-shrink:0">${Currency.fmtILS(row.amount)}</span>
+            <div style="flex-shrink:0;min-width:36px;text-align:left">
+              <p style="font-size:12px;font-weight:700;color:${row.style.color};line-height:1">${row.pct.toFixed(1)}%</p>
+              <p style="font-size:9px;color:rgba(255,255,255,0.28);margin-top:1px">מהסך הכל</p>
+            </div>
+          </div>
+          <div style="height:2px;background:rgba(255,255,255,0.06);border-radius:99px;margin-top:8px;margin-right:46px">
+            <div style="height:2px;border-radius:99px;background:${row.style.color};width:${Math.max(0,Math.min(100,row.pct))}%;box-shadow:0 0 7px ${row.style.color}80"></div>
+          </div>
+        </div>`;
+    }).join('');
+
+    body.innerHTML = summaryHeader + rows;
     App.openModal('modal-category-summary');
   },
 
