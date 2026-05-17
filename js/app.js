@@ -177,7 +177,6 @@ const App = {
     this._bindEl('btn-show-forecast', 'click', () => Expenses.openForecast());
     this._bindEl('btn-delete-expense', 'click', () => Expenses.delete());
     this._bindEl('btn-edit-expense', 'click', () => Expenses.editCurrent());
-    this._bindEl('btn-mark-paid', 'click', () => Expenses.markPaid());
     this._bindEl('nav-settings-trips', 'click', e => { e.preventDefault(); this.openSettings(); });
     this._bindEl('nav-settings-trip', 'click', e => { e.preventDefault(); this.openSettings(); });
     this._bindEl('nav-trips-from-settings', 'click', e => { e.preventDefault(); this.goToTrips(); });
