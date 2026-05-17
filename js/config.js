@@ -38,3 +38,15 @@ const CAT_COLORS = [
   '#009688','#673ab7','#ff9800','#795548','#00bcd4',
   '#f44336','#4caf50','#2196f3','#9e9e9e','#607d8b',
 ];
+
+const CAT_MS_ICONS = {
+  'לינה':'hotel','אוכל ושתייה':'restaurant','קניות':'shopping_bag',
+  'אטרקציות':'attractions','רכב':'directions_car','רכב שכור':'directions_car',
+  'תחבורה':'directions_bus','טיסות':'flight','ביטוח':'shield','אחר':'category',
+};
+
+function getCatStyle(name) {
+  const cat = CATEGORIES[name] || DEFAULT_CATEGORIES[name] || { icon:'📦', color:'#9e9e9e' };
+  const msIcon = CAT_MS_ICONS[name] || (/^[a-z][a-z_]+$/.test(cat.icon) ? cat.icon : null);
+  return { color: cat.color, icon: cat.icon, msIcon };
+}

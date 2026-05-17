@@ -361,13 +361,8 @@ const App = {
   _renderCategoriesSettings() {
     const el = document.getElementById('categories-list');
     if (!el) return;
-    const CAT_MS = {
-      'לינה':'hotel','אוכל ושתייה':'restaurant','קניות':'shopping_bag',
-      'אטרקציות':'attractions','רכב':'directions_car','רכב שכור':'directions_car','תחבורה':'directions_bus',
-      'טיסות':'flight','ביטוח':'shield','אחר':'category',
-    };
     el.innerHTML = Object.entries(CATEGORIES).map(([name, def]) => {
-      const msName = CAT_MS[name] || (/^[a-z][a-z_]+$/.test(def.icon) ? def.icon : null);
+      const { msIcon: msName } = getCatStyle(name);
       const iconHTML = msName
         ? `<span class="material-symbols-outlined" style="font-size:20px;color:#fff;font-variation-settings:'FILL' 1">${msName}</span>`
         : `<span style="font-size:18px;line-height:1">${def.icon}</span>`;
