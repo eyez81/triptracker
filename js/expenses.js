@@ -419,7 +419,7 @@ const Expenses = {
     const secLabel = (text) => `<p style="font-size:11px;font-weight:600;color:rgba(45,212,191,0.75);margin-bottom:6px;text-align:right">${text}</p>`;
 
     const origAmount = exp.currency !== 'ILS'
-      ? `<p style="font-size:14px;font-weight:500;color:rgba(255,255,255,0.38);margin-top:5px;direction:ltr;letter-spacing:-0.01em">${Currency.fmt(exp.amount, exp.currency, 2)}</p>`
+      ? `<p style="font-size:18px;font-weight:600;color:rgba(255,255,255,0.55);margin-top:3px;direction:ltr;letter-spacing:-0.015em">${Currency.fmt(exp.amount, exp.currency, 2)}</p>`
       : '';
 
     const headerCard = `
