@@ -59,7 +59,7 @@ const Expenses = {
       'אטרקציות':'attractions', 'רכב שכור':'directions_car', 'תחבורה':'directions_bus',
       'טיסות':'flight', 'ביטוח':'shield', 'אחר':'category',
     };
-    const msIcon = CAT_MS[e.category];
+    const msIcon = CAT_MS[e.category] || (/^[a-z][a-z_]+$/.test(cat.icon) ? cat.icon : null);
     const iconHTML = msIcon
       ? `<span class="material-symbols-outlined" style="font-size:22px;color:#fff;font-variation-settings:'FILL' 1">${msIcon}</span>`
       : `<span style="font-size:22px;line-height:1">${cat.icon}</span>`;

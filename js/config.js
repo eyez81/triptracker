@@ -21,8 +21,20 @@ const CURRENCY_SYMBOLS = {
   ILS:'₪', USD:'$', EUR:'€', GBP:'£', JPY:'¥', THB:'฿', TRY:'₺', AED:'د.إ',
 };
 
-const EMOJI_LIST = [
-  '🏨','🍽','🛍','🎡','🚗','🚌','✈','🛡','📦','🎭','🏖','🏔','🎪',
-  '🚢','🏕','🎵','🎨','⚽','🏊','🚴','🍕','☕','🍺','🛒','💊',
-  '📱','💻','🎁','💰','🏦','🎓','🔧','🌐','🏛','🗺','📸','🎬','🎿','🧘',
+const MS_ICON_LIST = [
+  'hotel','restaurant','shopping_bag','attractions','directions_car','directions_bus',
+  'flight','shield','category','local_cafe','local_bar','spa','museum','beach_access',
+  'hiking','sailing','sports_soccer','pool','fitness_center','medical_services',
+  'camera_alt','music_note','movie','train','directions_boat','apartment','villa',
+  'backpack','wallet','payments','savings','credit_card','park','pets','wine_bar',
+  'icecream','cake','theater_comedy','landscape','shopping_cart','pharmacy',
+  'smartphone','laptop','casino','sports_tennis','downhill_skiing','surfing',
+  'kayaking','camping','temple_buddhist','church','forest','self_care','nightlife',
+];
+
+const CAT_COLORS = [
+  '#4f8ef7','#38c9a0','#f5a623','#7b5ea7','#e05252',
+  '#3cb8e0','#5e7ef7','#8bc34a','#e91e63','#ff5722',
+  '#009688','#673ab7','#ff9800','#795548','#00bcd4',
+  '#f44336','#4caf50','#2196f3','#9e9e9e','#607d8b',
 ];

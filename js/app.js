@@ -367,9 +367,9 @@ const App = {
       'טיסות':'flight','ביטוח':'shield','אחר':'category',
     };
     el.innerHTML = Object.entries(CATEGORIES).map(([name, def]) => {
-      const ms = CAT_MS[name];
-      const iconHTML = ms
-        ? `<span class="material-symbols-outlined" style="font-size:20px;color:#fff;font-variation-settings:'FILL' 1">${ms}</span>`
+      const msName = CAT_MS[name] || (/^[a-z][a-z_]+$/.test(def.icon) ? def.icon : null);
+      const iconHTML = msName
+        ? `<span class="material-symbols-outlined" style="font-size:20px;color:#fff;font-variation-settings:'FILL' 1">${msName}</span>`
         : `<span style="font-size:18px;line-height:1">${def.icon}</span>`;
       return `
       <div class="flex items-center justify-between py-2.5 border-b border-white/5">
@@ -400,33 +400,69 @@ const App = {
     this._editingCatName = existing;
     document.getElementById('cat-modal-title').textContent = existing ? 'עריכת קטגוריה' : 'קטגוריה חדשה';
     document.getElementById('cat-name-input').value = existing || '';
-    const currentIcon = existing ? (CATEGORIES[existing]?.icon || '📦') : '📦';
-    document.getElementById('cat-selected-icon').textContent = currentIcon;
+
+    const cat = existing ? CATEGORIES[existing] : null;
+    const EMOJI_TO_MS = {
+      '🏨':'hotel','🍽':'restaurant','🛍':'shopping_bag','🎡':'attractions',
+      '🚗':'directions_car','🚌':'directions_bus','✈':'flight','🛡':'shield','📦':'category',
+    };
+    const rawIcon = cat?.icon || 'category';
+    const currentIcon = /^[a-z][a-z_]+$/.test(rawIcon) ? rawIcon : (EMOJI_TO_MS[rawIcon] || 'category');
+    const currentColor = cat?.color || CAT_COLORS[0];
+
     document.getElementById('cat-icon-value').value = currentIcon;
-    const grid = document.getElementById('cat-emoji-grid');
-    grid.innerHTML = EMOJI_LIST.map(em => `
-      <button class="emoji-pick text-2xl p-2 rounded-xl hover:bg-surface-container active:scale-95 transition ${em === currentIcon ? 'bg-primary-container/50' : ''}" data-emoji="${em}">${em}</button>
+    document.getElementById('cat-color-value').value = currentColor;
+    this._updateCatPreview(currentIcon, currentColor);
+
+    // Color grid
+    const colorGrid = document.getElementById('cat-color-grid');
+    colorGrid.innerHTML = CAT_COLORS.map(c => `
+      <button class="cat-color-btn rounded-full transition active:scale-90 ${c === currentColor ? 'ring-2 ring-white ring-offset-2 ring-offset-black/50' : ''}"
+        data-color="${c}" style="width:32px;height:32px;background:${c}"></button>
     `).join('');
-    grid.querySelectorAll('.emoji-pick').forEach(b => {
+    colorGrid.querySelectorAll('.cat-color-btn').forEach(b => {
       b.addEventListener('click', () => {
-        grid.querySelectorAll('.emoji-pick').forEach(x => x.classList.remove('bg-primary-container/50'));
-        b.classList.add('bg-primary-container/50');
-        document.getElementById('cat-selected-icon').textContent = b.dataset.emoji;
-        document.getElementById('cat-icon-value').value = b.dataset.emoji;
+        colorGrid.querySelectorAll('.cat-color-btn').forEach(x => x.classList.remove('ring-2','ring-white','ring-offset-2','ring-offset-black/50'));
+        b.classList.add('ring-2','ring-white','ring-offset-2','ring-offset-black/50');
+        document.getElementById('cat-color-value').value = b.dataset.color;
+        this._updateCatPreview(document.getElementById('cat-icon-value').value, b.dataset.color);
       });
     });
+
+    // Icon grid
+    const grid = document.getElementById('cat-emoji-grid');
+    grid.innerHTML = MS_ICON_LIST.map(icon => `
+      <button class="cat-icon-btn flex items-center justify-center rounded-xl transition active:scale-90 ${icon === currentIcon ? 'bg-primary-container/50' : 'hover:bg-surface-container-high'}"
+        data-icon="${icon}" style="height:44px">
+        <span class="material-symbols-outlined" style="font-size:24px;color:rgba(255,255,255,0.85);font-variation-settings:'FILL' 1">${icon}</span>
+      </button>
+    `).join('');
+    grid.querySelectorAll('.cat-icon-btn').forEach(b => {
+      b.addEventListener('click', () => {
+        grid.querySelectorAll('.cat-icon-btn').forEach(x => x.classList.remove('bg-primary-container/50'));
+        b.classList.add('bg-primary-container/50');
+        document.getElementById('cat-icon-value').value = b.dataset.icon;
+        this._updateCatPreview(b.dataset.icon, document.getElementById('cat-color-value').value);
+      });
+    });
+
     this.openModal('modal-category');
+  },
+
+  _updateCatPreview(icon, color) {
+    document.getElementById('cat-preview-circle').style.background = color;
+    document.getElementById('cat-preview-icon').textContent = icon;
   },
 
   _saveCategory() {
     const name = document.getElementById('cat-name-input').value.trim();
-    const icon = document.getElementById('cat-icon-value').value || '📦';
+    const icon = document.getElementById('cat-icon-value').value || 'category';
+    const color = document.getElementById('cat-color-value').value || '#9e9e9e';
     if (!name) { showToast('נא להזין שם קטגוריה'); return; }
 
     const previousName = this._editingCatName;
-    const existingColor = previousName ? CATEGORIES[previousName]?.color : null;
 
-    CategorySync.save(name, icon, existingColor || '#9e9e9e', previousName);
+    CategorySync.save(name, icon, color, previousName);
     this.closeModal('modal-category');
     this._renderCategoriesSettings();
     Expenses._rebuildCategoryPills?.();
