@@ -114,7 +114,6 @@ const Expenses = {
         </div>
       </div>`;
   },
-  },
 
   _renderSummary() {
     const trip = Trips.current;
