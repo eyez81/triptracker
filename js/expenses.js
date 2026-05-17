@@ -251,6 +251,12 @@ const Expenses = {
   },
 
 
+  _enqueueFiles(files = []) {
+    if (!Array.isArray(files) || !files.length) return;
+    this._pendingFiles = [...(this._pendingFiles || []), ...files];
+    this._renderAttachmentEditor();
+  },
+
   _openAttachment(url, type = 'image', filename = '') {
     if (type === 'pdf') {
       const a = document.createElement('a');
@@ -364,7 +370,7 @@ const Expenses = {
         const fd = new FormData();
         Object.entries(data).forEach(([k,v]) => { if (v != null) fd.append(k, v); });
         if (this._editing && this._removeAttachments.size) fd.append('receipt-', [...this._removeAttachments].join(','));
-        chosen.forEach(f => fd.append(this._editing ? 'receipt+' : 'receipt', f));
+        chosen.forEach(f => fd.append('receipt+', f));
         if (this._editing) await pb.updateForm(CONFIG.COLLECTIONS.EXPENSES, this._editing.id, fd);
         else await pb.createForm(CONFIG.COLLECTIONS.EXPENSES, fd);
       } else {

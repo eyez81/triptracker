@@ -540,8 +540,7 @@ const App = {
     const handleFile = (e) => {
       const files = [...(e.target.files || [])].filter(f => /^(image\/(jpeg|png|webp)|application\/pdf)$/i.test(f.type));
       if (!files.length) return;
-      Expenses._pendingFiles = [...(Expenses._pendingFiles || []), ...files];
-      Expenses._renderAttachmentEditor();
+      Expenses._enqueueFiles(files);
       e.target.value = '';
     };
     this._bindEl('exp-receipt-camera', 'change', handleFile);
