@@ -22,16 +22,12 @@ const Lightbox = {
     if (titleEl) titleEl.textContent = filename || (type === 'pdf' ? 'PDF' : 'תמונה');
 
     if (type === 'pdf') {
-      imgWrap.classList.add('hidden');
-      pdfWrap.classList.remove('hidden');
-      if (hint) hint.style.opacity = '0';
-      this._pdfZoomIdx = 2; // reset to 100%
-      this._pdfDoc = null;
-      document.getElementById('lightbox-pdf-pages').innerHTML = '';
-      document.getElementById('lightbox-pdf-scroll').classList.add('hidden');
-      document.getElementById('lightbox-pdf-toolbar').classList.add('hidden');
-      document.getElementById('lightbox-pdf-loading').style.display = 'flex';
-      this._loadPDF(url);
+      const a = document.createElement('a');
+      a.href = url;
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer';
+      a.click();
+      return;
     } else {
       pdfWrap.classList.add('hidden');
       imgWrap.classList.remove('hidden');
@@ -541,39 +537,12 @@ const App = {
       document.getElementById('exp-receipt-gallery').click();
     });
 
-    const fmtSize = bytes => {
-      if (bytes < 1024) return bytes + ' B';
-      if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
-      return (bytes / 1024 / 1024).toFixed(1) + ' MB';
-    };
-
     const handleFile = (e) => {
-      const file = e.target.files?.[0];
-      if (!file) return;
-      Expenses._receiptFile = file;
-      /* hide existing-attachment section when user picks a replacement */
-      document.getElementById('receipt-existing-section')?.classList.add('hidden');
-      const preview  = document.getElementById('receipt-preview');
-      const pdfBadge = document.getElementById('receipt-pdf-badge');
-      if (file.type === 'application/pdf') {
-        preview.classList.add('hidden');
-        preview.src = '';
-        if (pdfBadge) {
-          pdfBadge.classList.remove('hidden');
-          const nameEl = pdfBadge.querySelector('.pdf-name');
-          const sizeEl = pdfBadge.querySelector('.pdf-size');
-          if (nameEl) nameEl.textContent = file.name;
-          if (sizeEl) sizeEl.textContent = fmtSize(file.size);
-        }
-      } else {
-        if (pdfBadge) pdfBadge.classList.add('hidden');
-        const reader = new FileReader();
-        reader.onload = ev => {
-          preview.src = ev.target?.result || '';
-          preview.classList.remove('hidden');
-        };
-        reader.readAsDataURL(file);
-      }
+      const files = [...(e.target.files || [])].filter(f => /^(image\/(jpeg|png|webp)|application\/pdf)$/i.test(f.type));
+      if (!files.length) return;
+      Expenses._pendingFiles = [...(Expenses._pendingFiles || []), ...files];
+      Expenses._renderAttachmentEditor();
+      e.target.value = '';
     };
     this._bindEl('exp-receipt-camera', 'change', handleFile);
     this._bindEl('exp-receipt-gallery', 'change', handleFile);
