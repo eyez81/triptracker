@@ -259,24 +259,19 @@
   </header>
   <main class="flex-1 px-5 pt-6 max-w-2xl mx-auto w-full space-y-5">
     <!-- Budget card -->
-    <div class="rounded-2xl overflow-hidden relative" style="background:linear-gradient(150deg,#0c1d42 0%,#09223a 45%,#082d20 100%)">
-      <div style="position:absolute;inset:0;background:radial-gradient(ellipse 90% 100% at 8% 55%,rgba(0,190,145,0.18) 0%,transparent 55%),radial-gradient(ellipse 55% 55% at 92% 5%,rgba(37,99,235,0.16) 0%,transparent 55%);pointer-events:none"></div>
+    <div class="rounded-2xl overflow-hidden relative" style="background:linear-gradient(160deg,#0b1424 0%,#0d1c38 60%,#091828 100%)">
+      <div style="position:absolute;inset:0;background:radial-gradient(ellipse 50% 80% at 10% 50%,rgba(20,15,50,0.7) 0%,transparent 60%);pointer-events:none"></div>
       <div class="relative p-5">
+        <!-- Top row: text right, donut left -->
         <div class="flex items-center gap-4">
-          <!-- RIGHT: label, amount, budget text, contained progress bar -->
+          <!-- RIGHT: label + big amount + budget text -->
           <div class="flex-1 min-w-0">
-            <p style="font-size:11px;font-weight:600;color:rgba(255,255,255,0.42);letter-spacing:0.06em">מעקב תקציב</p>
-            <h2 id="sum-spent" style="font-size:40px;font-weight:800;color:#fff;line-height:1;margin-top:5px;letter-spacing:-0.02em">₪0</h2>
-            <p id="sum-budget" style="font-size:12px;color:rgba(255,255,255,0.38);margin-top:3px">מתוך ₪0</p>
-            <!-- Progress bar inside this column — not full card width -->
-            <div class="mt-3" style="position:relative;height:4px;border-radius:99px;background:rgba(255,255,255,0.1)">
-              <div id="budget-bar-fill" style="position:absolute;right:0;top:0;height:4px;border-radius:99px;width:0%;background:linear-gradient(to left,#4edea3,#2563eb);transition:width 0.7s ease">
-                <div style="position:absolute;left:0;top:50%;transform:translate(-50%,-50%);width:11px;height:11px;border-radius:50%;background:#fff;box-shadow:0 1px 5px rgba(0,0,0,0.35)"></div>
-              </div>
-            </div>
+            <p style="font-size:12px;font-weight:500;color:rgba(255,255,255,0.44)">מעקב תקציב</p>
+            <h2 id="sum-spent" style="font-size:46px;font-weight:800;color:#fff;line-height:1;margin-top:4px;letter-spacing:-0.02em">₪0</h2>
+            <p id="sum-budget" style="font-size:13px;color:rgba(255,255,255,0.4);margin-top:5px">מתוך ₪0</p>
           </div>
           <!-- LEFT: donut ring -->
-          <div class="relative flex-shrink-0" style="width:112px;height:112px">
+          <div class="relative flex-shrink-0" style="width:134px;height:134px">
             <svg class="w-full h-full -rotate-90" viewBox="0 0 120 120">
               <defs>
                 <linearGradient id="budgetGrad" x1="0%" y1="0%" x2="100%" y2="0%">
@@ -284,28 +279,46 @@
                   <stop offset="100%" stop-color="#4edea3"/>
                 </linearGradient>
               </defs>
-              <circle cx="60" cy="60" r="50" fill="none" stroke="rgba(255,255,255,0.07)" stroke-width="9"/>
+              <circle cx="60" cy="60" r="50" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="11"/>
               <circle id="budget-circle-progress" cx="60" cy="60" r="50" fill="none"
-                stroke="url(#budgetGrad)" stroke-width="9" stroke-linecap="round"
+                stroke="url(#budgetGrad)" stroke-width="11" stroke-linecap="round"
                 stroke-dasharray="0 314" style="transition:stroke-dasharray 0.7s ease"/>
             </svg>
             <div class="absolute inset-0 flex items-center justify-center">
-              <span id="budget-pct" style="font-size:20px;font-weight:800;color:#fff">0%</span>
+              <span id="budget-pct" style="font-size:22px;font-weight:800;color:#fff">0%</span>
             </div>
           </div>
         </div>
-        <!-- Divider -->
-        <div style="height:1px;background:rgba(255,255,255,0.07);margin:14px 0"></div>
-        <!-- Stats row -->
-        <div class="flex items-center gap-4">
-          <div>
-            <p style="font-size:10px;font-weight:600;color:rgba(255,255,255,0.38);letter-spacing:0.05em">נוצל</p>
-            <p id="sum-used" style="font-size:17px;font-weight:700;color:#fff;margin-top:2px">₪0</p>
+        <!-- Progress bar: full width -->
+        <div class="mt-4" style="position:relative;height:5px;background:rgba(255,255,255,0.1);border-radius:99px">
+          <div id="budget-bar-fill" style="position:absolute;right:0;top:0;height:5px;border-radius:99px;width:0%;background:linear-gradient(to left,#4edea3,#2563eb);transition:width 0.7s ease">
+            <div style="position:absolute;left:0;top:50%;transform:translate(-50%,-50%);width:13px;height:13px;border-radius:50%;background:#fff;box-shadow:0 1px 6px rgba(0,0,0,0.4)"></div>
           </div>
-          <div style="width:1px;height:28px;background:rgba(255,255,255,0.1)"></div>
-          <div>
-            <p style="font-size:10px;font-weight:600;color:rgba(255,255,255,0.38);letter-spacing:0.05em">נותר</p>
-            <p id="sum-remaining" style="font-size:17px;font-weight:700;color:#fff;margin-top:2px">₪0</p>
+        </div>
+        <!-- Stats: two cards -->
+        <div class="flex gap-3 mt-4">
+          <!-- נוצל card (right in RTL) -->
+          <div class="flex-1 flex items-center gap-3 rounded-xl p-3" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1)">
+            <div class="flex-shrink-0 flex items-center justify-center rounded-full" style="width:42px;height:42px;background:rgba(248,113,113,0.15)">
+              <span class="material-symbols-outlined" style="font-size:22px;color:#f87171;font-variation-settings:'FILL' 1">trending_up</span>
+            </div>
+            <div style="width:1px;height:30px;background:rgba(255,255,255,0.1)"></div>
+            <div class="flex-1 min-w-0">
+              <p style="font-size:11px;font-weight:600;color:rgba(255,255,255,0.42)">נוצל</p>
+              <p id="sum-used" style="font-size:19px;font-weight:800;color:#fff;margin-top:1px;line-height:1.1">₪0</p>
+            </div>
+            <div class="flex-shrink-0" style="width:8px;height:8px;border-radius:50%;background:#4edea3"></div>
+          </div>
+          <!-- נותר card (left in RTL) -->
+          <div class="flex-1 flex items-center gap-3 rounded-xl p-3" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07)">
+            <div class="flex-shrink-0 flex items-center justify-center rounded-full" style="width:42px;height:42px;background:rgba(37,99,235,0.15)">
+              <span class="material-symbols-outlined" style="font-size:22px;color:#60a5fa;font-variation-settings:'FILL' 1">wallet</span>
+            </div>
+            <div style="width:1px;height:30px;background:rgba(255,255,255,0.1)"></div>
+            <div class="flex-1 min-w-0">
+              <p style="font-size:11px;font-weight:600;color:rgba(255,255,255,0.42)">נותר</p>
+              <p id="sum-remaining" style="font-size:19px;font-weight:800;color:#fff;margin-top:1px;line-height:1.1">₪0</p>
+            </div>
           </div>
         </div>
         <!-- Date -->
