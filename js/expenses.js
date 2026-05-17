@@ -414,6 +414,10 @@ const Expenses = {
 
     const secLabel = (text) => `<p style="font-size:11px;font-weight:600;color:rgba(45,212,191,0.75);margin-bottom:6px;text-align:right">${text}</p>`;
 
+    const origAmount = exp.currency !== 'ILS'
+      ? `<p style="font-size:14px;font-weight:500;color:rgba(255,255,255,0.38);margin-top:5px;direction:ltr;letter-spacing:-0.01em">${Currency.fmt(exp.amount, exp.currency, 2)}</p>`
+      : '';
+
     const headerCard = `
       <div class="rounded-2xl overflow-hidden" style="background:linear-gradient(150deg,#0a1628 0%,#0d1f38 60%,#091825 100%)">
         <div class="p-5 space-y-4">
@@ -430,6 +434,7 @@ const Expenses = {
           <div>
             <p style="font-size:11px;color:rgba(255,255,255,0.36);margin-bottom:3px">סכום</p>
             <p style="font-size:38px;font-weight:800;color:#fff;line-height:1;letter-spacing:-0.02em">${Currency.fmtILS(sum.total)}</p>
+            ${origAmount}
           </div>
           <div class="flex flex-wrap items-center gap-x-3 gap-y-1" style="font-size:12px;color:rgba(255,255,255,0.42)">
             <span class="flex items-center gap-1" style="color:#4ade80">
@@ -463,6 +468,7 @@ const Expenses = {
           <div>
             <p style="font-size:11px;color:rgba(255,255,255,0.36);margin-bottom:3px">עלות כוללת</p>
             <p style="font-size:38px;font-weight:800;color:#fff;line-height:1;letter-spacing:-0.02em">${Currency.fmtILS(sum.total)}</p>
+            ${origAmount}
           </div>
         </div>
       </div>
@@ -547,12 +553,12 @@ const Expenses = {
           ${secLabel('איש קשר')}
           <div class="rounded-2xl p-4 space-y-3" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.07)">
             <div class="flex items-center gap-3">
+              <div style="width:44px;height:44px;border-radius:50%;background:rgba(45,212,191,0.1);border:1px solid rgba(45,212,191,0.18);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                <span class="material-symbols-outlined" style="font-size:22px;color:#2dd4bf;font-variation-settings:'FILL' 1">person</span>
+              </div>
               <div class="flex-1 min-w-0">
                 ${exp.contact_name ? `<p style="font-size:15px;font-weight:700;color:#fff">${esc(exp.contact_name)}</p>` : ''}
                 ${rawPhone ? `<div class="flex items-center gap-1 mt-0.5"><span class="material-symbols-outlined" style="font-size:13px;color:rgba(45,212,191,0.55)">phone</span><p dir="ltr" style="font-size:13px;color:rgba(255,255,255,0.48)">${esc(rawPhone)}</p></div>` : ''}
-              </div>
-              <div style="width:44px;height:44px;border-radius:50%;background:rgba(45,212,191,0.1);border:1px solid rgba(45,212,191,0.18);display:flex;align-items:center;justify-content:center;flex-shrink:0">
-                <span class="material-symbols-outlined" style="font-size:22px;color:#2dd4bf;font-variation-settings:'FILL' 1">person</span>
               </div>
             </div>
             ${rawPhone ? `<div class="grid grid-cols-2 gap-2">
