@@ -49,19 +49,13 @@ const Expenses = {
   },
 
   _itemHTML(e) {
-    const cat = CATEGORIES[e.category] || { icon:'📦', color:'#9e9e9e' };
+    const { color: catColor, icon: catIcon, msIcon } = getCatStyle(e.category);
     const isInstantPaid = e.payment_type === 'חד פעמי' && ['מזומן', 'אשראי', 'העברה', 'ביט'].includes(e.payment_method);
     const isTracking = e.payment_type === 'תשלומים' || e.payment_type === 'מקדמה+יתרה';
 
-    const CAT_MS = {
-      'לינה':'hotel','אוכל ושתייה':'restaurant','קניות':'shopping_bag',
-      'אטרקציות':'attractions','רכב':'directions_car','רכב שכור':'directions_car','תחבורה':'directions_bus',
-      'טיסות':'flight','ביטוח':'shield','אחר':'category',
-    };
-    const msIcon = CAT_MS[e.category] || (/^[a-z][a-z_]+$/.test(cat.icon) ? cat.icon : null);
     const iconHTML = msIcon
       ? `<span class="material-symbols-outlined" style="font-size:20px;color:#fff;font-variation-settings:'FILL' 1">${msIcon}</span>`
-      : `<span style="font-size:20px;line-height:1">${cat.icon}</span>`;
+      : `<span style="font-size:20px;line-height:1">${catIcon}</span>`;
 
     let badge = '';
     if (e.payment_type === 'עתידי') {
@@ -92,11 +86,11 @@ const Expenses = {
            data-id="${e.id}" onclick="Expenses._click(this.dataset.id)"
            style="background:linear-gradient(135deg,rgba(255,255,255,0.065) 0%,rgba(255,255,255,0.022) 100%);border:1px solid rgba(255,255,255,0.08);box-shadow:0 2px 12px rgba(0,0,0,0.28),inset 0 1px 0 rgba(255,255,255,0.08);padding:13px 14px 12px;font-family:'Heebo',sans-serif;transition:transform 0.1s ease,opacity 0.1s ease" onpointerdown="this.style.transform='scale(0.99)';this.style.opacity='0.9'" onpointerup="this.style.transform='';this.style.opacity=''" onpointerleave="this.style.transform='';this.style.opacity=''">
 
-        <div style="position:absolute;top:0;right:0;width:65%;height:100%;background:radial-gradient(ellipse 100% 140% at 95% 0%,${cat.color}1a 0%,transparent 60%);pointer-events:none"></div>
+        <div style="position:absolute;top:0;right:0;width:65%;height:100%;background:radial-gradient(ellipse 100% 140% at 95% 0%,${catColor}1a 0%,transparent 60%);pointer-events:none"></div>
 
         <div class="relative flex items-center gap-3">
 
-          <div style="width:42px;height:42px;flex-shrink:0;border-radius:13px;background:${cat.color};display:flex;align-items:center;justify-content:center;box-shadow:inset 0 1px 0 rgba(255,255,255,0.22)">
+          <div style="width:42px;height:42px;flex-shrink:0;border-radius:13px;background:${catColor};display:flex;align-items:center;justify-content:center;box-shadow:inset 0 1px 0 rgba(255,255,255,0.22)">
             ${iconHTML}
           </div>
 
@@ -394,19 +388,13 @@ const Expenses = {
     try {
     this._viewing = exp;
     document.getElementById('view-exp-name').textContent = exp.name;
-    const cat = CATEGORIES[exp.category] || { icon:'📦', color:'#9e9e9e' };
+    const { color: catColor, icon: catIcon, msIcon: catMs } = getCatStyle(exp.category);
     const sum = this._getExpensePaymentSummary(exp);
 
     const METHOD_ICON = { 'אשראי':'credit_card', 'מזומן':'payments', 'העברה':'account_balance', 'ביט':'smartphone' };
     const methodIcon = METHOD_ICON[exp.payment_method] || 'payments';
 
-    const CAT_MS_V = {
-      'לינה':'hotel','אוכל ושתייה':'restaurant','קניות':'shopping_bag',
-      'אטרקציות':'attractions','רכב':'directions_car','רכב שכור':'directions_car','תחבורה':'directions_bus',
-      'טיסות':'flight','ביטוח':'shield','אחר':'category',
-    };
-    const catMs = CAT_MS_V[exp.category] || (/^[a-z][a-z_]+$/.test(cat.icon) ? cat.icon : null);
-    const catCircle = `<div style="width:22px;height:22px;border-radius:50%;background:${cat.color};display:inline-flex;align-items:center;justify-content:center;flex-shrink:0">${catMs ? `<span class="material-symbols-outlined" style="font-size:12px;color:#fff;font-variation-settings:'FILL' 1">${catMs}</span>` : `<span style="font-size:10px">${cat.icon}</span>`}</div>`;
+    const catCircle = `<div style="width:22px;height:22px;border-radius:50%;background:${catColor};display:inline-flex;align-items:center;justify-content:center;flex-shrink:0">${catMs ? `<span class="material-symbols-outlined" style="font-size:12px;color:#fff;font-variation-settings:'FILL' 1">${catMs}</span>` : `<span style="font-size:10px">${catIcon}</span>`}</div>`;
 
     const infoRow = (icon, text, href = null) => {
       const inner = `
@@ -643,7 +631,7 @@ const Expenses = {
         name,
         amount,
         pct: total ? (amount / total) * 100 : 0,
-        style: CATEGORIES[name] || { icon: '📦', color: '#9e9e9e' },
+        style: getCatStyle(name),
       }))
       .sort((a, b) => b.amount - a.amount);
   },
@@ -656,12 +644,6 @@ const Expenses = {
       App.openModal('modal-category-summary');
       return;
     }
-
-    const CAT_MS = {
-      'לינה':'hotel','אוכל ושתייה':'restaurant','קניות':'shopping_bag',
-      'אטרקציות':'attractions','רכב':'directions_car','רכב שכור':'directions_car','תחבורה':'directions_bus',
-      'טיסות':'flight','ביטוח':'shield','אחר':'category',
-    };
 
     const total = data.reduce((s, r) => s + r.amount, 0);
     const avg   = data.length ? total / data.length : 0;
@@ -701,7 +683,7 @@ const Expenses = {
 
     // ── Category rows ──
     const rows = data.map((row) => {
-      const msIcon = CAT_MS[row.name] || (/^[a-z][a-z_]+$/.test(row.style.icon) ? row.style.icon : null);
+      const msIcon = row.style.msIcon;
       const iconHTML = msIcon
         ? `<span class="material-symbols-outlined" style="font-size:22px;color:#fff;font-variation-settings:'FILL' 1">${msIcon}</span>`
         : `<span style="font-size:20px;line-height:1">${row.style.icon}</span>`;
