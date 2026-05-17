@@ -8,7 +8,7 @@ const DEFAULT_CATEGORIES = {
   'אוכל ושתייה':  { icon: '🍽', color: '#38c9a0' },
   'קניות':        { icon: '🛍', color: '#f5a623' },
   'אטרקציות':     { icon: '🎡', color: '#7b5ea7' },
-  'רכב':          { icon: '🚗', color: '#e05252' },
+  'רכב':           { icon: '🚗', color: '#e05252' },
   'תחבורה':       { icon: '🚌', color: '#3cb8e0' },
   'טיסות':        { icon: '✈',  color: '#5e7ef7' },
   'ביטוח':        { icon: '🛡', color: '#8bc34a' },

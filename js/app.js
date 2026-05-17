@@ -363,7 +363,7 @@ const App = {
     if (!el) return;
     const CAT_MS = {
       'לינה':'hotel','אוכל ושתייה':'restaurant','קניות':'shopping_bag',
-      'אטרקציות':'attractions','רכב שכור':'directions_car','תחבורה':'directions_bus',
+      'אטרקציות':'attractions','רכב':'directions_car','רכב שכור':'directions_car','תחבורה':'directions_bus',
       'טיסות':'flight','ביטוח':'shield','אחר':'category',
     };
     el.innerHTML = Object.entries(CATEGORIES).map(([name, def]) => {
