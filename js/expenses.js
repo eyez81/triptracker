@@ -603,15 +603,41 @@ const Expenses = {
     if (exp.receipt) {
       const receiptUrl = pb.fileUrl(exp, exp.receipt);
       const isPdf = exp.receipt.toLowerCase().endsWith('.pdf');
+      const cleanName = exp.receipt.replace(/^[a-z0-9]+_/i, '') || exp.receipt;
       html += `
         <div>
           ${secLabel('קבלה')}
-          <div class="flex items-center gap-3 rounded-2xl p-3.5 cursor-pointer js-open-lightbox active:scale-[0.99] transition" style="background:var(--vrow-bg);border:1px solid var(--vrow-border)" data-lightbox-url="${receiptUrl}">
-            <div style="width:38px;height:38px;border-radius:50%;background:rgba(45,212,191,0.1);border:1px solid rgba(45,212,191,0.18);display:flex;align-items:center;justify-content:center;flex-shrink:0">
-              <span class="material-symbols-outlined" style="font-size:18px;color:#2dd4bf;font-variation-settings:'FILL' 1">${isPdf ? 'picture_as_pdf' : 'image'}</span>
+          ${isPdf ? `
+            <div class="flex items-center gap-3 rounded-2xl p-4 cursor-pointer js-open-attachment active:scale-[0.99] transition"
+                 style="background:var(--vrow-bg);border:1px solid var(--vrow-border)"
+                 data-url="${receiptUrl}" data-type="pdf" data-filename="${esc(cleanName)}">
+              <div style="width:48px;height:48px;border-radius:12px;background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.22);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                <span class="material-symbols-outlined" style="font-size:26px;color:#f87171;font-variation-settings:'FILL' 1">picture_as_pdf</span>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p style="font-size:14px;font-weight:600;color:var(--vcont-name);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(cleanName)}</p>
+                <p style="font-size:12px;color:var(--vschedrow-dtxt);margin-top:2px">PDF · לחץ לפתיחה</p>
+              </div>
+              <div style="width:36px;height:36px;border-radius:50%;background:rgba(45,212,191,0.1);border:1px solid rgba(45,212,191,0.18);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                <span class="material-symbols-outlined" style="font-size:17px;color:#2dd4bf;font-variation-settings:'FILL' 1">open_in_new</span>
+              </div>
             </div>
-            ${isPdf ? `<span style="font-size:13px;color:var(--vrow-txt)">PDF</span>` : `<img src="${receiptUrl}" alt="קבלה" class="rounded-xl object-cover" style="height:52px;max-width:140px;object-fit:cover"/>`}
-          </div>
+          ` : `
+            <div class="js-open-attachment cursor-pointer active:scale-[0.99] transition rounded-2xl overflow-hidden"
+                 style="background:var(--vrow-bg);border:1px solid var(--vrow-border)"
+                 data-url="${receiptUrl}" data-type="image" data-filename="${esc(cleanName)}">
+              <div class="relative">
+                <img src="${receiptUrl}" alt="קבלה" class="w-full object-cover" style="max-height:180px;object-fit:cover;display:block"/>
+                <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,0.38) 0%,transparent 55%);pointer-events:none"></div>
+                <div style="position:absolute;bottom:10px;left:12px;display:flex;align-items:center;gap:6px">
+                  <div style="width:28px;height:28px;border-radius:50%;background:rgba(0,0,0,0.45);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center">
+                    <span class="material-symbols-outlined" style="font-size:14px;color:#fff">zoom_in</span>
+                  </div>
+                  <span style="font-size:11px;font-weight:600;color:rgba(255,255,255,0.85)">לחץ להגדלה</span>
+                </div>
+              </div>
+            </div>
+          `}
         </div>`;
     }
 
@@ -631,8 +657,8 @@ const Expenses = {
         if (chevron) chevron.style.transform = isOpen ? '' : 'rotate(180deg)';
       });
     }
-    body.querySelectorAll('.js-open-lightbox').forEach(el => {
-      el.addEventListener('click', () => Lightbox.open(el.dataset.lightboxUrl));
+    body.querySelectorAll('.js-open-attachment').forEach(el => {
+      el.addEventListener('click', () => Lightbox.open(el.dataset.url, el.dataset.type || 'image', el.dataset.filename || ''));
     });
     App.openModal('modal-view-expense');
     } catch (err) { showToast('שגיאה בפתיחה: ' + err.message); }
