@@ -54,7 +54,7 @@ const Expenses = {
     const isTracking = e.payment_type === 'תשלומים' || e.payment_type === 'מקדמה+יתרה';
 
     const iconHTML = msIcon
-      ? `<span class="material-symbols-outlined" style="font-size:22px;color:#fff;font-variation-settings:'FILL' 1">${msIcon}</span>`
+      ? `<span class="material-symbols-outlined" style="font-size:22px;color:#fff;font-variation-settings:\'FILL\' 1">${msIcon}</span>`
       : `<span style="font-size:22px;line-height:1">${catIcon}</span>`;
 
     let badge = '';
@@ -184,8 +184,8 @@ const Expenses = {
     this._editing = expense;
     document.getElementById('modal-expense-title').textContent = expense ? 'עריכת הוצאה' : 'הוצאה חדשה';
 
-    this._receiptFile = null;
-    this._removeReceipt = false;
+    this._pendingFiles = [];
+    this._removeAttachments = new Set();
 
     // Reset
     document.getElementById('exp-name').value = expense?.name || '';
@@ -225,42 +225,48 @@ const Expenses = {
     // Receipt
     document.getElementById('exp-receipt-camera').value = '';
     document.getElementById('exp-receipt-gallery').value = '';
-    document.getElementById('receipt-preview').classList.add('hidden');
-    document.getElementById('receipt-pdf-badge')?.classList.add('hidden');
-    const existingSection = document.getElementById('receipt-existing-section');
-    const existingImgWrap = document.getElementById('receipt-existing-img-wrap');
-    const existingPdfWrap = document.getElementById('receipt-existing-pdf-wrap');
-    if (existingSection) existingSection.classList.add('hidden');
-    if (existingImgWrap) existingImgWrap.classList.add('hidden');
-    if (existingPdfWrap) existingPdfWrap.classList.add('hidden');
-    if (expense?.receipt) {
-      const fileUrl = pb.fileUrl(expense, expense.receipt);
-      const isPdf   = expense.receipt.toLowerCase().endsWith('.pdf');
-      const cleanName = expense.receipt.replace(/^[a-z0-9]+_/i, '') || expense.receipt;
-      if (existingSection) existingSection.classList.remove('hidden');
-      if (isPdf) {
-        if (existingPdfWrap) {
-          existingPdfWrap.classList.remove('hidden');
-          const nameEl = document.getElementById('receipt-existing-pdf-name');
-          if (nameEl) nameEl.textContent = cleanName;
-        }
-      } else {
-        if (existingImgWrap) {
-          existingImgWrap.classList.remove('hidden');
-          const img = document.getElementById('receipt-existing-img');
-          if (img) img.src = fileUrl;
-        }
-      }
-    }
+    this._renderAttachmentEditor(expense);
 
     this._updateCurrencyUI(expense?.currency || defaultCurrency);
     this._rebuildCategoryPills();
     App.openModal('modal-expense');
   },
 
-  _removeExistingReceipt() {
-    this._removeReceipt = true;
-    document.getElementById('receipt-existing-section')?.classList.add('hidden');
+
+  _normalizeAttachments(expense) {
+    const raw = expense?.attachments ?? expense?.receipt;
+    if (!raw) return [];
+    const files = Array.isArray(raw) ? raw : [raw];
+    return files.filter(Boolean).map(name => ({
+      name,
+      cleanName: name.replace(/^[a-z0-9]+_/i, '') || name,
+      url: pb.fileUrl(expense, name),
+      type: /\.pdf$/i.test(name) ? 'pdf' : 'image'
+    }));
+  },
+
+  _extFromName(name = '') {
+    const ext = name.split('.').pop()?.toLowerCase() || '';
+    return ext ? ext.toUpperCase() : 'FILE';
+  },
+
+
+  _enqueueFiles(files = []) {
+    if (!Array.isArray(files) || !files.length) return;
+    this._pendingFiles = [...(this._pendingFiles || []), ...files];
+    this._renderAttachmentEditor();
+  },
+
+  _openAttachment(url, type = 'image', filename = '') {
+    if (type === 'pdf') {
+      const a = document.createElement('a');
+      a.href = url;
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer';
+      a.click();
+      return;
+    }
+    Lightbox.open(url, 'image', filename);
   },
 
   _updatePaymentTypeUI(type) {
@@ -292,6 +298,31 @@ const Expenses = {
       this._updateILSPreview();
       showToast(`שער: 1 ${currency} = ₪${rate.toFixed(4)}`);
     } catch { showToast('לא ניתן לעדכן שער'); }
+  },
+
+  _toggleRemoveAttachment(name) {
+    if (this._removeAttachments.has(name)) this._removeAttachments.delete(name);
+    else this._removeAttachments.add(name);
+    this._renderAttachmentEditor(this._editing);
+  },
+
+  _renderAttachmentEditor(expense = this._editing) {
+    const wrap = document.getElementById('receipt-existing-section');
+    const list = document.getElementById('receipt-existing-list');
+    const pending = document.getElementById('receipt-new-list');
+    if (!wrap || !list || !pending) return;
+    const files = this._normalizeAttachments(expense);
+    list.innerHTML = files.map(att => {
+      const removed = this._removeAttachments.has(att.name);
+      return `<div class="glass-card rounded-xl p-3 flex items-center gap-3 ${removed ? 'opacity-45' : ''}">
+        <div style="width:40px;height:40px;border-radius:10px;${att.type === 'pdf' ? 'background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.2)' : 'overflow:hidden;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12)'};display:flex;align-items:center;justify-content:center;flex-shrink:0">${att.type === 'pdf' ? '<span class="material-symbols-outlined" style="font-size:20px;color:#f87171;font-variation-settings:\'FILL\' 1">picture_as_pdf</span>' : `<img src="${att.url}" alt="${esc(att.cleanName)}" style="width:100%;height:100%;object-fit:cover"/>`}</div>
+        <button type="button" class="flex-1 min-w-0 text-right js-open-existing" data-url="${att.url}" data-type="${att.type}" data-filename="${esc(att.cleanName)}"><p class="text-sm font-semibold text-on-surface truncate">${esc(att.cleanName)}</p><p class="text-xs text-on-surface-variant mt-0.5">${att.type === 'pdf' ? 'PDF' : this._extFromName(att.name)}</p></button>
+        <button type="button" onclick="Expenses._toggleRemoveAttachment('${att.name}')" class="w-8 h-8 rounded-full flex items-center justify-center active:scale-90 transition" style="${removed ? 'background:rgba(74,222,128,0.12);border:1px solid rgba(74,222,128,0.22)' : 'background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.2)'}"><span class="material-symbols-outlined" style="font-size:16px;color:${removed ? '#4ade80' : '#f87171'}">${removed ? 'undo' : 'delete'}</span></button>
+      </div>`;
+    }).join('');
+    wrap.classList.toggle('hidden', !files.length);
+    pending.innerHTML = this._pendingFiles.map((file, idx) => `<div class="glass-card rounded-xl p-3 flex items-center gap-3"><div style="width:40px;height:40px;border-radius:10px;background:rgba(45,212,191,0.12);border:1px solid rgba(45,212,191,0.2);display:flex;align-items:center;justify-content:center;flex-shrink:0"><span class="material-symbols-outlined" style="font-size:19px;color:#2dd4bf">attach_file</span></div><div class="flex-1 min-w-0"><p class="text-sm font-semibold text-on-surface truncate">${esc(file.name)}</p><p class="text-xs text-on-surface-variant mt-0.5">${file.type === 'application/pdf' ? 'PDF' : this._extFromName(file.name)}</p></div><button type="button" onclick="Expenses._pendingFiles.splice(${idx},1);Expenses._renderAttachmentEditor();" class="w-8 h-8 rounded-full flex items-center justify-center active:scale-90 transition" style="background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.2)"><span class="material-symbols-outlined" style="font-size:16px;color:#f87171">close</span></button></div>`).join('');
+    list.querySelectorAll('.js-open-existing').forEach(el => el.addEventListener('click', ()=> this._openAttachment(el.dataset.url, el.dataset.type, el.dataset.filename)));
   },
 
   async save() {
@@ -334,15 +365,18 @@ const Expenses = {
     };
 
     try {
-      const file = this._receiptFile || document.getElementById('exp-receipt-camera')?.files?.[0] || document.getElementById('exp-receipt-gallery')?.files?.[0];
-      if (file) {
+      const chosen = this._pendingFiles.length ? this._pendingFiles : [document.getElementById('exp-receipt-camera')?.files?.[0], document.getElementById('exp-receipt-gallery')?.files?.[0]].filter(Boolean);
+      if (chosen.length || (this._editing && this._removeAttachments.size)) {
         const fd = new FormData();
         Object.entries(data).forEach(([k,v]) => { if (v != null) fd.append(k, v); });
-        fd.append('receipt', file);
-        if (this._editing) await pb.updateForm(CONFIG.COLLECTIONS.EXPENSES, this._editing.id, fd);
-        else await pb.createForm(CONFIG.COLLECTIONS.EXPENSES, fd);
-      } else if (this._removeReceipt && this._editing) {
-        await pb.update(CONFIG.COLLECTIONS.EXPENSES, this._editing.id, { ...data, receipt: null });
+        if (this._editing && this._removeAttachments.size) fd.append('receipt-', [...this._removeAttachments].join(','));
+        if (this._editing) {
+          chosen.forEach(f => fd.append('receipt+', f));
+          await pb.updateForm(CONFIG.COLLECTIONS.EXPENSES, this._editing.id, fd);
+        } else {
+          chosen.forEach(f => fd.append('receipt', f));
+          await pb.createForm(CONFIG.COLLECTIONS.EXPENSES, fd);
+        }
       } else {
         if (this._editing) await pb.update(CONFIG.COLLECTIONS.EXPENSES, this._editing.id, data);
         else await pb.create(CONFIG.COLLECTIONS.EXPENSES, data);
@@ -429,12 +463,12 @@ const Expenses = {
     const METHOD_ICON = { 'אשראי':'credit_card', 'מזומן':'payments', 'העברה':'account_balance', 'ביט':'smartphone' };
     const methodIcon = METHOD_ICON[exp.payment_method] || 'payments';
 
-    const catCircle = `<div style="width:22px;height:22px;border-radius:50%;background:${catColor};display:inline-flex;align-items:center;justify-content:center;flex-shrink:0">${catMs ? `<span class="material-symbols-outlined" style="font-size:12px;color:#fff;font-variation-settings:'FILL' 1">${catMs}</span>` : `<span style="font-size:10px">${catIcon}</span>`}</div>`;
+    const catCircle = `<div style="width:22px;height:22px;border-radius:50%;background:${catColor};display:inline-flex;align-items:center;justify-content:center;flex-shrink:0">${catMs ? `<span class="material-symbols-outlined" style="font-size:12px;color:#fff;font-variation-settings:\'FILL\' 1">${catMs}</span>` : `<span style="font-size:10px">${catIcon}</span>`}</div>`;
 
     const infoRow = (icon, text, href = null) => {
       const inner = `
         <div style="width:38px;height:38px;border-radius:50%;background:rgba(45,212,191,0.1);border:1px solid rgba(45,212,191,0.18);display:flex;align-items:center;justify-content:center;flex-shrink:0">
-          <span class="material-symbols-outlined" style="font-size:18px;color:#2dd4bf;font-variation-settings:'FILL' 1">${icon}</span>
+          <span class="material-symbols-outlined" style="font-size:18px;color:#2dd4bf;font-variation-settings:\'FILL\' 1">${icon}</span>
         </div>
         <span class="flex-1 text-sm" style="color:var(--vrow-txt);direction:auto;white-space:pre-wrap;word-break:break-word">${text}</span>
         ${href ? `<span class="material-symbols-outlined flex-shrink-0" style="font-size:15px;color:var(--vrow-ext)">open_in_new</span>` : ''}
@@ -470,7 +504,7 @@ const Expenses = {
           </div>
           <div class="flex flex-wrap items-center gap-x-3 gap-y-1" style="font-size:12px;color:var(--vmeta)">
             <span class="flex items-center gap-1" style="color:#4ade80">
-              <span class="material-symbols-outlined" style="font-size:13px;font-variation-settings:'FILL' 1">check_circle</span>שולם במלואו
+              <span class="material-symbols-outlined" style="font-size:13px;font-variation-settings:\'FILL\' 1">check_circle</span>שולם במלואו
             </span>
             <span>•</span>
             <span class="flex items-center gap-1">
@@ -529,7 +563,7 @@ const Expenses = {
         <button id="schedule-toggle-${exp.id}" class="w-full flex items-center justify-between gap-2" style="background:none;border:none;cursor:pointer;padding:10px 0;border-top:1px solid var(--vsched-sep)">
           <span class="material-symbols-outlined" id="schedule-chevron-${exp.id}" style="font-size:20px;color:var(--vsched-icon);transition:transform 0.25s">expand_more</span>
           <span class="flex items-center gap-2" style="font-size:13px;font-weight:700;color:var(--vsched-txt)">
-            <span class="material-symbols-outlined" style="font-size:16px;color:var(--vsched-cal);font-variation-settings:'FILL' 1">event_note</span>
+            <span class="material-symbols-outlined" style="font-size:16px;color:var(--vsched-cal);font-variation-settings:\'FILL\' 1">event_note</span>
             לוח תשלומים · ${sum.rows.length} תשלומים
           </span>
         </button>
@@ -572,7 +606,7 @@ const Expenses = {
           ${exp.cancellation_date ? `
             <div class="flex items-center gap-3">
               <div style="width:38px;height:38px;border-radius:50%;background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.2);display:flex;align-items:center;justify-content:center;flex-shrink:0">
-                <span class="material-symbols-outlined" style="font-size:18px;color:#fbbf24;font-variation-settings:'FILL' 1">event_busy</span>
+                <span class="material-symbols-outlined" style="font-size:18px;color:#fbbf24;font-variation-settings:\'FILL\' 1">event_busy</span>
               </div>
               <div>
                 <p style="font-size:11px;color:var(--vschedrow-dtxt);margin-bottom:2px">ביטול אחרון עד</p>
@@ -582,7 +616,7 @@ const Expenses = {
           ${exp.cancellation_policy ? `
             <div class="flex items-start gap-3" ${exp.cancellation_date ? `style="padding-top:8px;border-top:1px solid var(--vcan-sep)"` : ''}>
               <div style="width:38px;height:38px;border-radius:50%;background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px">
-                <span class="material-symbols-outlined" style="font-size:18px;color:#fbbf24;font-variation-settings:'FILL' 1">policy</span>
+                <span class="material-symbols-outlined" style="font-size:18px;color:#fbbf24;font-variation-settings:\'FILL\' 1">policy</span>
               </div>
               <p style="font-size:13px;color:var(--vcancel-txt);line-height:1.55;white-space:pre-wrap;word-break:break-word;flex:1">${esc(exp.cancellation_policy)}</p>
             </div>` : ''}
@@ -610,7 +644,7 @@ const Expenses = {
           <div class="rounded-2xl p-4 space-y-3" style="background:var(--vcont-bg);border:1px solid var(--vcont-border)">
             <div class="flex items-center gap-3">
               <div style="width:44px;height:44px;border-radius:50%;background:rgba(45,212,191,0.1);border:1px solid rgba(45,212,191,0.18);display:flex;align-items:center;justify-content:center;flex-shrink:0">
-                <span class="material-symbols-outlined" style="font-size:22px;color:#2dd4bf;font-variation-settings:'FILL' 1">person</span>
+                <span class="material-symbols-outlined" style="font-size:22px;color:#2dd4bf;font-variation-settings:\'FILL\' 1">person</span>
               </div>
               <div class="flex-1 min-w-0">
                 ${exp.contact_name ? `<p style="font-size:15px;font-weight:700;color:var(--vcont-name)">${esc(exp.contact_name)}</p>` : ''}
@@ -628,45 +662,9 @@ const Expenses = {
           </div>
         </div>`;
     }
-    if (exp.receipt) {
-      const receiptUrl = pb.fileUrl(exp, exp.receipt);
-      const isPdf = exp.receipt.toLowerCase().endsWith('.pdf');
-      const cleanName = exp.receipt.replace(/^[a-z0-9]+_/i, '') || exp.receipt;
-      html += `
-        <div>
-          ${secLabel('קבלה')}
-          ${isPdf ? `
-            <div class="flex items-center gap-3 rounded-2xl p-4 cursor-pointer js-open-attachment active:scale-[0.99] transition"
-                 style="background:var(--vrow-bg);border:1px solid var(--vrow-border)"
-                 data-url="${receiptUrl}" data-type="pdf" data-filename="${esc(cleanName)}">
-              <div style="width:48px;height:48px;border-radius:12px;background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.22);display:flex;align-items:center;justify-content:center;flex-shrink:0">
-                <span class="material-symbols-outlined" style="font-size:26px;color:#f87171;font-variation-settings:'FILL' 1">picture_as_pdf</span>
-              </div>
-              <div class="flex-1 min-w-0">
-                <p style="font-size:14px;font-weight:600;color:var(--vcont-name);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(cleanName)}</p>
-                <p style="font-size:12px;color:var(--vschedrow-dtxt);margin-top:2px">PDF · לחץ לפתיחה</p>
-              </div>
-              <div style="width:36px;height:36px;border-radius:50%;background:rgba(45,212,191,0.1);border:1px solid rgba(45,212,191,0.18);display:flex;align-items:center;justify-content:center;flex-shrink:0">
-                <span class="material-symbols-outlined" style="font-size:17px;color:#2dd4bf;font-variation-settings:'FILL' 1">open_in_new</span>
-              </div>
-            </div>
-          ` : `
-            <div class="js-open-attachment cursor-pointer active:scale-[0.99] transition rounded-2xl overflow-hidden"
-                 style="background:var(--vrow-bg);border:1px solid var(--vrow-border)"
-                 data-url="${receiptUrl}" data-type="image" data-filename="${esc(cleanName)}">
-              <div class="relative">
-                <img src="${receiptUrl}" alt="קבלה" class="w-full object-cover" style="max-height:180px;object-fit:cover;display:block"/>
-                <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,0.38) 0%,transparent 55%);pointer-events:none"></div>
-                <div style="position:absolute;bottom:10px;left:12px;display:flex;align-items:center;gap:6px">
-                  <div style="width:28px;height:28px;border-radius:50%;background:rgba(0,0,0,0.45);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center">
-                    <span class="material-symbols-outlined" style="font-size:14px;color:#fff">zoom_in</span>
-                  </div>
-                  <span style="font-size:11px;font-weight:600;color:rgba(255,255,255,0.85)">לחץ להגדלה</span>
-                </div>
-              </div>
-            </div>
-          `}
-        </div>`;
+    const attachments = this._normalizeAttachments(exp);
+    if (attachments.length) {
+      html += `<div>${secLabel('קבצים מצורפים')}<div class="grid grid-cols-1 sm:grid-cols-2 gap-3">${attachments.map(att => `<div class="js-open-attachment cursor-pointer rounded-2xl overflow-hidden active:scale-[0.99] transition" style="background:var(--vrow-bg);border:1px solid var(--vrow-border)" data-url="${att.url}" data-type="${att.type}" data-filename="${esc(att.cleanName)}">${att.type === 'pdf' ? `<div class="p-4 flex items-center gap-3"><span class="material-symbols-outlined" style="font-size:24px;color:#f87171;font-variation-settings:\'FILL\' 1">picture_as_pdf</span><div class="min-w-0 flex-1"><p class="text-sm font-semibold truncate" style="color:var(--vcont-name)">${esc(att.cleanName)}</p><p class="text-xs mt-0.5" style="color:var(--vschedrow-dtxt)">PDF · פתיחה באפליקציה חיצונית</p></div></div>` : `<img src="${att.url}" alt="${esc(att.cleanName)}" class="w-full" style="height:160px;object-fit:cover"/>`}</div>`).join('')}</div></div>`;
     }
 
     const body = document.getElementById('view-expense-body');
@@ -686,7 +684,7 @@ const Expenses = {
       });
     }
     body.querySelectorAll('.js-open-attachment').forEach(el => {
-      el.addEventListener('click', () => Lightbox.open(el.dataset.url, el.dataset.type || 'image', el.dataset.filename || ''));
+      el.addEventListener('click', () => this._openAttachment(el.dataset.url, el.dataset.type || 'image', el.dataset.filename || ''));
     });
     App.openModal('modal-view-expense');
     } catch (err) { showToast('שגיאה בפתיחה: ' + err.message); }
@@ -747,7 +745,7 @@ const Expenses = {
           <div style="flex:1;min-width:0">
             <p style="font-size:11px;color:rgba(255,255,255,0.38);margin-bottom:5px;white-space:nowrap">סה"כ הוצאות</p>
             <div style="display:flex;align-items:center;gap:5px">
-              <span class="material-symbols-outlined" style="font-size:18px;color:rgba(255,255,255,0.45);font-variation-settings:'FILL' 1">account_balance_wallet</span>
+              <span class="material-symbols-outlined" style="font-size:18px;color:rgba(255,255,255,0.45);font-variation-settings:\'FILL\' 1">account_balance_wallet</span>
               <span style="font-size:22px;font-weight:800;color:#fff;direction:ltr">${Currency.fmtILS(total)}</span>
             </div>
           </div>
@@ -756,7 +754,7 @@ const Expenses = {
           <div style="flex:0 0 auto;text-align:center">
             <p style="font-size:11px;color:rgba(255,255,255,0.38);margin-bottom:5px">קטגוריות</p>
             <div style="display:flex;align-items:center;justify-content:center;gap:5px">
-              <span class="material-symbols-outlined" style="font-size:18px;color:rgba(255,255,255,0.45);font-variation-settings:'FILL' 1">shopping_bag</span>
+              <span class="material-symbols-outlined" style="font-size:18px;color:rgba(255,255,255,0.45);font-variation-settings:\'FILL\' 1">shopping_bag</span>
               <span style="font-size:22px;font-weight:800;color:#fff">${data.length}</span>
             </div>
           </div>
@@ -765,7 +763,7 @@ const Expenses = {
           <div style="flex:1;min-width:0;text-align:left">
             <p style="font-size:11px;color:rgba(255,255,255,0.38);margin-bottom:5px;white-space:nowrap">הוצאה ממוצעת לקטגוריה</p>
             <div style="display:flex;align-items:center;justify-content:flex-start;gap:5px">
-              <span class="material-symbols-outlined" style="font-size:18px;color:rgba(255,255,255,0.45);font-variation-settings:'FILL' 1">bar_chart</span>
+              <span class="material-symbols-outlined" style="font-size:18px;color:rgba(255,255,255,0.45);font-variation-settings:\'FILL\' 1">bar_chart</span>
               <span style="font-size:20px;font-weight:800;color:rgba(255,255,255,0.82);direction:ltr">${Currency.fmtILS(avg)}</span>
             </div>
           </div>
@@ -776,7 +774,7 @@ const Expenses = {
     const rows = data.map((row) => {
       const msIcon = row.style.msIcon;
       const iconHTML = msIcon
-        ? `<span class="material-symbols-outlined" style="font-size:22px;color:#fff;font-variation-settings:'FILL' 1">${msIcon}</span>`
+        ? `<span class="material-symbols-outlined" style="font-size:22px;color:#fff;font-variation-settings:\'FILL\' 1">${msIcon}</span>`
         : `<span style="font-size:20px;line-height:1">${row.style.icon}</span>`;
 
       return `
@@ -883,7 +881,7 @@ const Expenses = {
       } else {
         const { color, icon, msIcon } = getCatStyle(safeValue);
         const iconInner = msIcon
-          ? `<span class="material-symbols-outlined" style="font-size:13px;color:#fff;font-variation-settings:'FILL' 1;line-height:1">${msIcon}</span>`
+          ? `<span class="material-symbols-outlined" style="font-size:13px;color:#fff;font-variation-settings:\'FILL\' 1;line-height:1">${msIcon}</span>`
           : `<span style="font-size:13px;line-height:1">${icon}</span>`;
         label.innerHTML = `<span style="display:inline-flex;align-items:center;gap:8px"><span style="display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:7px;background:${color};flex-shrink:0;box-shadow:inset 0 1px 0 rgba(255,255,255,0.18)">${iconInner}</span><span>${esc(safeValue)}</span></span>`;
         label.classList.remove('text-on-surface-variant');
@@ -902,7 +900,7 @@ const Expenses = {
     menu.innerHTML = Object.entries(CATEGORIES).map(([name]) => {
       const { color, icon, msIcon } = getCatStyle(name);
       const iconInner = msIcon
-        ? `<span class="material-symbols-outlined" style="font-size:16px;color:#fff;font-variation-settings:'FILL' 1">${msIcon}</span>`
+        ? `<span class="material-symbols-outlined" style="font-size:16px;color:#fff;font-variation-settings:\'FILL\' 1">${msIcon}</span>`
         : `<span style="font-size:16px;line-height:1">${icon}</span>`;
       return `<button type="button" class="cat-option w-full flex items-center gap-3 px-4 py-3 transition-colors" data-value="${esc(name)}" role="option" style="border-bottom:1px solid rgba(255,255,255,0.05)">
         <div style="width:32px;height:32px;flex-shrink:0;border-radius:9px;background:${color};display:flex;align-items:center;justify-content:center;box-shadow:inset 0 1px 0 rgba(255,255,255,0.18)">
