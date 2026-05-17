@@ -193,6 +193,8 @@ const Expenses = {
     document.getElementById('exp-currency').value = expense?.currency || defaultCurrency;
     document.getElementById('exp-rate').value = expense?.exchange_rate || '';
     document.getElementById('exp-date').value = expense?.payment_date?.slice(0,10) || todayStr();
+    document.getElementById('exp-cancellation-date').value = expense?.cancellation_date?.slice(0,10) || '';
+    document.getElementById('exp-cancellation-policy').value = expense?.cancellation_policy || '';
     document.getElementById('exp-location').value = expense?.location || '';
     document.getElementById('exp-link').value = expense?.link || '';
     document.getElementById('exp-contact-name').value = expense?.contact_name || '';
@@ -290,6 +292,8 @@ const Expenses = {
       payment_type: paymentType,
       payment_method: paymentMethod,
       payment_date: document.getElementById('exp-date').value || null,
+      cancellation_date: document.getElementById('exp-cancellation-date').value || null,
+      cancellation_policy: document.getElementById('exp-cancellation-policy').value.trim() || null,
       location: document.getElementById('exp-location').value.trim() || null,
       link: document.getElementById('exp-link').value.trim() || null,
       contact_name: document.getElementById('exp-contact-name').value.trim() || null,
@@ -532,6 +536,30 @@ const Expenses = {
     }
     if (exp.notes) {
       html += `<div>${secLabel('הערות')}${infoRow('chat', esc(exp.notes))}</div>`;
+    }
+    if (exp.cancellation_date || exp.cancellation_policy) {
+      html += `<div>
+        ${secLabel('מדיניות ביטול')}
+        <div class="rounded-2xl p-4 space-y-3" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.07)">
+          ${exp.cancellation_date ? `
+            <div class="flex items-center gap-3">
+              <div style="width:38px;height:38px;border-radius:50%;background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.2);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                <span class="material-symbols-outlined" style="font-size:18px;color:#fbbf24;font-variation-settings:'FILL' 1">event_busy</span>
+              </div>
+              <div>
+                <p style="font-size:11px;color:rgba(255,255,255,0.38);margin-bottom:2px">ביטול אחרון עד</p>
+                <p style="font-size:14px;font-weight:600;color:#fbbf24">${fmtDate(exp.cancellation_date)}</p>
+              </div>
+            </div>` : ''}
+          ${exp.cancellation_policy ? `
+            <div class="flex items-start gap-3" ${exp.cancellation_date ? 'style="padding-top:8px;border-top:1px solid rgba(255,255,255,0.06)"' : ''}>
+              <div style="width:38px;height:38px;border-radius:50%;background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px">
+                <span class="material-symbols-outlined" style="font-size:18px;color:#fbbf24;font-variation-settings:'FILL' 1">policy</span>
+              </div>
+              <p style="font-size:13px;color:rgba(255,255,255,0.75);line-height:1.55;white-space:pre-wrap;word-break:break-word;flex:1">${esc(exp.cancellation_policy)}</p>
+            </div>` : ''}
+        </div>
+      </div>`;
     }
     if (exp.link) {
       let displayUrl;

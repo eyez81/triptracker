@@ -806,6 +806,22 @@
           <input id="exp-date" type="date" class="bg-transparent border-none p-0 w-full text-on-surface focus:ring-0 outline-none [color-scheme:dark]"/>
         </div>
       </div>
+      <!-- Cancellation deadline -->
+      <div>
+        <label class="text-xs text-primary font-medium block mb-1 pr-1">תאריך ביטול אחרון (אופציונלי)</label>
+        <div class="glass-card rounded-full px-4 py-3 flex items-center gap-3 inner-glow">
+          <span class="material-symbols-outlined text-outline">event_busy</span>
+          <input id="exp-cancellation-date" type="date" class="bg-transparent border-none p-0 w-full text-on-surface focus:ring-0 outline-none [color-scheme:dark]"/>
+        </div>
+      </div>
+      <!-- Cancellation policy -->
+      <div>
+        <label class="text-xs text-primary font-medium block mb-1 pr-1">מדיניות ביטול (אופציונלי)</label>
+        <div class="glass-card rounded-xl px-4 py-3 flex items-start gap-3 inner-glow">
+          <span class="material-symbols-outlined text-outline mt-1">policy</span>
+          <textarea id="exp-cancellation-policy" rows="2" placeholder="תנאי ביטול, קנסות, הגבלות..." class="bg-transparent border-none p-0 w-full text-on-surface focus:ring-0 placeholder:text-on-surface-variant/50 resize-none outline-none"></textarea>
+        </div>
+      </div>
       <!-- Location -->
       <div>
         <label class="text-xs text-primary font-medium block mb-1 pr-1">מיקום (אופציונלי)</label>
