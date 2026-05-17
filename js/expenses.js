@@ -50,44 +50,55 @@ const Expenses = {
     const isInstantPaid = e.payment_type === 'חד פעמי' && ['מזומן', 'אשראי', 'העברה', 'ביט'].includes(e.payment_method);
     const isTracking = e.payment_type === 'תשלומים' || e.payment_type === 'מקדמה+יתרה';
 
+    // Material Symbols icon per default category; emoji fallback for custom
+    const CAT_MS = {
+      'לינה':'hotel', 'אוכל ושתייה':'restaurant', 'קניות':'shopping_bag',
+      'אטרקציות':'attractions', 'רכב שכור':'directions_car', 'תחבורה':'directions_bus',
+      'טיסות':'flight', 'ביטוח':'shield', 'אחר':'category',
+    };
+    const msIcon = CAT_MS[e.category];
+    const iconHTML = msIcon
+      ? `<span class="material-symbols-outlined" style="font-size:22px;color:#fff;font-variation-settings:'FILL' 1">${msIcon}</span>`
+      : `<span style="font-size:22px;line-height:1">${cat.icon}</span>`;
+
     let badge = '';
     if (e.payment_type === 'עתידי') {
-      badge = `<span style="background:rgba(139,92,246,0.2);color:#a78bfa;font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;white-space:nowrap">עתידי</span>`;
+      badge = `<span style="background:rgba(139,92,246,0.22);color:#c4b5fd;font-size:12px;font-weight:600;padding:4px 12px;border-radius:20px;white-space:nowrap">עתידי</span>`;
     } else if (isInstantPaid) {
-      badge = `<span style="background:rgba(74,222,128,0.2);color:#4ade80;font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;white-space:nowrap">שולם</span>`;
+      badge = `<span style="background:rgba(74,222,128,0.18);color:#4ade80;font-size:12px;font-weight:600;padding:4px 12px;border-radius:20px;white-space:nowrap">שולם</span>`;
     } else if (isTracking) {
       const sum = this._getExpensePaymentSummary(e);
       const isFullyPaid = sum.remaining <= 0.01;
       const isPartial = sum.paid > 0 && !isFullyPaid;
       if (isFullyPaid) {
-        badge = `<span style="background:rgba(74,222,128,0.2);color:#4ade80;font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;white-space:nowrap">שולם</span>`;
+        badge = `<span style="background:rgba(74,222,128,0.18);color:#4ade80;font-size:12px;font-weight:600;padding:4px 12px;border-radius:20px;white-space:nowrap">שולם</span>`;
       } else if (isPartial) {
-        badge = `<span style="background:rgba(45,212,191,0.2);color:#2dd4bf;font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;white-space:nowrap">תשלום חלקי</span>`;
+        badge = `<span style="background:rgba(45,212,191,0.18);color:#2dd4bf;font-size:12px;font-weight:600;padding:4px 12px;border-radius:20px;white-space:nowrap">תשלום חלקי</span>`;
       } else {
-        badge = `<span style="background:rgba(239,68,68,0.18);color:#f87171;font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;white-space:nowrap">טרם שולם</span>`;
+        badge = `<span style="background:rgba(239,68,68,0.18);color:#f87171;font-size:12px;font-weight:600;padding:4px 12px;border-radius:20px;white-space:nowrap">טרם שולם</span>`;
       }
     }
 
     const origStr = e.currency !== 'ILS'
-      ? `<div style="font-size:11px;color:rgba(255,255,255,0.4);text-align:left;direction:ltr">${Currency.fmt(e.amount, e.currency, 2)}</div>`
+      ? `<div style="font-size:11px;color:rgba(255,255,255,0.38);direction:ltr">${Currency.fmt(e.amount, e.currency, 2)}</div>`
       : '';
     const sub = [esc(e.category || 'אחר'), e.payment_date ? fmtDate(e.payment_date) : ''].filter(Boolean).join(' • ');
 
     return `
-      <div class="expense-item flex items-center gap-3 px-4 py-3.5 cursor-pointer active:bg-white/5 transition-colors"
-           data-id="${e.id}" style="border-bottom:1px solid rgba(255,255,255,0.05)">
-        <div class="w-11 h-11 rounded-full flex items-center justify-center text-xl flex-shrink-0" style="background:${cat.color}33">${cat.icon}</div>
+      <div class="expense-item flex items-center gap-3 px-4 cursor-pointer active:bg-white/5 transition-colors"
+           data-id="${e.id}" style="padding-top:14px;padding-bottom:14px;border-bottom:1px solid rgba(255,255,255,0.06)">
+        <div class="flex-shrink-0 flex items-center justify-center" style="width:46px;height:46px;border-radius:50%;background:${cat.color}">${iconHTML}</div>
         <div class="flex-1 min-w-0">
-          <p style="font-size:15px;font-weight:600;color:rgba(255,255,255,0.92);line-height:1.3">${esc(e.name)}</p>
-          <p style="font-size:12px;color:rgba(255,255,255,0.4);margin-top:2px">${sub}</p>
+          <p style="font-size:17px;font-weight:700;color:rgba(255,255,255,0.95);line-height:1.25">${esc(e.name)}</p>
+          <p style="font-size:13px;color:rgba(255,255,255,0.42);margin-top:3px">${sub}</p>
         </div>
         ${badge}
-        <div class="flex-shrink-0 flex items-center gap-0.5" style="text-align:left;direction:ltr">
-          <div>
-            <div style="font-size:15px;font-weight:700;color:rgba(255,255,255,0.92)">${Currency.fmtILS(e.amount_ils)}</div>
+        <div class="flex-shrink-0 flex items-center gap-0.5" style="direction:ltr">
+          <div style="text-align:right">
+            <div style="font-size:17px;font-weight:700;color:rgba(255,255,255,0.95)">${Currency.fmtILS(e.amount_ils)}</div>
             ${origStr}
           </div>
-          <span class="material-symbols-outlined" style="font-size:18px;color:rgba(255,255,255,0.25)">chevron_left</span>
+          <span class="material-symbols-outlined" style="font-size:18px;color:rgba(255,255,255,0.22)">chevron_left</span>
         </div>
       </div>`;
   },
