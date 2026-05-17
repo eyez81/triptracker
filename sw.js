@@ -1,6 +1,20 @@
 const CACHE = 'triptracker-v1';
-const ASSETS = ['/', '/index.html', '/manifest.json', '/icon.svg',
-  '/js/api.js', '/js/config.js', '/js/trips.js', '/js/expenses.js'];
+const ASSETS = [
+  './',
+  './index.html',
+  './manifest.json',
+  './icon.svg',
+  './favicon-32.png',
+  './icon-192.png',
+  './icon-512.png',
+  './js/api.js',
+  './js/config.js',
+  './js/currency.js',
+  './js/export.js',
+  './js/trips.js',
+  './js/expenses.js',
+  './js/app.js',
+];
 
 self.addEventListener('install', e =>
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)).then(() => self.skipWaiting()))

@@ -4,9 +4,17 @@
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
   <title>מעקב הוצאות</title>
-  <link rel="icon" type="image/svg+xml" href="./favicon.svg"/>
-  <link rel="shortcut icon" href="./favicon.svg"/>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <meta name="description" content="מעקב הוצאות וניהול תקציב לטיולים"/>
+  <meta name="theme-color" content="#0b1326"/>
+  <meta name="mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <meta name="apple-mobile-web-app-title" content="טיולים"/>
+  <link rel="manifest" href="./manifest.json"/>
+  <link rel="icon" href="./favicon-32.png" type="image/png"/>
+  <link rel="icon" href="./icon.svg" type="image/svg+xml"/>
+  <link rel="apple-touch-icon" href="./icon-192.png"/>
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
   <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
   <script>
@@ -207,17 +215,21 @@
     </div>
   </main>
   <button id="btn-add-trip"
-    class="fixed bottom-24 left-5 z-50 bg-primary-container text-on-primary-container px-6 py-4 rounded-xl shadow-xl flex items-center gap-3 active:scale-95 transition-transform font-semibold">
-    <span class="material-symbols-outlined">add</span> טיול חדש
+    class="fixed z-50 flex flex-col items-center justify-center active:scale-95 transition-transform text-white"
+    style="bottom:16px;left:50%;transform:translateX(-50%);width:84px;height:84px;border-radius:50%;background:linear-gradient(145deg,#00d4aa,#1e88e5);box-shadow:0 6px 32px rgba(0,212,170,0.45)">
+    <span class="material-symbols-outlined text-2xl" style="font-variation-settings:'FILL' 1">add</span>
+    <span style="font-size:10px;font-weight:700;line-height:1.2;text-align:center">טיול חדש</span>
   </button>
-  <nav class="fixed bottom-0 w-full z-50 bg-surface/80 backdrop-blur-xl border-t border-white/10 rounded-t-lg flex flex-row-reverse justify-around items-center h-20 px-4">
-    <a class="flex flex-col items-center bg-primary-container text-on-primary-container rounded-xl px-8 py-1 active:scale-90 transition">
-      <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1">flight_takeoff</span>
-      <span class="text-xs mt-1 font-medium">טיולים</span>
+  <nav class="fixed bottom-0 w-full z-40 grid items-center"
+       style="height:70px;grid-template-columns:1fr 88px 1fr;background:rgba(10,15,35,0.96);backdrop-filter:blur(24px);border-top:1px solid rgba(255,255,255,0.07);border-radius:24px 24px 0 0">
+    <a id="nav-settings-trips" href="#" class="flex flex-col items-center gap-0.5 text-on-surface-variant hover:text-primary transition active:scale-90">
+      <span class="material-symbols-outlined text-2xl">settings</span>
+      <span style="font-size:11px;font-weight:500">הגדרות</span>
     </a>
-    <a id="nav-settings-trips" href="#" class="flex flex-col items-center text-on-surface-variant hover:text-primary transition active:scale-90">
-      <span class="material-symbols-outlined">settings</span>
-      <span class="text-xs mt-1 font-medium">הגדרות</span>
+    <div></div>
+    <a class="flex flex-col items-center gap-0.5" style="color:#00d4aa">
+      <span class="material-symbols-outlined text-2xl" style="font-variation-settings:'FILL' 1">flight_takeoff</span>
+      <span style="font-size:11px;font-weight:700">טיולים</span>
     </a>
   </nav>
 </div>
@@ -340,19 +352,22 @@
   </main>
 
   <button id="btn-add-expense"
-    class="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 px-7 py-3.5 rounded-full shadow-2xl flex items-center gap-2 active:scale-95 transition-transform font-bold text-base text-white"
-    style="background:linear-gradient(135deg,#2563eb,#4edea3);box-shadow:0 8px 32px rgba(78,222,163,0.35)">
-    <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1">add</span> הוצאה חדשה
+    class="fixed z-50 flex flex-col items-center justify-center active:scale-95 transition-transform text-white"
+    style="bottom:16px;left:50%;transform:translateX(-50%);width:84px;height:84px;border-radius:50%;background:linear-gradient(145deg,#00d4aa,#1e88e5);box-shadow:0 6px 32px rgba(0,212,170,0.45)">
+    <span class="material-symbols-outlined text-2xl" style="font-variation-settings:'FILL' 1">add</span>
+    <span style="font-size:10px;font-weight:700;line-height:1.2;text-align:center">הוצאה חדשה</span>
   </button>
 
-  <nav class="fixed bottom-0 w-full z-50 bg-surface/80 backdrop-blur-xl border-t border-white/10 rounded-t-lg flex flex-row-reverse justify-around items-center h-20 px-4">
-    <a id="nav-trips-from-trip" href="#" class="flex flex-col items-center bg-primary-container text-on-primary-container rounded-xl px-8 py-1 active:scale-90 transition">
-      <span class="material-symbols-outlined">flight_takeoff</span>
-      <span class="text-xs mt-1 font-medium">טיולים</span>
+  <nav class="fixed bottom-0 w-full z-40 grid items-center"
+       style="height:70px;grid-template-columns:1fr 88px 1fr;background:rgba(10,15,35,0.96);backdrop-filter:blur(24px);border-top:1px solid rgba(255,255,255,0.07);border-radius:24px 24px 0 0">
+    <a id="nav-settings-trip" href="#" class="flex flex-col items-center gap-0.5 text-on-surface-variant hover:text-primary transition active:scale-90">
+      <span class="material-symbols-outlined text-2xl">settings</span>
+      <span style="font-size:11px;font-weight:500">הגדרות</span>
     </a>
-    <a id="nav-settings-trip" href="#" class="flex flex-col items-center text-on-surface-variant hover:text-primary transition active:scale-90">
-      <span class="material-symbols-outlined">settings</span>
-      <span class="text-xs mt-1 font-medium">הגדרות</span>
+    <div></div>
+    <a id="nav-trips-from-trip" href="#" class="flex flex-col items-center gap-0.5" style="color:#00d4aa">
+      <span class="material-symbols-outlined text-2xl" style="font-variation-settings:'FILL' 1">flight_takeoff</span>
+      <span style="font-size:11px;font-weight:700">טיולים</span>
     </a>
   </nav>
 </div>
@@ -446,14 +461,16 @@
       <p class="text-xs text-on-surface-variant">גרסה 1.0.0</p>
     </section>
   </main>
-  <nav class="fixed bottom-0 w-full z-50 bg-surface/80 backdrop-blur-xl border-t border-white/10 rounded-t-lg flex flex-row-reverse justify-around items-center h-20 px-4">
-    <a id="nav-trips-from-settings" href="#" class="flex flex-col items-center text-on-surface-variant hover:text-primary transition active:scale-90">
-      <span class="material-symbols-outlined">flight_takeoff</span>
-      <span class="text-xs mt-1 font-medium">טיולים</span>
+  <nav class="fixed bottom-0 w-full z-40 grid items-center"
+       style="height:70px;grid-template-columns:1fr 88px 1fr;background:rgba(10,15,35,0.96);backdrop-filter:blur(24px);border-top:1px solid rgba(255,255,255,0.07);border-radius:24px 24px 0 0">
+    <a class="flex flex-col items-center gap-0.5" style="color:#00d4aa">
+      <span class="material-symbols-outlined text-2xl" style="font-variation-settings:'FILL' 1">settings</span>
+      <span style="font-size:11px;font-weight:700">הגדרות</span>
     </a>
-    <a class="flex flex-col items-center bg-secondary-container text-on-secondary-container rounded-full px-6 py-2 active:scale-90 transition">
-      <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1">settings</span>
-      <span class="text-xs mt-1 font-medium">הגדרות</span>
+    <div></div>
+    <a id="nav-trips-from-settings" href="#" class="flex flex-col items-center gap-0.5 text-on-surface-variant hover:text-primary transition active:scale-90">
+      <span class="material-symbols-outlined text-2xl">flight_takeoff</span>
+      <span style="font-size:11px;font-weight:500">טיולים</span>
     </a>
   </nav>
 </div>
@@ -868,7 +885,7 @@
 <script src="js/app.js"></script>
 <script>
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/sw.js').catch(() => {});
+    navigator.serviceWorker.register('./sw.js').catch(() => {});
   }
 </script>
 </body>
