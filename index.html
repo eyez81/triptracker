@@ -677,20 +677,24 @@
     </button>
   </div>
 
-  <main class="flex-1 px-5 pt-4 max-w-2xl mx-auto w-full space-y-4">
-    <!-- Budget card -->
+  <main class="flex-1 px-5 pt-5 max-w-2xl mx-auto w-full space-y-4">
+
+    <!-- ── Trip title + dates (prominent screen header) ── -->
+    <div class="text-center" style="padding-bottom:2px">
+      <h1 id="trip-header-title" style="font-size:34px;font-weight:800;color:var(--title-color);line-height:1.15;letter-spacing:-0.03em"></h1>
+      <div id="sum-dates" class="flex items-center justify-center gap-1.5 mt-2" style="font-size:13px;color:var(--bdates)"></div>
+    </div>
+
+    <!-- ── Budget card ── -->
     <div class="rounded-2xl relative" style="background:var(--bcard-bg);box-shadow:var(--bcard-shadow);overflow:hidden">
       <div style="position:absolute;inset:0;pointer-events:none;background:var(--bcard-amb)"></div>
       <div class="relative" style="padding:12px 14px">
 
-        <!-- Trip name (single title — no duplicate) -->
-        <p id="trip-header-title" style="font-size:11px;font-weight:600;color:var(--bcard-lbl);letter-spacing:0.06em;margin-bottom:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></p>
-
         <!-- Amount + donut -->
         <div style="background:var(--binner-bg);border:1px solid var(--binner-border);border-radius:14px;box-shadow:var(--binner-shadow);padding:12px 14px 14px">
           <div class="flex items-center gap-3">
-            <!-- Amount column -->
             <div class="flex-1 min-w-0">
+              <p style="font-size:10px;font-weight:600;color:var(--bcard-lbl);letter-spacing:0.07em;margin-bottom:4px">התקציב</p>
               <h2 id="sum-spent" style="font-size:30px;font-weight:800;color:var(--bcard-amount);line-height:1;letter-spacing:-0.025em">₪0</h2>
               <p id="sum-budget" style="font-size:11px;color:var(--bcard-sublbl);margin-top:4px">מתוך ₪0</p>
               <div style="position:relative;height:3px;background:var(--bbar-track);border-radius:99px;margin-top:12px">
@@ -699,7 +703,6 @@
                 </div>
               </div>
             </div>
-            <!-- Donut -->
             <div class="relative flex-shrink-0" style="width:80px;height:80px">
               <div style="position:absolute;inset:-5px;border-radius:50%;background:radial-gradient(circle,rgba(78,222,163,0.18) 0%,transparent 68%);pointer-events:none"></div>
               <svg class="w-full h-full -rotate-90" viewBox="0 0 120 120">
@@ -769,31 +772,10 @@
           </div>
 
         </div>
-
-        <!-- Date -->
-        <div id="sum-dates" class="flex items-center gap-1 mt-1.5" style="font-size:11px;color:var(--bdates)">
-          <span class="material-symbols-outlined" style="font-size:13px">calendar_month</span>
-        </div>
-
       </div>
     </div>
 
-    <!-- Search + Filter -->
-    <div class="relative">
-      <span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
-      <input id="expense-search" type="text" placeholder="חיפוש הוצאה..."
-        class="w-full bg-surface-container-high border border-white/5 rounded-2xl pr-12 pl-12 py-3.5 text-on-surface placeholder:text-on-surface-variant focus:ring-2 focus:ring-primary outline-none"/>
-      <button id="btn-filter" class="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-primary transition active:scale-90">
-        <span class="material-symbols-outlined">filter_list</span>
-      </button>
-    </div>
-
-    <!-- Filter dropdown (hidden by default) -->
-    <div id="filter-panel" class="hidden glass-card rounded-xl p-4 space-y-3">
-      <p class="text-sm font-semibold text-on-surface-variant">סינון לפי קטגוריה</p>
-      <div id="filter-pills" class="flex flex-wrap gap-2"></div>
-    </div>
-
+    <!-- ── Action buttons (categories + forecast) — BEFORE search ── -->
     <div class="grid grid-cols-2 gap-3">
       <button id="btn-show-categories" class="rounded-2xl px-4 py-4 flex items-center gap-3 active:scale-95 transition" style="background:linear-gradient(135deg,#3730a3,#6c5ce7)">
         <span class="material-symbols-outlined text-white text-2xl" style="font-variation-settings:'FILL' 1">pie_chart</span>
@@ -811,6 +793,22 @@
         </div>
         <span class="material-symbols-outlined text-white/50">chevron_left</span>
       </button>
+    </div>
+
+    <!-- ── Search + Filter — AFTER action buttons ── -->
+    <div class="relative">
+      <span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+      <input id="expense-search" type="text" placeholder="חיפוש הוצאה..."
+        class="w-full bg-surface-container-high border border-white/5 rounded-2xl pr-12 pl-12 py-3.5 text-on-surface placeholder:text-on-surface-variant focus:ring-2 focus:ring-primary outline-none"/>
+      <button id="btn-filter" class="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-primary transition active:scale-90">
+        <span class="material-symbols-outlined">filter_list</span>
+      </button>
+    </div>
+
+    <!-- Filter dropdown (hidden by default) -->
+    <div id="filter-panel" class="hidden glass-card rounded-xl p-4 space-y-3">
+      <p class="text-sm font-semibold text-on-surface-variant">סינון לפי קטגוריה</p>
+      <div id="filter-pills" class="flex flex-wrap gap-2"></div>
     </div>
 
     <!-- Expenses list -->
