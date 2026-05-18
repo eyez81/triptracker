@@ -123,7 +123,7 @@ const Expenses = {
     const totalAll = this._list.reduce((s,e) => s + (Number(e.amount_ils)||0), 0);
     let totalPaid = 0, totalUnpaid = 0;
     this._list.forEach(e => {
-      const ps = this._paymentSummary(e);
+      const ps = this._getExpensePaymentSummary(e);
       totalPaid += ps.paid;
       totalUnpaid += ps.remaining;
     });
