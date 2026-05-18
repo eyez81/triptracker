@@ -662,14 +662,14 @@ const Expenses = {
           </div>
         </div>`;
     }
-    if (exp.receipt) {
-      const receiptUrl = pb.fileUrl(exp, exp.receipt);
-      const isPdf = exp.receipt.toLowerCase().endsWith('.pdf');
-      const cleanName = exp.receipt.replace(/^[a-z0-9]+_/i, '') || exp.receipt;
-      html += `
-        <div>
-          ${secLabel('קבלה')}
-          ${isPdf ? `
+    const viewAttachments = getExpenseAttachments(exp);
+    if (viewAttachments.length > 0) {
+      const attachmentCards = viewAttachments.map(filename => {
+        const receiptUrl = pb.fileUrl(exp, filename);
+        const isPdf      = filename.toLowerCase().endsWith('.pdf');
+        const cleanName  = filename.replace(/^[a-z0-9]+_/i, '') || filename;
+        if (isPdf) {
+          return `
             <div class="flex items-center gap-3 rounded-2xl p-4 cursor-pointer js-open-attachment active:scale-[0.99] transition"
                  style="background:var(--vrow-bg);border:1px solid var(--vrow-border)"
                  data-url="${receiptUrl}" data-type="pdf" data-filename="${esc(cleanName)}">
@@ -683,8 +683,9 @@ const Expenses = {
               <div style="width:36px;height:36px;border-radius:50%;background:var(--ateal-bg);border:1px solid var(--ateal-brd);display:flex;align-items:center;justify-content:center;flex-shrink:0">
                 <span class="material-symbols-outlined" style="font-size:17px;color:var(--ateal);font-variation-settings:'FILL' 1">open_in_new</span>
               </div>
-            </div>
-          ` : `
+            </div>`;
+        } else {
+          return `
             <div class="js-open-attachment cursor-pointer active:scale-[0.99] transition rounded-2xl overflow-hidden"
                  style="background:var(--vrow-bg);border:1px solid var(--vrow-border)"
                  data-url="${receiptUrl}" data-type="image" data-filename="${esc(cleanName)}">
@@ -698,8 +699,13 @@ const Expenses = {
                   <span style="font-size:11px;font-weight:600;color:rgba(255,255,255,0.85)">לחץ להגדלה</span>
                 </div>
               </div>
-            </div>
-          `}
+            </div>`;
+        }
+      }).join('');
+      html += `
+        <div>
+          ${secLabel('קבלה')}
+          <div class="space-y-2">${attachmentCards}</div>
         </div>`;
     }
 
@@ -978,3 +984,12 @@ const Expenses = {
 };
 
 function todayStr() { return new Date().toISOString().slice(0,10); }
+
+/* Normalise receipt field: PocketBase returns a string for legacy single-file
+   records and an array for the new multi-file schema.  Always returns an array
+   (possibly empty) so callers never have to branch on type. */
+function getExpenseAttachments(exp) {
+  if (!exp?.receipt) return [];
+  if (Array.isArray(exp.receipt)) return exp.receipt.filter(Boolean);
+  return [exp.receipt];
+}
