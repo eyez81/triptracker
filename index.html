@@ -477,8 +477,12 @@
 <div id="screen-trips" class="screen flex-col pb-24">
   <header dir="ltr" class="app-header" style="position:sticky;top:0;z-index:50;width:100%;background:var(--hdr-bg);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-bottom:1px solid var(--hdr-border);display:grid;grid-template-columns:56px 1fr 56px;align-items:center;padding:0 14px;box-sizing:border-box">
 
-    <!-- LEFT: empty balancing cell -->
-    <div></div>
+    <!-- LEFT: logout -->
+    <div style="display:flex;justify-content:flex-start">
+      <button id="btn-logout" style="width:42px;height:42px;display:flex;align-items:center;justify-content:center;border-radius:50%;background:var(--hdr-btn-bg);border:1px solid var(--hdr-btn-border);cursor:pointer" onpointerdown="this.style.background='var(--hdr-btn-active)'" onpointerup="this.style.background='var(--hdr-btn-bg)'" onpointerleave="this.style.background='var(--hdr-btn-bg)'">
+        <span class="material-symbols-outlined" style="font-size:20px;color:var(--hdr-btn-color)">logout</span>
+      </button>
+    </div>
 
     <!-- CENTER: logo -->
     <div style="display:flex;align-items:center;justify-content:center;padding:0 8px">
@@ -490,12 +494,8 @@
       </div>
     </div>
 
-    <!-- RIGHT: logout -->
-    <div style="display:flex;justify-content:flex-end">
-      <button id="btn-logout" style="width:42px;height:42px;display:flex;align-items:center;justify-content:center;border-radius:50%;background:var(--hdr-btn-bg);border:1px solid var(--hdr-btn-border);cursor:pointer" onpointerdown="this.style.background='var(--hdr-btn-active)'" onpointerup="this.style.background='var(--hdr-btn-bg)'" onpointerleave="this.style.background='var(--hdr-btn-bg)'">
-        <span class="material-symbols-outlined" style="font-size:20px;color:var(--hdr-btn-color)">logout</span>
-      </button>
-    </div>
+    <!-- RIGHT: empty balancing cell -->
+    <div></div>
 
   </header>
   <main class="flex-1 px-5 pt-6 max-w-2xl mx-auto w-full space-y-6">
@@ -765,7 +765,7 @@
       <span class="font-bold text-xl text-primary">הגדרות</span>
     </div>
     <button id="btn-back-from-settings" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-variant/50 transition active:scale-95">
-      <span class="material-symbols-outlined text-on-surface-variant">arrow_forward</span>
+      <span class="material-symbols-outlined text-on-surface-variant">arrow_back</span>
     </button>
   </header>
   <main class="flex-1 px-5 pt-6 max-w-2xl mx-auto w-full space-y-8">
