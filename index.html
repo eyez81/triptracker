@@ -167,6 +167,38 @@
       --vcont-name: #fff;
       --vcont-phone: rgba(255,255,255,0.48);
       --vteal-icon: rgba(45,212,191,0.55);
+      /* ── Semantic accent palette (dark = neon, light = rich/deep) ── */
+      --agreen: #4ade80;
+      --agreen-bg: rgba(74,222,128,0.14);
+      --agreen-brd: rgba(74,222,128,0.22);
+      --ateal: #2dd4bf;
+      --ateal-bg: rgba(45,212,191,0.1);
+      --ateal-brd: rgba(45,212,191,0.2);
+      --ared: #f87171;
+      --ared-bg: rgba(248,113,113,0.1);
+      --ared-brd: rgba(248,113,113,0.2);
+      --aamber: #fbbf24;
+      --aamber-bg: rgba(251,191,36,0.1);
+      --aamber-brd: rgba(251,191,36,0.22);
+      --apurple: #c4b5fd;
+      --apurple-bg: rgba(139,92,246,0.18);
+      --apurple-brd: rgba(139,92,246,0.25);
+      --ablue: #60a5fa;
+      --ablue-bg: rgba(96,165,250,0.12);
+      --ablue-brd: rgba(96,165,250,0.22);
+      --awa: #25d366;
+      --awa-bg: rgba(37,211,102,0.12);
+      --awa-brd: rgba(37,211,102,0.22);
+      --progress-bar: linear-gradient(to left,#2dd4bf,#2563eb);
+      /* Category-summary modal */
+      --cs-card-bg: rgba(255,255,255,0.04);
+      --cs-card-brd: rgba(255,255,255,0.08);
+      --cs-txt-hi: #fff;
+      --cs-txt-mid: rgba(255,255,255,0.9);
+      --cs-txt-lo: rgba(255,255,255,0.38);
+      --cs-txt-dim: rgba(255,255,255,0.32);
+      --cs-div: rgba(255,255,255,0.08);
+      --cs-icon: rgba(255,255,255,0.45);
     }
     .light {
       --c-background: #f7f9ff;
@@ -236,13 +268,13 @@
       --title-color: #1a2238;
       --inner-glow-shadow: inset 0 1px 0 rgba(255,255,255,0.85),0 1px 3px rgba(0,0,0,0.05);
       --exp-card-bg: linear-gradient(135deg,rgba(255,255,255,0.94) 0%,rgba(248,250,255,0.98) 100%);
-      --exp-card-border: rgba(0,0,0,0.07);
-      --exp-card-shadow: 0 2px 12px rgba(0,0,0,0.06),0 1px 3px rgba(0,0,0,0.04);
+      --exp-card-border: rgba(0,0,0,0.12);
+      --exp-card-shadow: 0 2px 16px rgba(0,0,0,0.1),0 1px 4px rgba(0,0,0,0.07),0 0 0 1px rgba(0,0,0,0.04);
       --exp-name: #0f172a;
       --exp-sub: rgba(0,0,0,0.44);
       --exp-amt: #0f172a;
-      --vrow-bg: rgba(0,0,0,0.03);
-      --vrow-border: rgba(0,0,0,0.07);
+      --vrow-bg: rgba(0,0,0,0.04);
+      --vrow-border: rgba(0,0,0,0.1);
       --vrow-txt: rgba(0,0,0,0.78);
       --vrow-ext: rgba(0,0,0,0.25);
       --vseclbl: #0f766e;
@@ -253,8 +285,8 @@
       --vamt: #0f172a;
       --vorig: rgba(0,0,0,0.48);
       --vmeta: rgba(0,0,0,0.48);
-      --vpay-bg: rgba(0,0,0,0.03);
-      --vpay-border: rgba(0,0,0,0.07);
+      --vpay-bg: rgba(0,0,0,0.04);
+      --vpay-border: rgba(0,0,0,0.1);
       --vpay-hdrtxt: rgba(0,0,0,0.8);
       --vbar-track: rgba(0,0,0,0.09);
       --vpaid-lbl: rgba(0,0,0,0.45);
@@ -262,17 +294,49 @@
       --vsched-icon: rgba(0,0,0,0.35);
       --vsched-txt: rgba(0,0,0,0.8);
       --vsched-cal: rgba(0,0,0,0.35);
-      --vschedrow-bg: rgba(0,0,0,0.03);
-      --vschedrow-border: rgba(0,0,0,0.07);
+      --vschedrow-bg: rgba(0,0,0,0.04);
+      --vschedrow-border: rgba(0,0,0,0.1);
       --vschedrow-ptxt: rgba(0,0,0,0.85);
       --vschedrow-dtxt: rgba(0,0,0,0.42);
       --vcan-sep: rgba(0,0,0,0.06);
       --vcancel-txt: rgba(0,0,0,0.72);
-      --vcont-bg: rgba(0,0,0,0.03);
-      --vcont-border: rgba(0,0,0,0.07);
+      --vcont-bg: rgba(0,0,0,0.04);
+      --vcont-border: rgba(0,0,0,0.1);
       --vcont-name: #0f172a;
       --vcont-phone: rgba(0,0,0,0.45);
       --vteal-icon: rgba(15,118,110,0.6);
+      /* ── Semantic accent palette (light = rich/deep tones) ── */
+      --agreen: #166534;
+      --agreen-bg: rgba(22,101,52,0.1);
+      --agreen-brd: rgba(22,101,52,0.2);
+      --ateal: #0d9488;
+      --ateal-bg: rgba(13,148,136,0.08);
+      --ateal-brd: rgba(13,148,136,0.2);
+      --ared: #b91c1c;
+      --ared-bg: rgba(185,28,28,0.08);
+      --ared-brd: rgba(185,28,28,0.2);
+      --aamber: #b45309;
+      --aamber-bg: rgba(180,83,9,0.08);
+      --aamber-brd: rgba(180,83,9,0.2);
+      --apurple: #6d28d9;
+      --apurple-bg: rgba(109,40,217,0.1);
+      --apurple-brd: rgba(109,40,217,0.2);
+      --ablue: #1d4ed8;
+      --ablue-bg: rgba(29,78,216,0.08);
+      --ablue-brd: rgba(29,78,216,0.18);
+      --awa: #15803d;
+      --awa-bg: rgba(21,128,61,0.09);
+      --awa-brd: rgba(21,128,61,0.22);
+      --progress-bar: linear-gradient(to left,#0d9488,#1d4ed8);
+      /* Category-summary modal */
+      --cs-card-bg: rgba(255,255,255,0.95);
+      --cs-card-brd: rgba(0,0,0,0.1);
+      --cs-txt-hi: #0f172a;
+      --cs-txt-mid: rgba(0,0,0,0.82);
+      --cs-txt-lo: rgba(0,0,0,0.45);
+      --cs-txt-dim: rgba(0,0,0,0.35);
+      --cs-div: rgba(0,0,0,0.09);
+      --cs-icon: rgba(0,0,0,0.42);
     }
     /* ── Atmospheric base ── */
     body {
@@ -368,8 +432,8 @@
 
     .glass-card { background: rgba(45,52,73,0.4); backdrop-filter: blur(24px); border: 1px solid rgba(255,255,255,0.08); }
     .glass-container { background: rgba(23,31,51,0.6); backdrop-filter: blur(24px); border: 1px solid rgba(255,255,255,0.1); }
-    .light .glass-card { background: rgba(255,255,255,0.88); backdrop-filter: blur(24px); border: 1px solid rgba(0,0,0,0.08); box-shadow: 0 2px 12px rgba(0,0,0,0.06),0 1px 3px rgba(0,0,0,0.04); }
-    .light .glass-container { background: rgba(255,255,255,0.94); backdrop-filter: blur(24px); border: 1px solid rgba(0,0,0,0.09); box-shadow: 0 8px 32px rgba(0,0,0,0.08),0 2px 8px rgba(0,0,0,0.05); }
+    .light .glass-card { background: rgba(255,255,255,0.92); backdrop-filter: blur(24px); border: 1px solid rgba(0,0,0,0.1); box-shadow: 0 2px 16px rgba(0,0,0,0.1),0 1px 4px rgba(0,0,0,0.06),0 0 0 1px rgba(0,0,0,0.03); }
+    .light .glass-container { background: rgba(255,255,255,0.96); backdrop-filter: blur(24px); border: 1px solid rgba(0,0,0,0.1); box-shadow: 0 8px 40px rgba(0,0,0,0.12),0 2px 10px rgba(0,0,0,0.07),0 0 0 1px rgba(0,0,0,0.04); }
     .inner-glow { box-shadow: var(--inner-glow-shadow); }
     /* Light mode structural overrides */
     .light #budget-pct { color: var(--bpct-color) !important; }

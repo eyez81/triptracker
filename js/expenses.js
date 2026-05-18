@@ -59,19 +59,19 @@ const Expenses = {
 
     let badge = '';
     if (e.payment_type === 'עתידי') {
-      badge = `<span style="background:rgba(139,92,246,0.18);color:#c4b5fd;border:1px solid rgba(139,92,246,0.25);font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;white-space:nowrap">עתידי</span>`;
+      badge = `<span style="background:var(--apurple-bg);color:var(--apurple);border:1px solid var(--apurple-brd);font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;white-space:nowrap">עתידי</span>`;
     } else if (isInstantPaid) {
-      badge = `<span style="background:rgba(74,222,128,0.14);color:#4ade80;border:1px solid rgba(74,222,128,0.22);font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;white-space:nowrap">✓ שולם</span>`;
+      badge = `<span style="background:var(--agreen-bg);color:var(--agreen);border:1px solid var(--agreen-brd);font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;white-space:nowrap">✓ שולם</span>`;
     } else if (isTracking) {
       const sum = this._getExpensePaymentSummary(e);
       const isFullyPaid = sum.remaining <= 0.01;
       const isPartial = sum.paid > 0 && !isFullyPaid;
       if (isFullyPaid) {
-        badge = `<span style="background:rgba(74,222,128,0.14);color:#4ade80;border:1px solid rgba(74,222,128,0.22);font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;white-space:nowrap">✓ שולם</span>`;
+        badge = `<span style="background:var(--agreen-bg);color:var(--agreen);border:1px solid var(--agreen-brd);font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;white-space:nowrap">✓ שולם</span>`;
       } else if (isPartial) {
-        badge = `<span style="background:rgba(45,212,191,0.14);color:#2dd4bf;border:1px solid rgba(45,212,191,0.22);font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;white-space:nowrap">תשלום חלקי</span>`;
+        badge = `<span style="background:var(--ateal-bg);color:var(--ateal);border:1px solid var(--ateal-brd);font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;white-space:nowrap">תשלום חלקי</span>`;
       } else {
-        badge = `<span style="background:rgba(239,68,68,0.14);color:#f87171;border:1px solid rgba(239,68,68,0.22);font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;white-space:nowrap">טרם שולם</span>`;
+        badge = `<span style="background:var(--ared-bg);color:var(--ared);border:1px solid var(--ared-brd);font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;white-space:nowrap">טרם שולם</span>`;
       }
     }
 
@@ -461,7 +461,7 @@ const Expenses = {
                 <span style="font-size:12px;color:var(--vcat-txt)">${esc(exp.category || 'אחר')}</span>
               </div>
             </div>
-            <span style="font-size:12px;font-weight:700;padding:5px 14px;border-radius:20px;background:rgba(74,222,128,0.15);color:#4ade80;white-space:nowrap;flex-shrink:0">שולם ✓</span>
+            <span style="font-size:12px;font-weight:700;padding:5px 14px;border-radius:20px;background:var(--agreen-bg);color:var(--agreen);white-space:nowrap;flex-shrink:0">שולם ✓</span>
           </div>
           <div>
             <p style="font-size:11px;color:var(--vamt-lbl);margin-bottom:3px">סכום</p>
@@ -469,7 +469,7 @@ const Expenses = {
             ${origAmount}
           </div>
           <div class="flex flex-wrap items-center gap-x-3 gap-y-1" style="font-size:12px;color:var(--vmeta)">
-            <span class="flex items-center gap-1" style="color:#4ade80">
+            <span class="flex items-center gap-1" style="color:var(--agreen)">
               <span class="material-symbols-outlined" style="font-size:13px;font-variation-settings:'FILL' 1">check_circle</span>שולם במלואו
             </span>
             <span>•</span>
@@ -482,8 +482,8 @@ const Expenses = {
         </div>
       </div>`;
 
-    const statusColor = sum.status === 'שולם במלואו' ? '#4ade80' : sum.status === 'שולם חלקית' ? '#2dd4bf' : '#f87171';
-    const statusBg = sum.status === 'שולם במלואו' ? 'rgba(74,222,128,0.15)' : sum.status === 'שולם חלקית' ? 'rgba(45,212,191,0.15)' : 'rgba(248,113,113,0.15)';
+    const statusColor = sum.status === 'שולם במלואו' ? 'var(--agreen)' : sum.status === 'שולם חלקית' ? 'var(--ateal)' : 'var(--ared)';
+    const statusBg = sum.status === 'שולם במלואו' ? 'var(--agreen-bg)' : sum.status === 'שולם חלקית' ? 'var(--ateal-bg)' : 'var(--ared-bg)';
     const trackingCard = `
       <div class="rounded-2xl overflow-hidden" style="background:var(--vcard-bg)">
         <div class="p-5 space-y-4">
@@ -511,7 +511,7 @@ const Expenses = {
           <span style="font-size:13px;font-weight:700;color:#2dd4bf">${Math.round(sum.total ? (sum.paid / sum.total) * 100 : 0)}%</span>
         </div>
         <div style="height:4px;background:var(--vbar-track);border-radius:99px;overflow:hidden">
-          <div style="height:4px;border-radius:99px;background:linear-gradient(to left,#2dd4bf,#2563eb);width:${Math.max(0,Math.min(100,sum.total?(sum.paid/sum.total)*100:0))}%"></div>
+          <div style="height:4px;border-radius:99px;background:var(--progress-bar);width:${Math.max(0,Math.min(100,sum.total?(sum.paid/sum.total)*100:0))}%"></div>
         </div>
         <div class="grid grid-cols-2 gap-3">
           <div class="rounded-xl p-3" style="background:rgba(45,212,191,0.08);border:1px solid rgba(45,212,191,0.12)">
