@@ -117,13 +117,23 @@ const Expenses = {
     const budget = Number(trip?.budget) || 0;
     const actual = this._list.filter(e => e.payment_type !== 'עתידי');
     const spent = actual.reduce((s,e) => s + (Number(e.amount_ils)||0), 0);
-    const remaining = budget - spent;
     const pct = budget > 0 ? Math.round((spent/budget)*100) : 0;
+
+    // Stat cards
+    const totalAll = this._list.reduce((s,e) => s + (Number(e.amount_ils)||0), 0);
+    let totalPaid = 0, totalUnpaid = 0;
+    this._list.forEach(e => {
+      const ps = this._paymentSummary(e);
+      totalPaid += ps.paid;
+      totalUnpaid += ps.remaining;
+    });
 
     document.getElementById('sum-spent').textContent = Currency.fmtILS(spent);
     document.getElementById('sum-budget').textContent = budget ? `מתוך ${Currency.fmtILS(budget)}` : '';
-    document.getElementById('sum-used').textContent = Currency.fmtILS(spent);
-    document.getElementById('sum-remaining').textContent = budget ? Currency.fmtILS(Math.max(remaining,0)) : '—';
+    document.getElementById('sum-remaining').textContent = budget ? Currency.fmtILS(Math.max(budget - totalAll, 0)) : '—';
+    document.getElementById('sum-paid').textContent = Currency.fmtILS(totalPaid);
+    document.getElementById('sum-total').textContent = Currency.fmtILS(totalAll);
+    document.getElementById('sum-unpaid').textContent = Currency.fmtILS(totalUnpaid);
 
     const fill = document.getElementById('budget-bar-fill');
     fill.style.width = `${Math.min(pct, 100)}%`;

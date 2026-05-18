@@ -733,17 +733,31 @@
           </div>
         </div>
 
-        <!-- Stat tiles -->
-        <div class="flex gap-2 mt-2.5">
-          <!-- נוצל (RIGHT in RTL = first) -->
-          <div class="flex-1 flex items-center justify-between rounded-xl px-3.5 py-3" style="background:var(--stat-teal-bg);border:1px solid var(--stat-teal-border);gap:8px">
-            <p id="sum-used" style="font-size:20px;font-weight:800;color:var(--stat-amount);line-height:1;direction:ltr;letter-spacing:-0.01em">₪0</p>
-            <p style="font-size:11px;font-weight:600;color:var(--stat-lbl);white-space:nowrap">נוצל</p>
+        <!-- Stat tiles 2×2 grid -->
+        <div class="grid grid-cols-2 gap-2 mt-2.5">
+          <!-- Card 1: נותר (remaining budget) -->
+          <div class="flex flex-col rounded-xl px-3.5 py-3" style="background:var(--stat-blue-bg);border:1px solid var(--stat-blue-border)">
+            <p style="font-size:11px;font-weight:600;color:var(--stat-lbl)">נותר</p>
+            <p id="sum-remaining" style="font-size:17px;font-weight:800;color:var(--stat-amount);line-height:1.15;direction:ltr;letter-spacing:-0.01em;margin-top:4px">₪0</p>
+            <p style="font-size:10px;color:var(--exp-sub);margin-top:3px">סה״כ תקציב שנותר</p>
           </div>
-          <!-- נותר (LEFT in RTL = last) -->
-          <div class="flex-1 flex items-center justify-between rounded-xl px-3.5 py-3" style="background:var(--stat-blue-bg);border:1px solid var(--stat-blue-border);gap:8px">
-            <p id="sum-remaining" style="font-size:20px;font-weight:800;color:var(--stat-amount);line-height:1;direction:ltr;letter-spacing:-0.01em">₪0</p>
-            <p style="font-size:11px;font-weight:600;color:var(--stat-lbl);white-space:nowrap">נותר</p>
+          <!-- Card 2: שולם (actual paid) -->
+          <div class="flex flex-col rounded-xl px-3.5 py-3" style="background:var(--stat-teal-bg);border:1px solid var(--stat-teal-border)">
+            <p style="font-size:11px;font-weight:600;color:var(--stat-lbl)">שולם</p>
+            <p id="sum-paid" style="font-size:17px;font-weight:800;color:var(--stat-amount);line-height:1.15;direction:ltr;letter-spacing:-0.01em;margin-top:4px">₪0</p>
+            <p style="font-size:10px;color:var(--exp-sub);margin-top:3px">שולם בפועל</p>
+          </div>
+          <!-- Card 3: התחייבות (total expenses) -->
+          <div class="flex flex-col rounded-xl px-3.5 py-3" style="background:var(--stat-teal-bg);border:1px solid var(--stat-teal-border)">
+            <p style="font-size:11px;font-weight:600;color:var(--stat-lbl)">התחייבות</p>
+            <p id="sum-total" style="font-size:17px;font-weight:800;color:var(--stat-amount);line-height:1.15;direction:ltr;letter-spacing:-0.01em;margin-top:4px">₪0</p>
+            <p style="font-size:10px;color:var(--exp-sub);margin-top:3px">סה״כ הוצאות</p>
+          </div>
+          <!-- Card 4: נותר התחייבויות (unpaid commitments) -->
+          <div class="flex flex-col rounded-xl px-3.5 py-3" style="background:var(--stat-blue-bg);border:1px solid var(--stat-blue-border)">
+            <p style="font-size:11px;font-weight:600;color:var(--stat-lbl)">נותר התחייבויות</p>
+            <p id="sum-unpaid" style="font-size:17px;font-weight:800;color:var(--stat-amount);line-height:1.15;direction:ltr;letter-spacing:-0.01em;margin-top:4px">₪0</p>
+            <p style="font-size:10px;color:var(--exp-sub);margin-top:3px">נותר לשלם</p>
           </div>
         </div>
 
