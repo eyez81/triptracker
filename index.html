@@ -477,8 +477,12 @@
 <div id="screen-trips" class="screen flex-col pb-24">
   <header dir="ltr" class="app-header" style="position:sticky;top:0;z-index:50;width:100%;background:var(--hdr-bg);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-bottom:1px solid var(--hdr-border);display:grid;grid-template-columns:56px 1fr 56px;align-items:center;padding:0 14px;box-sizing:border-box">
 
-    <!-- LEFT: empty balancing cell -->
-    <div></div>
+    <!-- LEFT: logout -->
+    <div style="display:flex;justify-content:flex-start">
+      <button id="btn-logout" style="width:42px;height:42px;display:flex;align-items:center;justify-content:center;border-radius:50%;background:var(--hdr-btn-bg);border:1px solid var(--hdr-btn-border);cursor:pointer" onpointerdown="this.style.background='var(--hdr-btn-active)'" onpointerup="this.style.background='var(--hdr-btn-bg)'" onpointerleave="this.style.background='var(--hdr-btn-bg)'">
+        <span class="material-symbols-outlined" style="font-size:20px;color:var(--hdr-btn-color)">logout</span>
+      </button>
+    </div>
 
     <!-- CENTER: logo -->
     <div style="display:flex;align-items:center;justify-content:center;padding:0 8px">
@@ -490,12 +494,8 @@
       </div>
     </div>
 
-    <!-- RIGHT: logout -->
-    <div style="display:flex;justify-content:flex-end">
-      <button id="btn-logout" style="width:42px;height:42px;display:flex;align-items:center;justify-content:center;border-radius:50%;background:var(--hdr-btn-bg);border:1px solid var(--hdr-btn-border);cursor:pointer" onpointerdown="this.style.background='var(--hdr-btn-active)'" onpointerup="this.style.background='var(--hdr-btn-bg)'" onpointerleave="this.style.background='var(--hdr-btn-bg)'">
-        <span class="material-symbols-outlined" style="font-size:20px;color:var(--hdr-btn-color)">logout</span>
-      </button>
-    </div>
+    <!-- RIGHT: empty balancing cell -->
+    <div></div>
 
   </header>
   <main class="flex-1 px-5 pt-6 max-w-2xl mx-auto w-full space-y-6">
@@ -759,14 +759,14 @@
 
 <!-- ==================== SETTINGS SCREEN ==================== -->
 <div id="screen-settings" class="screen flex-col pb-24">
-  <header class="w-full top-0 sticky z-50 bg-surface/80 backdrop-blur-xl border-b border-white/10 flex flex-row-reverse justify-between items-center px-5 h-16">
+  <header class="w-full top-0 sticky z-50 bg-surface/80 backdrop-blur-xl border-b border-white/10 flex justify-between items-center px-5 h-16">
+    <button id="btn-back-from-settings" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-variant/50 transition active:scale-95">
+      <span class="material-symbols-outlined text-on-surface-variant">arrow_back</span>
+    </button>
     <div class="flex items-center gap-2">
       <span class="material-symbols-outlined text-primary">settings</span>
       <span class="font-bold text-xl text-primary">הגדרות</span>
     </div>
-    <button id="btn-back-from-settings" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-variant/50 transition active:scale-95">
-      <span class="material-symbols-outlined text-on-surface-variant">arrow_forward</span>
-    </button>
   </header>
   <main class="flex-1 px-5 pt-6 max-w-2xl mx-auto w-full space-y-8">
     <!-- Theme -->
@@ -1124,7 +1124,7 @@
       </div>
       <!-- Receipt -->
       <div>
-        <label class="text-xs text-primary font-medium block mb-1 pr-1">העלאת קבלה (אופציונלי)</label>
+        <label class="text-xs text-primary font-medium block mb-1 pr-1">העלאת קבצים (אופציונלי)</label>
         <div class="grid grid-cols-2 gap-3">
           <button type="button" id="btn-camera" class="glass-card rounded-xl p-4 flex flex-col items-center gap-2 hover:bg-surface-variant/40 active:scale-95 transition">
             <span class="material-symbols-outlined text-primary text-3xl">photo_camera</span>
@@ -1138,51 +1138,14 @@
         <!-- iOS: input נפרד עם capture למצלמה -->
         <input type="file" id="exp-receipt-camera" accept="image/*" capture="environment" class="hidden"/>
         <!-- גלריה + PDF -->
-        <input type="file" id="exp-receipt-gallery" accept="image/*,application/pdf" class="hidden"/>
+        <input type="file" id="exp-receipt-gallery" accept="image/jpeg,image/png,image/webp,application/pdf" multiple class="hidden"/>
         <!-- Existing attachment (shown in edit mode) -->
         <div id="receipt-existing-section" class="hidden mt-3">
-          <div id="receipt-existing-img-wrap" class="hidden relative rounded-xl overflow-hidden cursor-pointer active:opacity-90 transition"
-               onclick="Lightbox.open(document.getElementById('receipt-existing-img').src,'image','קבלה')">
-            <img id="receipt-existing-img" class="w-full object-cover" style="max-height:160px" alt="קבלה קיימת"/>
-            <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,0.4),transparent 55%);pointer-events:none"></div>
-            <div style="position:absolute;bottom:8px;right:10px;pointer-events:none">
-              <span style="font-size:11px;font-weight:600;color:rgba(255,255,255,0.8)">קבלה קיימת · לחץ להגדלה</span>
-            </div>
-            <button type="button" onclick="event.stopPropagation();Expenses._removeExistingReceipt()"
-              class="absolute top-2 left-2 w-7 h-7 z-10 rounded-full flex items-center justify-center active:scale-90 transition"
-              style="background:rgba(0,0,0,0.55);backdrop-filter:blur(6px)">
-              <span class="material-symbols-outlined" style="font-size:16px;color:#fff">close</span>
-            </button>
-          </div>
-          <div id="receipt-existing-pdf-wrap" class="hidden glass-card rounded-xl overflow-hidden">
-            <div class="flex items-center gap-3 px-3 py-2.5">
-              <div style="width:40px;height:40px;border-radius:10px;background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.2);display:flex;align-items:center;justify-content:center;flex-shrink:0">
-                <span class="material-symbols-outlined" style="font-size:22px;color:#f87171;font-variation-settings:'FILL' 1">picture_as_pdf</span>
-              </div>
-              <div class="flex-1 min-w-0">
-                <p id="receipt-existing-pdf-name" class="text-sm font-semibold text-on-surface truncate"></p>
-                <p class="text-xs text-on-surface-variant mt-0.5">קבלה קיימת</p>
-              </div>
-              <button type="button" onclick="Expenses._removeExistingReceipt()"
-                class="w-8 h-8 rounded-full flex items-center justify-center active:scale-90 transition"
-                style="background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.2)">
-                <span class="material-symbols-outlined" style="font-size:16px;color:#f87171">close</span>
-              </button>
-            </div>
-          </div>
+          <p class="text-xs text-on-surface-variant mb-2">קבצים קיימים</p>
+          <div id="receipt-existing-list" class="space-y-2"></div>
         </div>
-        <img id="receipt-preview" class="hidden mt-3 w-full rounded-xl max-h-52 object-contain cursor-zoom-in active:opacity-80 transition" alt="קבלה" onclick="Lightbox.open(this.src,'image','תמונה')"/>
-        <div id="receipt-pdf-badge" class="hidden mt-3 glass-card rounded-xl overflow-hidden">
-          <div class="flex items-center gap-3 px-3 py-2.5">
-            <div style="width:40px;height:40px;border-radius:10px;background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.2);display:flex;align-items:center;justify-content:center;flex-shrink:0">
-              <span class="material-symbols-outlined" style="font-size:22px;color:#f87171;font-variation-settings:'FILL' 1">picture_as_pdf</span>
-            </div>
-            <div class="flex-1 min-w-0">
-              <p class="pdf-name text-sm font-semibold text-on-surface truncate"></p>
-              <p class="pdf-size text-xs text-on-surface-variant mt-0.5">PDF</p>
-            </div>
-          </div>
-        </div>
+        <div id="receipt-new-list" class="mt-3 space-y-2"></div>
+
       </div>
     </div>
     <div class="flex-shrink-0 p-6 pt-4 space-y-3">
