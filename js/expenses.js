@@ -433,8 +433,8 @@ const Expenses = {
 
     const infoRow = (icon, text, href = null) => {
       const inner = `
-        <div style="width:38px;height:38px;border-radius:50%;background:rgba(45,212,191,0.1);border:1px solid rgba(45,212,191,0.18);display:flex;align-items:center;justify-content:center;flex-shrink:0">
-          <span class="material-symbols-outlined" style="font-size:18px;color:#2dd4bf;font-variation-settings:'FILL' 1">${icon}</span>
+        <div style="width:38px;height:38px;border-radius:50%;background:var(--ateal-bg);border:1px solid var(--ateal-brd);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <span class="material-symbols-outlined" style="font-size:18px;color:var(--ateal);font-variation-settings:'FILL' 1">${icon}</span>
         </div>
         <span class="flex-1 text-sm" style="color:var(--vrow-txt);direction:auto;white-space:pre-wrap;word-break:break-word">${text}</span>
         ${href ? `<span class="material-symbols-outlined flex-shrink-0" style="font-size:15px;color:var(--vrow-ext)">open_in_new</span>` : ''}
@@ -508,19 +508,19 @@ const Expenses = {
       <div class="rounded-2xl p-4 space-y-3" style="background:var(--vpay-bg);border:1px solid var(--vpay-border)">
         <div class="flex items-center justify-between">
           <h4 style="font-size:13px;font-weight:700;color:var(--vpay-hdrtxt)">סקירת תשלומים</h4>
-          <span style="font-size:13px;font-weight:700;color:#2dd4bf">${Math.round(sum.total ? (sum.paid / sum.total) * 100 : 0)}%</span>
+          <span style="font-size:13px;font-weight:700;color:var(--ateal)">${Math.round(sum.total ? (sum.paid / sum.total) * 100 : 0)}%</span>
         </div>
         <div style="height:4px;background:var(--vbar-track);border-radius:99px;overflow:hidden">
           <div style="height:4px;border-radius:99px;background:var(--progress-bar);width:${Math.max(0,Math.min(100,sum.total?(sum.paid/sum.total)*100:0))}%"></div>
         </div>
         <div class="grid grid-cols-2 gap-3">
-          <div class="rounded-xl p-3" style="background:rgba(45,212,191,0.08);border:1px solid rgba(45,212,191,0.12)">
+          <div class="rounded-xl p-3" style="background:var(--ateal-bg);border:1px solid var(--ateal-brd)">
             <p style="font-size:10px;color:var(--vpaid-lbl);font-weight:600">שולם</p>
-            <p style="font-size:17px;font-weight:800;color:#2dd4bf;margin-top:2px">${Currency.fmtILS(sum.paid)}</p>
+            <p style="font-size:17px;font-weight:800;color:var(--ateal);margin-top:2px">${Currency.fmtILS(sum.paid)}</p>
           </div>
-          <div class="rounded-xl p-3" style="background:rgba(248,113,113,0.08);border:1px solid rgba(248,113,113,0.12)">
+          <div class="rounded-xl p-3" style="background:var(--ared-bg);border:1px solid var(--ared-brd)">
             <p style="font-size:10px;color:var(--vpaid-lbl);font-weight:600">נותר</p>
-            <p style="font-size:17px;font-weight:800;color:#f87171;margin-top:2px">${Currency.fmtILS(sum.remaining)}</p>
+            <p style="font-size:17px;font-weight:800;color:var(--ared);margin-top:2px">${Currency.fmtILS(sum.remaining)}</p>
           </div>
         </div>
       </div>
@@ -542,12 +542,12 @@ const Expenses = {
                   <p style="font-size:14px;font-weight:600;color:var(--vschedrow-ptxt)">תשלום ${r.idx} — ${r.type}</p>
                   <p style="font-size:12px;color:var(--vschedrow-dtxt);margin-top:2px">${r.date ? fmtDate(r.date) : 'ללא תאריך'}</p>
                 </div>
-                <span style="font-size:15px;font-weight:800;color:${paid ? '#2dd4bf' : '#f87171'};white-space:nowrap;direction:ltr">${Currency.fmtILS(r.amount)}</span>
+                <span style="font-size:15px;font-weight:800;color:${paid ? 'var(--ateal)' : 'var(--ared)'};white-space:nowrap;direction:ltr">${Currency.fmtILS(r.amount)}</span>
               </div>
               <div class="flex items-center justify-between mt-3">
-                <span style="font-size:11px;padding:3px 10px;border-radius:20px;font-weight:600;${paid ? 'background:rgba(45,212,191,0.12);color:#2dd4bf' : 'background:rgba(248,113,113,0.12);color:#f87171'}">${paid ? 'שולם' : 'לא שולם'}</span>
+                <span style="font-size:11px;padding:3px 10px;border-radius:20px;font-weight:600;${paid ? 'background:var(--ateal-bg);color:var(--ateal)' : 'background:var(--ared-bg);color:var(--ared)'}">${paid ? 'שולם' : 'לא שולם'}</span>
                 <button class="pay-row-btn px-4 py-1.5 rounded-full text-sm font-semibold active:scale-95 transition"
-                  style="${paid ? 'background:var(--vpay-bg);color:var(--vsched-icon);cursor:default' : 'background:rgba(45,212,191,0.13);color:#2dd4bf;border:1px solid rgba(45,212,191,0.22)'}"
+                  style="${paid ? 'background:var(--vpay-bg);color:var(--vsched-icon);cursor:default' : 'background:var(--ateal-bg);color:var(--ateal);border:1px solid var(--ateal-brd)'}"
                   data-exp-id="${exp.id}" data-row-idx="${r.idx}" ${paid ? 'disabled' : ''}>${paid ? 'שולם' : 'סמן כשולם'}</button>
               </div>
             </div>`;
@@ -571,18 +571,18 @@ const Expenses = {
         <div class="rounded-2xl p-4 space-y-3" style="background:var(--vpay-bg);border:1px solid var(--vpay-border)">
           ${exp.cancellation_date ? `
             <div class="flex items-center gap-3">
-              <div style="width:38px;height:38px;border-radius:50%;background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.2);display:flex;align-items:center;justify-content:center;flex-shrink:0">
-                <span class="material-symbols-outlined" style="font-size:18px;color:#fbbf24;font-variation-settings:'FILL' 1">event_busy</span>
+              <div style="width:38px;height:38px;border-radius:50%;background:var(--aamber-bg);border:1px solid var(--aamber-brd);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                <span class="material-symbols-outlined" style="font-size:18px;color:var(--aamber);font-variation-settings:'FILL' 1">event_busy</span>
               </div>
               <div>
                 <p style="font-size:11px;color:var(--vschedrow-dtxt);margin-bottom:2px">ביטול אחרון עד</p>
-                <p style="font-size:14px;font-weight:600;color:#fbbf24">${fmtDate(exp.cancellation_date)}</p>
+                <p style="font-size:14px;font-weight:600;color:var(--aamber)">${fmtDate(exp.cancellation_date)}</p>
               </div>
             </div>` : ''}
           ${exp.cancellation_policy ? `
             <div class="flex items-start gap-3" ${exp.cancellation_date ? `style="padding-top:8px;border-top:1px solid var(--vcan-sep)"` : ''}>
-              <div style="width:38px;height:38px;border-radius:50%;background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px">
-                <span class="material-symbols-outlined" style="font-size:18px;color:#fbbf24;font-variation-settings:'FILL' 1">policy</span>
+              <div style="width:38px;height:38px;border-radius:50%;background:var(--aamber-bg);border:1px solid var(--aamber-brd);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px">
+                <span class="material-symbols-outlined" style="font-size:18px;color:var(--aamber);font-variation-settings:'FILL' 1">policy</span>
               </div>
               <p style="font-size:13px;color:var(--vcancel-txt);line-height:1.55;white-space:pre-wrap;word-break:break-word;flex:1">${esc(exp.cancellation_policy)}</p>
             </div>` : ''}
@@ -609,8 +609,8 @@ const Expenses = {
           ${secLabel('איש קשר')}
           <div class="rounded-2xl p-4 space-y-3" style="background:var(--vcont-bg);border:1px solid var(--vcont-border)">
             <div class="flex items-center gap-3">
-              <div style="width:44px;height:44px;border-radius:50%;background:rgba(45,212,191,0.1);border:1px solid rgba(45,212,191,0.18);display:flex;align-items:center;justify-content:center;flex-shrink:0">
-                <span class="material-symbols-outlined" style="font-size:22px;color:#2dd4bf;font-variation-settings:'FILL' 1">person</span>
+              <div style="width:44px;height:44px;border-radius:50%;background:var(--ateal-bg);border:1px solid var(--ateal-brd);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                <span class="material-symbols-outlined" style="font-size:22px;color:var(--ateal);font-variation-settings:'FILL' 1">person</span>
               </div>
               <div class="flex-1 min-w-0">
                 ${exp.contact_name ? `<p style="font-size:15px;font-weight:700;color:var(--vcont-name)">${esc(exp.contact_name)}</p>` : ''}
@@ -618,10 +618,10 @@ const Expenses = {
               </div>
             </div>
             ${rawPhone ? `<div class="grid grid-cols-2 gap-2">
-              <a href="${waHref}" target="_blank" rel="noopener noreferrer" class="flex items-center justify-center gap-2 rounded-full py-2.5 font-semibold active:scale-95 transition" style="background:rgba(37,211,102,0.12);color:#25d366;border:1px solid rgba(37,211,102,0.2)">
+              <a href="${waHref}" target="_blank" rel="noopener noreferrer" class="flex items-center justify-center gap-2 rounded-full py-2.5 font-semibold active:scale-95 transition" style="background:var(--awa-bg);color:var(--awa);border:1px solid var(--awa-brd)">
                 <span class="material-symbols-outlined" style="font-size:17px">chat</span>ווטסאפ
               </a>
-              <a href="${callHref}" class="flex items-center justify-center gap-2 rounded-full py-2.5 font-semibold active:scale-95 transition" style="background:rgba(96,165,250,0.12);color:#60a5fa;border:1px solid rgba(96,165,250,0.2)">
+              <a href="${callHref}" class="flex items-center justify-center gap-2 rounded-full py-2.5 font-semibold active:scale-95 transition" style="background:var(--ablue-bg);color:var(--ablue);border:1px solid var(--ablue-brd)">
                 <span class="material-symbols-outlined" style="font-size:17px">call</span>חייג
               </a>
             </div>` : ''}
@@ -639,15 +639,15 @@ const Expenses = {
             <div class="flex items-center gap-3 rounded-2xl p-4 cursor-pointer js-open-attachment active:scale-[0.99] transition"
                  style="background:var(--vrow-bg);border:1px solid var(--vrow-border)"
                  data-url="${receiptUrl}" data-type="pdf" data-filename="${esc(cleanName)}">
-              <div style="width:48px;height:48px;border-radius:12px;background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.22);display:flex;align-items:center;justify-content:center;flex-shrink:0">
-                <span class="material-symbols-outlined" style="font-size:26px;color:#f87171;font-variation-settings:'FILL' 1">picture_as_pdf</span>
+              <div style="width:48px;height:48px;border-radius:12px;background:var(--ared-bg);border:1px solid var(--ared-brd);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                <span class="material-symbols-outlined" style="font-size:26px;color:var(--ared);font-variation-settings:'FILL' 1">picture_as_pdf</span>
               </div>
               <div class="flex-1 min-w-0">
                 <p style="font-size:14px;font-weight:600;color:var(--vcont-name);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(cleanName)}</p>
                 <p style="font-size:12px;color:var(--vschedrow-dtxt);margin-top:2px">PDF · לחץ לפתיחה</p>
               </div>
-              <div style="width:36px;height:36px;border-radius:50%;background:rgba(45,212,191,0.1);border:1px solid rgba(45,212,191,0.18);display:flex;align-items:center;justify-content:center;flex-shrink:0">
-                <span class="material-symbols-outlined" style="font-size:17px;color:#2dd4bf;font-variation-settings:'FILL' 1">open_in_new</span>
+              <div style="width:36px;height:36px;border-radius:50%;background:var(--ateal-bg);border:1px solid var(--ateal-brd);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                <span class="material-symbols-outlined" style="font-size:17px;color:var(--ateal);font-variation-settings:'FILL' 1">open_in_new</span>
               </div>
             </div>
           ` : `
@@ -741,32 +741,32 @@ const Expenses = {
 
     // ── Header: 3 stats ──
     const summaryHeader = `
-      <div style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:16px;box-shadow:0 8px 24px rgba(0,0,0,0.25)">
+      <div style="background:var(--cs-card-bg);border:1px solid var(--cs-card-brd);border-radius:16px;padding:16px;box-shadow:0 8px 24px rgba(0,0,0,0.12)">
         <div style="display:flex;align-items:stretch;gap:0">
           <!-- RIGHT: total (first in RTL HTML) -->
           <div style="flex:1;min-width:0">
-            <p style="font-size:11px;color:rgba(255,255,255,0.38);margin-bottom:5px;white-space:nowrap">סה"כ הוצאות</p>
+            <p style="font-size:11px;color:var(--cs-txt-lo);margin-bottom:5px;white-space:nowrap">סה"כ הוצאות</p>
             <div style="display:flex;align-items:center;gap:5px">
-              <span class="material-symbols-outlined" style="font-size:18px;color:rgba(255,255,255,0.45);font-variation-settings:'FILL' 1">account_balance_wallet</span>
-              <span style="font-size:22px;font-weight:800;color:#fff;direction:ltr">${Currency.fmtILS(total)}</span>
+              <span class="material-symbols-outlined" style="font-size:18px;color:var(--cs-icon);font-variation-settings:'FILL' 1">account_balance_wallet</span>
+              <span style="font-size:22px;font-weight:800;color:var(--cs-txt-hi);direction:ltr">${Currency.fmtILS(total)}</span>
             </div>
           </div>
-          <div style="width:1px;background:rgba(255,255,255,0.08);margin:0 12px"></div>
+          <div style="width:1px;background:var(--cs-div);margin:0 12px"></div>
           <!-- CENTER: count -->
           <div style="flex:0 0 auto;text-align:center">
-            <p style="font-size:11px;color:rgba(255,255,255,0.38);margin-bottom:5px">קטגוריות</p>
+            <p style="font-size:11px;color:var(--cs-txt-lo);margin-bottom:5px">קטגוריות</p>
             <div style="display:flex;align-items:center;justify-content:center;gap:5px">
-              <span class="material-symbols-outlined" style="font-size:18px;color:rgba(255,255,255,0.45);font-variation-settings:'FILL' 1">shopping_bag</span>
-              <span style="font-size:22px;font-weight:800;color:#fff">${data.length}</span>
+              <span class="material-symbols-outlined" style="font-size:18px;color:var(--cs-icon);font-variation-settings:'FILL' 1">shopping_bag</span>
+              <span style="font-size:22px;font-weight:800;color:var(--cs-txt-hi)">${data.length}</span>
             </div>
           </div>
-          <div style="width:1px;background:rgba(255,255,255,0.08);margin:0 12px"></div>
+          <div style="width:1px;background:var(--cs-div);margin:0 12px"></div>
           <!-- LEFT: average (last in RTL HTML) -->
           <div style="flex:1;min-width:0;text-align:left">
-            <p style="font-size:11px;color:rgba(255,255,255,0.38);margin-bottom:5px;white-space:nowrap">הוצאה ממוצעת לקטגוריה</p>
+            <p style="font-size:11px;color:var(--cs-txt-lo);margin-bottom:5px;white-space:nowrap">הוצאה ממוצעת לקטגוריה</p>
             <div style="display:flex;align-items:center;justify-content:flex-start;gap:5px">
-              <span class="material-symbols-outlined" style="font-size:18px;color:rgba(255,255,255,0.45);font-variation-settings:'FILL' 1">bar_chart</span>
-              <span style="font-size:20px;font-weight:800;color:rgba(255,255,255,0.82);direction:ltr">${Currency.fmtILS(avg)}</span>
+              <span class="material-symbols-outlined" style="font-size:18px;color:var(--cs-icon);font-variation-settings:'FILL' 1">bar_chart</span>
+              <span style="font-size:20px;font-weight:800;color:var(--cs-txt-mid);direction:ltr">${Currency.fmtILS(avg)}</span>
             </div>
           </div>
         </div>
@@ -780,7 +780,7 @@ const Expenses = {
         : `<span style="font-size:20px;line-height:1">${row.style.icon}</span>`;
 
       return `
-        <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:16px;box-shadow:0 8px 24px rgba(0,0,0,0.25)">
+        <div style="background:var(--cs-card-bg);border:1px solid var(--cs-card-brd);border-radius:16px;padding:16px;box-shadow:0 4px 16px rgba(0,0,0,0.1)">
           <div style="display:flex;align-items:center;gap:12px">
 
             <!-- RIGHT column: icon + name + amount + progress bar (first in RTL) -->
@@ -791,20 +791,20 @@ const Expenses = {
                   ${iconHTML}
                 </div>
                 <!-- Name -->
-                <span style="flex:1;font-size:17px;font-weight:600;color:rgba(255,255,255,0.9);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(row.name)}</span>
+                <span style="flex:1;font-size:17px;font-weight:600;color:var(--cs-txt-mid);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(row.name)}</span>
                 <!-- Amount -->
-                <span style="font-size:22px;font-weight:700;color:#fff;direction:ltr;flex-shrink:0">${Currency.fmtILS(row.amount)}</span>
+                <span style="font-size:22px;font-weight:700;color:var(--cs-txt-hi);direction:ltr;flex-shrink:0">${Currency.fmtILS(row.amount)}</span>
               </div>
               <!-- Progress bar (RTL: fills from right) -->
-              <div style="position:relative;height:6px;background:rgba(255,255,255,0.07);border-radius:99px;overflow:hidden">
-                <div style="position:absolute;right:0;top:0;height:6px;border-radius:99px;background:${row.style.color};width:${Math.max(0,Math.min(100,row.pct))}%;box-shadow:0 0 8px ${row.style.color}99"></div>
+              <div style="position:relative;height:6px;background:var(--cs-div);border-radius:99px;overflow:hidden">
+                <div style="position:absolute;right:0;top:0;height:6px;border-radius:99px;background:${row.style.color};width:${Math.max(0,Math.min(100,row.pct))}%;box-shadow:0 0 8px ${row.style.color}66"></div>
               </div>
             </div>
 
             <!-- LEFT column: percentage + subtitle (last in RTL = leftmost) -->
             <div style="flex-shrink:0;min-width:52px;text-align:left">
               <p style="font-size:22px;font-weight:700;color:${row.style.color};line-height:1.1">${row.pct.toFixed(1)}%</p>
-              <p style="font-size:12px;color:rgba(255,255,255,0.32);margin-top:3px">מהסך הכל</p>
+              <p style="font-size:12px;color:var(--cs-txt-dim);margin-top:3px">מהסך הכל</p>
             </div>
 
           </div>
