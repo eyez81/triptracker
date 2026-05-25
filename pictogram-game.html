@@ -3,1586 +3,975 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🎧 מצעד השכבה - משחק פיקטוגרמה</title>
+<title>🎧 מצעד השכבה — פיקטוגרמה</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Heebo:wght@400;600;700;800;900&display=swap');
 
 :root {
-  --pink:    #FF4FA3;
-  --purple:  #8B5CF6;
-  --blue:    #3B82F6;
-  --cyan:    #06B6D4;
-  --green:   #22C55E;
-  --yellow:  #FBBF24;
-  --orange:  #F97316;
-  --red:     #EF4444;
-
-  --hiphop:  #FF4FA3;
-  --pop:     #FBBF24;
-  --rock:    #22C55E;
-  --med:     #3B82F6;
-
-  --bg:      #F0F4FF;
-  --surface: #FFFFFF;
-  --surface2:#F8FAFF;
-  --border:  #E2E8F0;
+  --bg:      #EEF2FF;
+  --white:   #FFFFFF;
+  --border:  #DDE3F0;
   --text:    #1E293B;
-  --text2:   #475569;
-  --shadow:  0 4px 20px rgba(99,102,241,0.12);
-  --shadow-lg: 0 8px 40px rgba(99,102,241,0.18);
+  --text2:   #64748B;
+  --shadow:  0 4px 24px rgba(99,102,241,.13);
+  --shadow-lg: 0 8px 40px rgba(99,102,241,.18);
+
+  --pink:   #F43F8E;
+  --amber:  #D97706;
+  --green:  #16A34A;
+  --blue:   #2563EB;
+  --purple: #7C3AED;
+  --red:    #DC2626;
+  --gold:   #CA8A04;
 }
 
-* { box-sizing: border-box; margin: 0; padding: 0; }
+*{box-sizing:border-box;margin:0;padding:0;}
 
-body {
-  font-family: 'Heebo', sans-serif;
-  background: var(--bg);
-  color: var(--text);
-  min-height: 100vh;
-  direction: rtl;
-  font-size: 18px;
+body{
+  font-family:'Heebo',sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+  direction:rtl;
+  font-size:17px;
 }
 
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
+/* ── gradient blobs ── */
+body::before{
+  content:'';position:fixed;inset:0;pointer-events:none;
   background:
-    radial-gradient(ellipse at 10% 20%, rgba(139,92,246,0.08) 0%, transparent 50%),
-    radial-gradient(ellipse at 90% 80%, rgba(6,182,212,0.08) 0%, transparent 50%),
-    radial-gradient(ellipse at 50% 50%, rgba(251,191,36,0.05) 0%, transparent 60%);
-  pointer-events: none;
-  z-index: 0;
-}
-
-.screen {
-  display: none;
-  position: relative;
-  z-index: 1;
-  min-height: 100vh;
-  padding: 20px 16px 40px;
-}
-.screen.active { display: flex; flex-direction: column; align-items: center; }
-
-/* ===== HUD ===== */
-.hud {
-  position: fixed;
-  top: 0; inset-inline-start: 0; inset-inline-end: 0;
-  z-index: 100;
-  background: linear-gradient(135deg, #667eea, #764ba2);
-  padding: 10px 20px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  box-shadow: 0 4px 20px rgba(102,126,234,0.4);
-}
-
-.hud-logo {
-  font-size: 1.1rem;
-  font-weight: 900;
-  color: #fff;
-  text-shadow: 0 2px 8px rgba(0,0,0,0.2);
-}
-
-.hud-stats { display: flex; gap: 12px; align-items: center; }
-
-.hud-stat {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  background: rgba(255,255,255,0.2);
-  padding: 6px 14px;
-  border-radius: 30px;
-  font-size: 0.9rem;
-  font-weight: 800;
-  color: #fff;
-  backdrop-filter: blur(4px);
-}
-
-.hud-stat .val { font-size: 1.1rem; color: #FFE55C; }
-
-.listener-bar {
-  width: 80px; height: 10px;
-  background: rgba(255,255,255,0.25);
-  border-radius: 6px;
-  overflow: hidden;
-}
-
-.listener-fill {
-  height: 100%;
-  background: linear-gradient(90deg, #FFE55C, #FFC107);
-  border-radius: 6px;
-  width: 0%;
-  transition: width 0.6s cubic-bezier(.34,1.56,.64,1);
-}
-
-/* ===== BUTTONS ===== */
-.btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 14px 36px;
-  font-family: 'Heebo', sans-serif;
-  font-size: 1.1rem;
-  font-weight: 800;
-  border: none;
-  border-radius: 50px;
-  cursor: pointer;
-  transition: all 0.2s cubic-bezier(.34,1.56,.64,1);
-  text-decoration: none;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.15);
-}
-
-.btn:hover  { transform: translateY(-3px) scale(1.03); }
-.btn:active { transform: scale(0.97); }
-
-.btn-purple { background: linear-gradient(135deg, #8B5CF6, #6D28D9); color: #fff; }
-.btn-pink   { background: linear-gradient(135deg, #FF4FA3, #DB2777); color: #fff; }
-.btn-blue   { background: linear-gradient(135deg, #3B82F6, #1D4ED8); color: #fff; }
-.btn-green  { background: linear-gradient(135deg, #22C55E, #15803D); color: #fff; }
-.btn-orange { background: linear-gradient(135deg, #F97316, #C2410C); color: #fff; }
-
-/* ===== CARD ===== */
-.card {
-  background: var(--surface);
-  border-radius: 24px;
-  box-shadow: var(--shadow);
-  border: 2px solid var(--border);
-  width: 100%;
-  max-width: 700px;
-}
-
-/* ===== PROGRESS STEPS ===== */
-.progress-steps {
-  display: flex;
-  gap: 6px;
-  margin-bottom: 24px;
-  justify-content: center;
-  direction: ltr;
-}
-
-.step {
-  width: 38px; height: 38px;
-  border-radius: 50%;
-  border: 3px solid var(--border);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 0.85rem;
-  font-weight: 800;
-  color: #94A3B8;
-  transition: all 0.3s;
-  background: var(--surface);
-}
-
-.step.current {
-  border-color: var(--purple);
-  color: var(--purple);
-  box-shadow: 0 0 0 4px rgba(139,92,246,0.2);
-  background: rgba(139,92,246,0.08);
-}
-
-.step.done {
-  background: var(--green);
-  border-color: var(--green);
-  color: #fff;
-}
-
-/* ===== SCREEN TITLE ===== */
-.screen-title {
-  font-size: 2rem;
-  font-weight: 900;
-  text-align: center;
-  margin-bottom: 6px;
-  color: var(--text);
-}
-
-.screen-sub {
-  font-size: 1rem;
-  text-align: center;
-  color: var(--text2);
-  margin-bottom: 24px;
-  font-weight: 600;
-}
-
-/* ===== TOAST ===== */
-.toast {
-  position: fixed;
-  top: 80px;
-  left: 50%;
-  transform: translateX(-50%) translateY(-20px);
-  background: var(--surface);
-  border-radius: 14px;
-  padding: 14px 28px;
-  font-weight: 800;
-  font-size: 1rem;
-  z-index: 200;
-  opacity: 0;
-  transition: all 0.3s cubic-bezier(.34,1.56,.64,1);
-  pointer-events: none;
-  border: 3px solid var(--green);
-  color: var(--green);
-  box-shadow: var(--shadow-lg);
-  white-space: nowrap;
-}
-
-.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-.toast.error { border-color: var(--red); color: var(--red); }
-
-/* ============================================================
-   SCREEN 0 — INTRO
-   ============================================================ */
-#screen-intro {
-  justify-content: center;
-  padding-top: 30px;
-  text-align: center;
-  gap: 20px;
-}
-
-.radio-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  background: linear-gradient(135deg, #FF4FA3, #F97316);
-  color: #fff;
-  padding: 8px 20px;
-  border-radius: 30px;
-  font-size: 0.9rem;
-  font-weight: 800;
-  letter-spacing: 1px;
-  box-shadow: 0 4px 15px rgba(255,79,163,0.4);
-  animation: pulse-badge 2s ease infinite;
-}
-
-@keyframes pulse-badge {
-  0%,100% { box-shadow: 0 4px 15px rgba(255,79,163,0.4); }
-  50%      { box-shadow: 0 4px 30px rgba(255,79,163,0.7); }
-}
-
-.intro-title {
-  font-size: clamp(2.2rem, 6vw, 3.5rem);
-  font-weight: 900;
-  background: linear-gradient(135deg, #8B5CF6, #3B82F6, #FF4FA3);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  line-height: 1.2;
-}
-
-.intro-card {
-  background: var(--surface);
-  border-radius: 28px;
-  padding: 32px 36px;
-  max-width: 580px;
-  width: 100%;
-  box-shadow: var(--shadow-lg);
-  border: 3px solid rgba(139,92,246,0.2);
-  text-align: center;
-  position: relative;
-  overflow: hidden;
-}
-
-.intro-card::before {
-  content: '';
-  position: absolute;
-  top: -60px; right: -60px;
-  width: 180px; height: 180px;
-  background: radial-gradient(circle, rgba(255,79,163,0.12), transparent 70%);
-  pointer-events: none;
-}
-
-.intro-card::after {
-  content: '';
-  position: absolute;
-  bottom: -60px; left: -60px;
-  width: 180px; height: 180px;
-  background: radial-gradient(circle, rgba(6,182,212,0.12), transparent 70%);
-  pointer-events: none;
-}
-
-.intro-mic {
-  font-size: 5rem;
-  display: block;
-  animation: rock 2s ease-in-out infinite alternate;
-  margin-bottom: 12px;
-}
-
-@keyframes rock {
-  from { transform: rotate(-8deg); }
-  to   { transform: rotate(8deg); }
-}
-
-.intro-card p {
-  font-size: 1.15rem;
-  line-height: 1.9;
-  color: var(--text2);
-  font-weight: 600;
-  position: relative;
-  z-index: 1;
-}
-
-.intro-card .hl { color: var(--purple); font-weight: 900; }
-.intro-card .hl2 { color: var(--pink);   font-weight: 900; }
-
-/* ============================================================
-   SCREEN 1 — DATA TABLE
-   ============================================================ */
-#screen-table { padding-top: 90px; }
-
-.data-card {
-  background: var(--surface);
-  border-radius: 24px;
-  padding: 28px;
-  box-shadow: var(--shadow-lg);
-  border: 2px solid var(--border);
-  max-width: 620px;
-  width: 100%;
-  margin-bottom: 28px;
-}
-
-.data-table {
-  width: 100%;
-  border-collapse: separate;
-  border-spacing: 0 8px;
-}
-
-.data-table th {
-  font-size: 0.85rem;
-  font-weight: 800;
-  letter-spacing: 2px;
-  color: var(--text2);
-  text-transform: uppercase;
-  padding: 0 16px 8px;
-  text-align: center;
-  border-bottom: 2px solid var(--border);
-}
-
-.data-table td {
-  padding: 14px 16px;
-  text-align: center;
-  font-size: 1.05rem;
-  font-weight: 700;
-}
-
-.data-table tbody tr td:first-child {
-  border-radius: 14px 0 0 14px;
-}
-.data-table tbody tr td:last-child {
-  border-radius: 0 14px 14px 0;
-}
-
-.row-hiphop td { background: rgba(255,79,163,0.08); }
-.row-pop    td { background: rgba(251,191,36,0.12); }
-.row-rock   td { background: rgba(34,197,94,0.08); }
-.row-med    td { background: rgba(59,130,246,0.08); }
-.row-total  td { background: rgba(99,102,241,0.08); font-size: 1.15rem; }
-
-.genre-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 18px;
-  border-radius: 30px;
-  font-weight: 800;
-  font-size: 1rem;
-  white-space: nowrap;
-}
-
-.pill-hiphop { background: rgba(255,79,163,0.15); color: #DB2777; border: 2px solid rgba(255,79,163,0.4); }
-.pill-pop    { background: rgba(251,191,36,0.2);  color: #B45309; border: 2px solid rgba(251,191,36,0.5); }
-.pill-rock   { background: rgba(34,197,94,0.15);  color: #15803D; border: 2px solid rgba(34,197,94,0.4); }
-.pill-med    { background: rgba(59,130,246,0.15); color: #1D4ED8; border: 2px solid rgba(59,130,246,0.4); }
-
-.freq-big { font-size: 1.6rem; font-weight: 900; }
-.freq-hiphop { color: #DB2777; }
-.freq-pop    { color: #B45309; }
-.freq-rock   { color: #15803D; }
-.freq-med    { color: #1D4ED8; }
-.freq-total  { color: #4F46E5; }
-
-/* ============================================================
-   SCREEN 2 — LEGEND
-   ============================================================ */
-#screen-legend { padding-top: 90px; }
-
-.legend-hint {
-  background: linear-gradient(135deg, rgba(6,182,212,0.1), rgba(59,130,246,0.1));
-  border: 2px solid rgba(6,182,212,0.35);
-  border-radius: 16px;
-  padding: 14px 22px;
-  font-size: 1rem;
-  font-weight: 700;
-  color: #0369A1;
-  max-width: 580px;
-  text-align: center;
-  margin-bottom: 24px;
-  line-height: 1.6;
-}
-
-.legend-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 16px;
-  max-width: 560px;
-  width: 100%;
-  margin-bottom: 28px;
-}
-
-.legend-option {
-  background: var(--surface);
-  border: 3px solid var(--border);
-  border-radius: 20px;
-  padding: 24px 20px;
-  text-align: center;
-  cursor: pointer;
-  transition: all 0.25s cubic-bezier(.34,1.56,.64,1);
-  user-select: none;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
-}
-
-.legend-option:hover {
-  border-color: var(--purple);
-  transform: translateY(-6px);
-  box-shadow: 0 12px 30px rgba(139,92,246,0.2);
-}
-
-.legend-option.selected {
-  border-color: var(--pink);
-  background: rgba(255,79,163,0.06);
-  box-shadow: 0 8px 30px rgba(255,79,163,0.25);
-}
-
-.legend-option .big-sym { font-size: 3rem; display: block; margin-bottom: 10px; }
-.legend-option .leg-val { font-size: 1.05rem; font-weight: 800; color: var(--text); }
-.legend-option .leg-val span { color: var(--purple); font-size: 1.3rem; }
-.legend-option .leg-note { font-size: 0.85rem; color: var(--text2); font-weight: 600; margin-top: 4px; }
-
-/* ============================================================
-   SCREEN 3 — PICTOGRAM
-   ============================================================ */
-#screen-picto { padding-top: 90px; }
-
-.picto-legend-bar {
-  background: linear-gradient(135deg, rgba(139,92,246,0.1), rgba(59,130,246,0.1));
-  border: 2px solid rgba(139,92,246,0.25);
-  border-radius: 16px;
-  padding: 12px 22px;
-  font-size: 1rem;
-  font-weight: 800;
-  color: #4F46E5;
-  max-width: 680px;
-  width: 100%;
-  text-align: center;
-  margin-bottom: 20px;
-}
-
-.picto-instructions {
-  background: rgba(251,191,36,0.12);
-  border: 2px solid rgba(251,191,36,0.4);
-  border-radius: 14px;
-  padding: 12px 20px;
-  font-size: 0.95rem;
-  font-weight: 700;
-  color: #92400E;
-  max-width: 680px;
-  width: 100%;
-  text-align: center;
-  margin-bottom: 20px;
-  line-height: 1.6;
-}
-
-.picto-board {
-  background: var(--surface);
-  border-radius: 24px;
-  padding: 28px;
-  max-width: 780px;
-  width: 100%;
-  box-shadow: var(--shadow-lg);
-  border: 2px solid var(--border);
-}
-
-.picto-row {
-  display: grid;
-  grid-template-columns: 160px 1fr;
-  gap: 20px;
-  align-items: start;
-  margin-bottom: 24px;
-  padding-bottom: 24px;
-  border-bottom: 2px dashed var(--border);
-}
-
-.picto-row:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
-
-.picto-label { display: flex; flex-direction: column; gap: 8px; }
-
-.genre-label-name {
-  font-weight: 900;
-  font-size: 1.05rem;
-}
-
-.picto-add-btns {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-top: 4px;
-}
-
-.add-btn {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 10px 14px;
-  border-radius: 12px;
-  border: 2px solid var(--border);
-  background: var(--surface2);
-  cursor: pointer;
-  font-family: 'Heebo', sans-serif;
-  font-size: 1rem;
-  font-weight: 800;
-  color: var(--text);
-  transition: all 0.2s;
-  white-space: nowrap;
-}
-
-.add-btn:hover { background: rgba(139,92,246,0.08); border-color: var(--purple); color: var(--purple); }
-.add-btn:active { transform: scale(0.96); }
-
-.check-row-btn {
-  margin-top: 8px;
-  padding: 12px 18px;
-  border-radius: 12px;
-  border: 3px solid var(--blue);
-  background: rgba(59,130,246,0.08);
-  cursor: pointer;
-  font-family: 'Heebo', sans-serif;
-  font-size: 1rem;
-  font-weight: 800;
-  color: var(--blue);
-  transition: all 0.2s;
-  text-align: center;
-}
-
-.check-row-btn:hover { background: rgba(59,130,246,0.18); transform: translateY(-2px); }
-
-.row-feedback {
-  font-size: 0.95rem;
-  font-weight: 800;
-  margin-top: 6px;
-  min-height: 24px;
-  line-height: 1.4;
-}
-
-.fb-ok  { color: var(--green); }
-.fb-bad { color: var(--red); }
-
-.picto-zone {
-  min-height: 70px;
-  background: var(--surface2);
-  border: 3px dashed var(--border);
-  border-radius: 16px;
-  padding: 12px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  align-items: center;
-  transition: all 0.2s;
-  position: relative;
-}
-
-.picto-zone.zone-ok  { border-color: var(--green); background: rgba(34,197,94,0.06); }
-.picto-zone.zone-bad { border-color: var(--red);   background: rgba(239,68,68,0.06); }
-
-.zone-ph {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #CBD5E1;
-  font-size: 0.9rem;
-  font-weight: 700;
-  pointer-events: none;
-}
-
-.sym-item {
-  font-size: 2rem;
-  cursor: pointer;
-  line-height: 1;
-  transition: transform 0.15s;
-  user-select: none;
-}
-
-.sym-item:hover { transform: scale(1.3); }
-
-/* ============================================================
-   SCREEN 4 — ANALYSIS
-   ============================================================ */
-#screen-analysis { padding-top: 90px; }
-
-/* inline data table */
-.mini-data-card {
-  background: linear-gradient(135deg, rgba(139,92,246,0.06), rgba(59,130,246,0.06));
-  border: 2px solid rgba(139,92,246,0.2);
-  border-radius: 20px;
-  padding: 20px 24px;
-  max-width: 700px;
-  width: 100%;
-  margin-bottom: 24px;
-}
-
-.mini-data-title {
-  font-size: 0.85rem;
-  font-weight: 800;
-  letter-spacing: 2px;
-  color: var(--purple);
-  text-align: center;
-  margin-bottom: 14px;
-}
-
-.mini-table {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 10px;
-}
-
-.mini-cell {
-  background: var(--surface);
-  border-radius: 14px;
-  padding: 12px 8px;
-  text-align: center;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-  border: 2px solid var(--border);
-}
-
-.mini-cell .mc-icon { font-size: 1.5rem; display: block; margin-bottom: 4px; }
-.mini-cell .mc-name { font-size: 0.8rem; font-weight: 800; color: var(--text2); margin-bottom: 4px; }
-.mini-cell .mc-num  { font-size: 1.5rem; font-weight: 900; }
-
-.questions-list { display: grid; gap: 18px; max-width: 700px; width: 100%; }
-
-.qcard {
-  background: var(--surface);
-  border: 2px solid var(--border);
-  border-radius: 20px;
-  padding: 22px 26px;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
-  transition: all 0.3s;
-}
-
-.qcard.q-correct { border-color: var(--green); background: rgba(34,197,94,0.04); }
-.qcard.q-wrong   { border-color: var(--red);   background: rgba(239,68,68,0.04); }
-
-.qcard-header { display: flex; gap: 14px; align-items: flex-start; margin-bottom: 16px; }
-
-.q-bubble {
-  width: 36px; height: 36px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #8B5CF6, #6D28D9);
-  color: #fff;
-  display: flex; align-items: center; justify-content: center;
-  font-weight: 900;
-  font-size: 1rem;
-  flex-shrink: 0;
-  box-shadow: 0 4px 12px rgba(109,40,217,0.4);
-}
-
-.qcard-text {
-  font-size: 1.05rem;
-  font-weight: 700;
-  color: var(--text);
-  line-height: 1.6;
-}
-
-.q-row {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-  flex-wrap: wrap;
-}
-
-.q-input {
-  background: var(--surface2);
-  border: 2px solid var(--border);
-  border-radius: 12px;
-  color: var(--text);
-  font-family: 'Heebo', sans-serif;
-  font-size: 1.05rem;
-  font-weight: 700;
-  padding: 10px 16px;
-  outline: none;
-  transition: border-color 0.2s;
-  direction: rtl;
-}
-
-.q-input:focus { border-color: var(--purple); }
-.q-input.inp-ok  { border-color: var(--green); background: rgba(34,197,94,0.08); }
-.q-input.inp-bad { border-color: var(--red);   background: rgba(239,68,68,0.08); }
-
-select.q-input { cursor: pointer; min-width: 180px; }
-
-.q-check-btn {
-  padding: 10px 24px;
-  border-radius: 12px;
-  border: 3px solid var(--blue);
-  background: rgba(59,130,246,0.1);
-  cursor: pointer;
-  font-family: 'Heebo', sans-serif;
-  font-weight: 800;
-  font-size: 1rem;
-  color: var(--blue);
-  transition: all 0.2s;
-  white-space: nowrap;
-}
-
-.q-check-btn:hover { background: rgba(59,130,246,0.2); }
-.q-check-btn:disabled { opacity: 0.4; cursor: default; }
-
-.q-feedback-box {
-  display: none;
-  margin-top: 12px;
-  padding: 12px 16px;
-  border-radius: 12px;
-  font-size: 0.95rem;
-  font-weight: 700;
-  line-height: 1.5;
-}
-
-.q-feedback-box.show { display: block; }
-.q-feedback-box.fok  { background: rgba(34,197,94,0.1); color: #15803D; border: 2px solid rgba(34,197,94,0.3); }
-.q-feedback-box.fbad { background: rgba(239,68,68,0.1); color: #B91C1C; border: 2px solid rgba(239,68,68,0.3); }
-
-/* fraction inputs */
-.frac-wrap { display: inline-flex; align-items: center; gap: 8px; flex-direction: row-reverse; }
-.frac-stack { display: flex; flex-direction: column; align-items: center; gap: 3px; }
-.frac-line { width: 56px; height: 3px; background: #94A3B8; border-radius: 2px; }
-.frac-input { width: 56px; text-align: center; }
-
-/* ============================================================
-   SCREEN 5 — MULTIPLE CHOICE
-   ============================================================ */
-#screen-mc { padding-top: 90px; }
-
-.mc-card {
-  background: var(--surface);
-  border-radius: 24px;
-  padding: 30px;
-  max-width: 660px;
-  width: 100%;
-  box-shadow: var(--shadow-lg);
-  border: 2px solid var(--border);
-}
-
-.mc-q-box {
-  background: linear-gradient(135deg, rgba(251,191,36,0.15), rgba(249,115,22,0.1));
-  border-right: 5px solid var(--yellow);
-  border-radius: 14px;
-  padding: 18px 20px;
-  font-size: 1.1rem;
-  font-weight: 800;
-  color: var(--text);
-  margin-bottom: 22px;
-  line-height: 1.7;
-}
-
-.mc-options { display: grid; gap: 12px; }
-
-.mc-opt {
-  background: var(--surface2);
-  border: 2.5px solid var(--border);
-  border-radius: 16px;
-  padding: 16px 20px;
-  cursor: pointer;
-  transition: all 0.2s cubic-bezier(.34,1.56,.64,1);
-  font-size: 1rem;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  text-align: right;
-  color: var(--text);
-}
-
-.mc-opt:hover { border-color: var(--purple); background: rgba(139,92,246,0.06); transform: translateX(4px); }
-.mc-opt.opt-correct { border-color: var(--green); background: rgba(34,197,94,0.1); }
-.mc-opt.opt-wrong   { border-color: var(--red);   background: rgba(239,68,68,0.1); }
-.mc-opt.opt-reveal  { border-color: var(--green); background: rgba(34,197,94,0.07); }
-.mc-opt.disabled    { cursor: default; pointer-events: none; }
-
-.mc-letter {
-  background: rgba(139,92,246,0.12);
-  width: 36px; height: 36px;
-  border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  font-weight: 900;
-  font-size: 0.95rem;
-  flex-shrink: 0;
-  color: var(--purple);
-}
-
-.mc-fb {
-  display: none;
-  margin-top: 18px;
-  padding: 16px 20px;
-  border-radius: 14px;
-  font-size: 1rem;
-  font-weight: 700;
-  line-height: 1.6;
-}
-
-.mc-fb.show { display: block; }
-.mc-fb.fok  { background: rgba(34,197,94,0.1); color: #15803D; border: 2px solid rgba(34,197,94,0.3); }
-.mc-fb.fbad { background: rgba(239,68,68,0.1); color: #B91C1C; border: 2px solid rgba(239,68,68,0.3); }
-
-/* ============================================================
-   SCREEN 6 — CERTIFICATE
-   ============================================================ */
-#screen-certificate { padding-top: 80px; justify-content: center; text-align: center; gap: 20px; }
-
-.cert {
-  background: var(--surface);
-  border-radius: 28px;
-  padding: 44px 40px;
-  max-width: 580px;
-  width: 100%;
-  box-shadow: 0 12px 60px rgba(251,191,36,0.25), 0 4px 20px rgba(0,0,0,0.08);
-  border: 4px solid var(--yellow);
-  position: relative;
-  overflow: hidden;
-}
-
-.cert::before, .cert::after {
-  content: '🎵';
-  position: absolute;
-  font-size: 6rem;
-  opacity: 0.06;
-  pointer-events: none;
-}
-.cert::before { top: -20px; right: -20px; transform: rotate(20deg); }
-.cert::after  { bottom: -20px; left: -20px; transform: rotate(-20deg); }
-
-.cert-label {
-  font-size: 0.85rem;
-  font-weight: 800;
-  letter-spacing: 4px;
-  color: #B45309;
-  margin-bottom: 10px;
-}
-
-.cert-title {
-  font-size: clamp(1.8rem, 4vw, 2.6rem);
-  font-weight: 900;
-  background: linear-gradient(135deg, #F97316, #FBBF24, #F97316);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  margin-bottom: 16px;
-  line-height: 1.3;
-}
-
-.cert-icon { font-size: 5rem; display: block; margin: 10px 0; animation: wiggle 3s ease infinite; }
-@keyframes wiggle {
-  0%,90%,100% { transform: rotate(0); }
-  93%  { transform: rotate(12deg); }
-  96%  { transform: rotate(-12deg); }
-}
-
-.cert-body { font-size: 1.05rem; color: var(--text2); line-height: 1.8; font-weight: 600; margin: 12px 0; }
-
-.cert-score-box {
-  display: inline-block;
-  background: linear-gradient(135deg, rgba(251,191,36,0.15), rgba(249,115,22,0.1));
-  border: 3px solid var(--yellow);
-  border-radius: 18px;
-  padding: 18px 32px;
-  margin: 14px 0;
-}
-
-.cert-score-num { font-size: 3.5rem; font-weight: 900; color: #D97706; display: block; }
-.cert-score-lbl { font-size: 0.95rem; color: var(--text2); font-weight: 700; }
-.cert-rank { font-size: 1.15rem; font-weight: 900; color: #D97706; margin-top: 10px; }
+    radial-gradient(ellipse 60% 40% at 15% 25%,rgba(167,139,250,.14) 0%,transparent 70%),
+    radial-gradient(ellipse 50% 40% at 85% 75%,rgba(6,182,212,.10) 0%,transparent 70%),
+    radial-gradient(ellipse 40% 30% at 55% 50%,rgba(251,191,36,.07) 0%,transparent 60%);
+}
+
+.screen{display:none;position:relative;z-index:1;min-height:100vh;padding:20px 16px 60px;flex-direction:column;align-items:center;}
+.screen.active{display:flex;}
+
+/* ════════════════ HUD ════════════════ */
+.hud{
+  position:fixed;top:0;inset-inline:0;z-index:100;
+  background:linear-gradient(135deg,#4F46E5,#7C3AED);
+  padding:10px 22px;display:flex;justify-content:space-between;align-items:center;
+  box-shadow:0 4px 20px rgba(79,70,229,.35);
+}
+.hud-logo{font-size:1rem;font-weight:900;color:#fff;letter-spacing:.5px;}
+.hud-stats{display:flex;gap:10px;align-items:center;}
+.hud-chip{
+  display:flex;align-items:center;gap:7px;
+  background:rgba(255,255,255,.18);
+  padding:6px 14px;border-radius:30px;
+  font-size:.9rem;font-weight:800;color:#fff;
+}
+.hud-chip .v{color:#FFE55C;font-size:1rem;}
+.lbar{width:72px;height:9px;background:rgba(255,255,255,.25);border-radius:5px;overflow:hidden;}
+.lfill{height:100%;background:linear-gradient(90deg,#FFE55C,#FFC107);border-radius:5px;width:0%;transition:width .6s cubic-bezier(.34,1.56,.64,1);}
+
+/* ════════════════ TOAST ════════════════ */
+.toast{
+  position:fixed;top:76px;left:50%;
+  transform:translateX(-50%) translateY(-14px);
+  background:#fff;border-radius:14px;padding:12px 26px;
+  font-weight:800;font-size:.95rem;z-index:200;
+  opacity:0;pointer-events:none;
+  transition:all .3s cubic-bezier(.34,1.56,.64,1);
+  border:3px solid var(--green);color:var(--green);
+  box-shadow:0 6px 24px rgba(0,0,0,.12);white-space:nowrap;
+}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0);}
+.toast.err{border-color:var(--red);color:var(--red);}
+
+/* ════════════════ SHARED ════════════════ */
+.steps{display:flex;gap:6px;margin-bottom:22px;justify-content:center;direction:ltr;}
+.step{
+  width:36px;height:36px;border-radius:50%;
+  border:3px solid var(--border);background:var(--white);
+  display:flex;align-items:center;justify-content:center;
+  font-size:.8rem;font-weight:800;color:#94A3B8;transition:all .3s;
+}
+.step.cur{border-color:var(--purple);color:var(--purple);box-shadow:0 0 0 4px rgba(124,58,237,.15);}
+.step.done{background:var(--green);border-color:var(--green);color:#fff;}
+
+.pg-title{font-size:1.9rem;font-weight:900;text-align:center;margin-bottom:6px;color:var(--text);}
+.pg-sub{font-size:1rem;text-align:center;color:var(--text2);margin-bottom:22px;font-weight:600;}
+
+/* ── buttons ── */
+.btn{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:13px 34px;font-family:'Heebo',sans-serif;
+  font-size:1.05rem;font-weight:800;border:none;border-radius:50px;
+  cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,.14);
+  transition:all .22s cubic-bezier(.34,1.56,.64,1);
+}
+.btn:hover{transform:translateY(-3px) scale(1.03);}
+.btn:active{transform:scale(.97);}
+.btn-purple{background:linear-gradient(135deg,#7C3AED,#5B21B6);color:#fff;}
+.btn-blue  {background:linear-gradient(135deg,#2563EB,#1D4ED8);color:#fff;}
+.btn-green {background:linear-gradient(135deg,#16A34A,#166534);color:#fff;}
+.btn-orange{background:linear-gradient(135deg,#EA580C,#C2410C);color:#fff;}
+.btn-pink  {background:linear-gradient(135deg,#F43F8E,#BE185D);color:#fff;}
+
+/* ════════════════ SCREEN 0 — INTRO ════════════════ */
+#screen-intro{justify-content:center;padding-top:30px;text-align:center;gap:20px;}
+
+.radio-badge{
+  display:inline-flex;align-items:center;gap:8px;
+  background:linear-gradient(135deg,#F43F8E,#EA580C);
+  color:#fff;padding:8px 22px;border-radius:30px;
+  font-size:.9rem;font-weight:800;letter-spacing:1px;
+  box-shadow:0 4px 16px rgba(244,63,142,.4);
+  animation:pb 2s ease infinite;
+}
+@keyframes pb{0%,100%{box-shadow:0 4px 16px rgba(244,63,142,.4);}50%{box-shadow:0 4px 28px rgba(244,63,142,.7);}}
+
+.intro-title{
+  font-size:clamp(2.2rem,6vw,3.4rem);font-weight:900;line-height:1.2;
+  background:linear-gradient(135deg,#7C3AED,#2563EB,#F43F8E);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+
+.intro-card{
+  background:var(--white);border-radius:28px;padding:32px 38px;
+  max-width:560px;width:100%;box-shadow:var(--shadow-lg);
+  border:3px solid rgba(124,58,237,.18);text-align:center;
+  position:relative;overflow:hidden;
+}
+.intro-card::before{content:'🎵';position:absolute;top:-20px;left:-10px;font-size:5rem;opacity:.05;pointer-events:none;}
+.intro-card::after {content:'🎶';position:absolute;bottom:-20px;right:-10px;font-size:5rem;opacity:.05;pointer-events:none;}
+.intro-mic{font-size:5rem;display:block;animation:rock 2s ease-in-out infinite alternate;margin-bottom:14px;}
+@keyframes rock{from{transform:rotate(-8deg);}to{transform:rotate(8deg);}}
+.intro-card p{font-size:1.1rem;line-height:2;color:var(--text2);font-weight:600;position:relative;z-index:1;}
+.hl {color:var(--purple);font-weight:900;}
+.hl2{color:var(--pink);  font-weight:900;}
+
+/* ════════════════ SCREEN 1 — TABLE ════════════════ */
+#screen-table{padding-top:86px;}
+
+.data-card{
+  background:var(--white);border-radius:24px;padding:28px;
+  box-shadow:var(--shadow-lg);border:2px solid var(--border);
+  max-width:580px;width:100%;margin-bottom:28px;
+}
+.data-tbl{width:100%;border-collapse:separate;border-spacing:0 8px;}
+.data-tbl th{
+  font-size:.8rem;font-weight:800;letter-spacing:2px;
+  color:var(--text2);padding:0 16px 8px;text-align:center;
+  border-bottom:2px solid var(--border);
+}
+.data-tbl td{padding:12px 16px;text-align:center;font-size:1rem;font-weight:700;}
+.data-tbl tbody tr td:first-child{border-radius:14px 0 0 14px;}
+.data-tbl tbody tr td:last-child {border-radius:0 14px 14px 0;}
+.r-hiphop td{background:rgba(244,63,142,.08);}
+.r-pop    td{background:rgba(217,119, 6,.10);}
+.r-rock   td{background:rgba( 22,163,74,.08);}
+.r-med    td{background:rgba( 37, 99,235,.08);}
+.r-total  td{background:rgba(124, 58,237,.08);}
+
+.gpill{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:8px 18px;border-radius:30px;font-weight:800;font-size:1rem;
+}
+.gp-hiphop{background:rgba(244,63,142,.12);color:#BE185D;border:2px solid rgba(244,63,142,.35);}
+.gp-pop   {background:rgba(217,119, 6,.15);color:#92400E;border:2px solid rgba(217,119, 6,.4);}
+.gp-rock  {background:rgba( 22,163,74,.12);color:#14532D;border:2px solid rgba( 22,163,74,.35);}
+.gp-med   {background:rgba( 37, 99,235,.12);color:#1E3A8A;border:2px solid rgba( 37, 99,235,.35);}
+
+.fnum{font-size:1.6rem;font-weight:900;}
+.fn-hiphop{color:#BE185D;} .fn-pop{color:#92400E;} .fn-rock{color:#14532D;}
+.fn-med{color:#1E3A8A;}    .fn-tot{color:#5B21B6;}
+
+/* ════════════════ SCREEN 2 — LEGEND ════════════════ */
+#screen-legend{padding-top:86px;}
+
+.leg-hint{
+  background:rgba(37,99,235,.08);border:2px solid rgba(37,99,235,.25);
+  border-radius:16px;padding:14px 22px;font-size:1rem;font-weight:700;
+  color:#1E40AF;max-width:560px;text-align:center;margin-bottom:24px;line-height:1.7;
+}
+.leg-grid{
+  display:grid;grid-template-columns:repeat(2,1fr);gap:16px;
+  max-width:520px;width:100%;margin-bottom:28px;
+}
+.leg-opt{
+  background:var(--white);border:3px solid var(--border);border-radius:20px;
+  padding:24px 16px;text-align:center;cursor:pointer;
+  transition:all .25s cubic-bezier(.34,1.56,.64,1);
+  box-shadow:0 2px 10px rgba(0,0,0,.06);user-select:none;
+}
+.leg-opt:hover{border-color:var(--purple);transform:translateY(-5px);box-shadow:0 12px 28px rgba(124,58,237,.18);}
+.leg-opt.sel{border-color:var(--pink);background:rgba(244,63,142,.05);box-shadow:0 8px 28px rgba(244,63,142,.22);}
+.leg-sym{font-size:3rem;display:block;margin-bottom:10px;}
+.leg-val{font-size:1rem;font-weight:800;color:var(--text);}
+.leg-val span{color:var(--purple);font-size:1.25rem;}
+.leg-note{font-size:.82rem;color:var(--text2);font-weight:600;margin-top:4px;}
+
+/* ════════════════ SCREEN 3 — PICTOGRAM ════════════════ */
+#screen-picto{padding-top:86px;}
+
+.picto-legbar{
+  background:linear-gradient(135deg,rgba(124,58,237,.09),rgba(37,99,235,.09));
+  border:2px solid rgba(124,58,237,.22);border-radius:14px;
+  padding:11px 20px;font-size:1rem;font-weight:800;color:#4C1D95;
+  max-width:720px;width:100%;text-align:center;margin-bottom:14px;
+}
+.picto-tip{
+  background:rgba(217,119,6,.1);border:2px solid rgba(217,119,6,.3);
+  border-radius:12px;padding:10px 18px;font-size:.95rem;font-weight:700;
+  color:#78350F;max-width:720px;width:100%;text-align:center;margin-bottom:20px;line-height:1.6;
+}
+
+/* each genre card */
+.pcard{
+  background:var(--white);border-radius:20px;
+  box-shadow:0 3px 16px rgba(0,0,0,.08);
+  border:2px solid var(--border);
+  margin-bottom:18px;overflow:hidden;
+}
+.pcard:last-child{margin-bottom:0;}
+
+.pcard-head{
+  display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:10px;
+  padding:14px 18px 12px;
+  border-bottom:2px solid var(--border);
+}
+.pcard-info{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+.pcard-name{font-size:1.1rem;font-weight:900;}
+.pcard-count{
+  font-size:.95rem;font-weight:800;padding:4px 14px;
+  border-radius:20px;white-space:nowrap;
+}
+.pcard-btns{display:flex;gap:8px;flex-wrap:wrap;}
+
+.add-btn{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:9px 16px;border-radius:12px;border:2px solid var(--border);
+  background:var(--bg);cursor:pointer;font-family:'Heebo',sans-serif;
+  font-size:1rem;font-weight:800;color:var(--text);transition:all .2s;
+}
+.add-btn:hover{background:var(--white);transform:scale(1.04);}
+.add-btn:active{transform:scale(.96);}
+
+.picto-zone{
+  min-height:68px;padding:14px 16px;
+  display:flex;flex-wrap:wrap;gap:6px;align-items:center;
+  position:relative;cursor:default;transition:background .2s;
+}
+.picto-zone.zok {background:rgba(22,163,74,.06);}
+.picto-zone.zbad{background:rgba(220,38,38,.06);}
+.zone-ph{
+  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  color:#CBD5E1;font-size:.9rem;font-weight:700;pointer-events:none;
+}
+.sym{
+  font-size:2rem;cursor:pointer;line-height:1;
+  transition:transform .15s;user-select:none;
+  display:inline-block;
+}
+.sym:hover{transform:scale(1.3);}
+
+.pcard-foot{
+  display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+  padding:12px 18px;border-top:2px solid var(--border);
+}
+.chk-row-btn{
+  padding:10px 22px;border-radius:12px;font-family:'Heebo',sans-serif;
+  font-size:1rem;font-weight:800;cursor:pointer;border:2.5px solid;
+  transition:all .2s;background:transparent;
+}
+.chk-row-btn:hover{opacity:.8;transform:translateY(-2px);}
+.rfb{font-size:.95rem;font-weight:800;line-height:1.4;}
+.rfb-ok {color:var(--green);}
+.rfb-bad{color:var(--red);}
+
+/* ── per-genre accents ── */
+.acc-hiphop .pcard-head{background:rgba(244,63,142,.06);}
+.acc-hiphop .pcard-name{color:#BE185D;}
+.acc-hiphop .pcard-count{background:rgba(244,63,142,.12);color:#BE185D;border:2px solid rgba(244,63,142,.3);}
+.acc-hiphop .chk-row-btn{border-color:#F43F8E;color:#BE185D;}
+.acc-hiphop .add-btn:hover{border-color:#F43F8E;color:#BE185D;}
+
+.acc-pop .pcard-head{background:rgba(217,119,6,.06);}
+.acc-pop .pcard-name{color:#92400E;}
+.acc-pop .pcard-count{background:rgba(217,119,6,.14);color:#92400E;border:2px solid rgba(217,119,6,.35);}
+.acc-pop .chk-row-btn{border-color:#D97706;color:#92400E;}
+.acc-pop .add-btn:hover{border-color:#D97706;color:#92400E;}
+
+.acc-rock .pcard-head{background:rgba(22,163,74,.06);}
+.acc-rock .pcard-name{color:#14532D;}
+.acc-rock .pcard-count{background:rgba(22,163,74,.12);color:#14532D;border:2px solid rgba(22,163,74,.3);}
+.acc-rock .chk-row-btn{border-color:#16A34A;color:#14532D;}
+.acc-rock .add-btn:hover{border-color:#16A34A;color:#14532D;}
+
+.acc-med .pcard-head{background:rgba(37,99,235,.06);}
+.acc-med .pcard-name{color:#1E3A8A;}
+.acc-med .pcard-count{background:rgba(37,99,235,.12);color:#1E3A8A;border:2px solid rgba(37,99,235,.3);}
+.acc-med .chk-row-btn{border-color:#2563EB;color:#1E3A8A;}
+.acc-med .add-btn:hover{border-color:#2563EB;color:#1E3A8A;}
+
+/* ── live graph ── */
+.graph-wrap{
+  background:var(--white);border-radius:22px;padding:24px 28px;
+  max-width:720px;width:100%;box-shadow:var(--shadow);
+  border:2px solid var(--border);margin-top:24px;
+}
+.graph-title{
+  font-size:1.05rem;font-weight:900;text-align:center;
+  color:var(--purple);margin-bottom:18px;letter-spacing:.5px;
+}
+.graph-row{
+  display:grid;grid-template-columns:130px 1fr;
+  gap:10px;align-items:center;margin-bottom:12px;
+}
+.graph-row:last-child{margin-bottom:0;}
+.graph-label{font-size:.9rem;font-weight:800;text-align:right;}
+.graph-syms{
+  display:flex;flex-wrap:wrap;gap:4px;
+  min-height:36px;align-items:center;
+  background:var(--bg);border-radius:10px;padding:6px 10px;
+}
+.gsym{font-size:1.5rem;line-height:1;}
+.graph-empty{color:#CBD5E1;font-size:.8rem;font-weight:700;}
+.graph-legend{
+  text-align:center;margin-top:14px;
+  font-size:.85rem;font-weight:700;color:var(--text2);
+  padding-top:12px;border-top:2px solid var(--border);
+}
+
+.check-all-wrap{text-align:center;margin-top:24px;}
+
+/* ════════════════ SCREEN 4 — ANALYSIS ════════════════ */
+#screen-analysis{padding-top:86px;}
+
+.reminder-card{
+  background:linear-gradient(135deg,rgba(124,58,237,.07),rgba(37,99,235,.07));
+  border:2px solid rgba(124,58,237,.2);border-radius:20px;
+  padding:20px 24px;max-width:700px;width:100%;margin-bottom:24px;
+}
+.reminder-title{
+  font-size:.8rem;font-weight:800;letter-spacing:2px;
+  color:var(--purple);text-align:center;margin-bottom:14px;
+}
+.reminder-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
+.rem-cell{
+  background:var(--white);border-radius:14px;padding:12px 8px;
+  text-align:center;border:2px solid var(--border);
+  box-shadow:0 2px 8px rgba(0,0,0,.05);
+}
+.rem-icon{font-size:1.5rem;display:block;margin-bottom:4px;}
+.rem-name{font-size:.78rem;font-weight:800;color:var(--text2);margin-bottom:4px;}
+.rem-num{font-size:1.55rem;font-weight:900;}
+.rem-tot{text-align:center;margin-top:10px;font-size:.88rem;font-weight:800;color:var(--purple);}
+
+.qlist{display:grid;gap:18px;max-width:700px;width:100%;}
+
+.qcard{
+  background:var(--white);border:2px solid var(--border);border-radius:20px;
+  padding:22px 26px;box-shadow:0 2px 12px rgba(0,0,0,.06);transition:all .3s;
+}
+.qcard.qok {border-color:var(--green);background:rgba(22,163,74,.04);}
+.qcard.qbad{border-color:var(--red);  background:rgba(220,38,38,.04);}
+
+.qhead{display:flex;gap:14px;align-items:flex-start;margin-bottom:16px;}
+.qbubble{
+  width:36px;height:36px;border-radius:50%;flex-shrink:0;
+  background:linear-gradient(135deg,#7C3AED,#5B21B6);
+  color:#fff;display:flex;align-items:center;justify-content:center;
+  font-weight:900;font-size:1rem;box-shadow:0 4px 12px rgba(91,33,182,.4);
+}
+.qtext{font-size:1.05rem;font-weight:700;color:var(--text);line-height:1.6;}
+
+.qrow{display:flex;gap:12px;align-items:center;flex-wrap:wrap;}
+
+/* ── inputs ── */
+.qi{
+  background:var(--bg);border:2px solid var(--border);border-radius:12px;
+  color:var(--text);font-family:'Heebo',sans-serif;font-size:1.05rem;font-weight:700;
+  padding:10px 15px;outline:none;transition:border-color .2s;
+  direction:rtl;
+}
+.qi:focus{border-color:var(--purple);}
+.qi.ok {border-color:var(--green);background:rgba(22,163,74,.07);}
+.qi.bad{border-color:var(--red);  background:rgba(220,38,38,.07);}
+select.qi{cursor:pointer;min-width:190px;}
+
+/* number inputs — must be LTR so digits display correctly */
+input[type="number"].qi{
+  direction:ltr;
+  text-align:center;
+  -moz-appearance:textfield;
+}
+input[type="number"].qi::-webkit-inner-spin-button,
+input[type="number"].qi::-webkit-outer-spin-button{-webkit-appearance:none;}
+
+.qbtn{
+  padding:10px 24px;border-radius:12px;border:2.5px solid var(--blue);
+  background:rgba(37,99,235,.09);cursor:pointer;font-family:'Heebo',sans-serif;
+  font-weight:800;font-size:.98rem;color:var(--blue);transition:all .2s;white-space:nowrap;
+}
+.qbtn:hover{background:rgba(37,99,235,.17);}
+.qbtn:disabled{opacity:.4;cursor:default;}
+
+.qfb{
+  display:none;margin-top:12px;padding:12px 16px;
+  border-radius:12px;font-size:.95rem;font-weight:700;line-height:1.5;
+}
+.qfb.show{display:block;}
+.qfb.ok {background:rgba(22,163,74,.1); color:#14532D;border:2px solid rgba(22,163,74,.3);}
+.qfb.bad{background:rgba(220,38,38,.1);color:#7F1D1D;border:2px solid rgba(220,38,38,.3);}
+
+/* fraction */
+.frac{display:inline-flex;align-items:center;gap:10px;flex-direction:row-reverse;}
+.frac-stack{display:flex;flex-direction:column;align-items:center;gap:3px;}
+.frac-line{width:58px;height:3px;background:#94A3B8;border-radius:2px;}
+.frac-num{width:58px;text-align:center;}
+
+/* ════════════════ SCREEN 5 — MC ════════════════ */
+#screen-mc{padding-top:86px;}
+
+.mc-card{
+  background:var(--white);border-radius:24px;padding:30px;
+  max-width:650px;width:100%;box-shadow:var(--shadow-lg);border:2px solid var(--border);
+}
+.mc-qbox{
+  background:linear-gradient(135deg,rgba(251,191,36,.14),rgba(249,115,22,.09));
+  border-right:5px solid #D97706;border-radius:14px;
+  padding:18px 20px;font-size:1.1rem;font-weight:800;
+  color:var(--text);margin-bottom:22px;line-height:1.75;
+}
+.mc-opts{display:grid;gap:12px;}
+.mc-opt{
+  background:var(--bg);border:2.5px solid var(--border);border-radius:16px;
+  padding:16px 20px;cursor:pointer;transition:all .2s cubic-bezier(.34,1.56,.64,1);
+  font-size:1rem;font-weight:700;display:flex;align-items:center;gap:14px;
+  text-align:right;color:var(--text);
+}
+.mc-opt:hover{border-color:var(--purple);background:rgba(124,58,237,.06);transform:translateX(5px);}
+.mc-opt.ok    {border-color:var(--green);background:rgba(22,163,74,.09);}
+.mc-opt.wrong {border-color:var(--red);  background:rgba(220,38,38,.09);}
+.mc-opt.reveal{border-color:var(--green);background:rgba(22,163,74,.06);}
+.mc-opt.off   {cursor:default;pointer-events:none;}
+.mc-let{
+  background:rgba(124,58,237,.1);width:36px;height:36px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-weight:900;font-size:.95rem;flex-shrink:0;color:var(--purple);
+}
+.mc-fb{
+  display:none;margin-top:18px;padding:16px 20px;border-radius:14px;
+  font-size:.98rem;font-weight:700;line-height:1.6;
+}
+.mc-fb.show{display:block;}
+.mc-fb.ok {background:rgba(22,163,74,.09);color:#14532D;border:2px solid rgba(22,163,74,.28);}
+.mc-fb.bad{background:rgba(220,38,38,.09);color:#7F1D1D;border:2px solid rgba(220,38,38,.28);}
+
+/* ════════════════ SCREEN 6 — CERTIFICATE ════════════════ */
+#screen-certificate{padding-top:76px;justify-content:center;text-align:center;gap:20px;}
+
+.cert{
+  background:var(--white);border-radius:28px;padding:44px 40px;
+  max-width:560px;width:100%;
+  box-shadow:0 12px 60px rgba(202,138,4,.22),0 4px 20px rgba(0,0,0,.08);
+  border:4px solid #FBBF24;position:relative;overflow:hidden;
+}
+.cert::before{content:'🎵';position:absolute;top:-18px;right:-14px;font-size:6rem;opacity:.06;pointer-events:none;transform:rotate(20deg);}
+.cert::after {content:'🎶';position:absolute;bottom:-18px;left:-14px;font-size:6rem;opacity:.06;pointer-events:none;transform:rotate(-20deg);}
+.cert-lbl{font-size:.8rem;font-weight:800;letter-spacing:4px;color:#92400E;margin-bottom:10px;}
+.cert-ttl{
+  font-size:clamp(1.7rem,4vw,2.6rem);font-weight:900;
+  background:linear-gradient(135deg,#D97706,#FBBF24,#D97706);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  margin-bottom:14px;line-height:1.3;
+}
+.cert-icon{font-size:5rem;display:block;margin:10px 0;animation:wig 3s ease infinite;}
+@keyframes wig{0%,88%,100%{transform:rotate(0);}92%{transform:rotate(12deg);}96%{transform:rotate(-12deg);}}
+.cert-body{font-size:1rem;color:var(--text2);line-height:1.9;font-weight:600;margin:12px 0;}
+.cert-score{
+  display:inline-block;
+  background:linear-gradient(135deg,rgba(251,191,36,.14),rgba(249,115,22,.09));
+  border:3px solid #FBBF24;border-radius:18px;padding:16px 32px;margin:14px 0;
+}
+.cert-snum{font-size:3.5rem;font-weight:900;color:#B45309;display:block;}
+.cert-slbl{font-size:.9rem;color:var(--text2);font-weight:700;}
+.cert-rank{font-size:1.1rem;font-weight:900;color:#B45309;margin-top:10px;}
 
 /* confetti */
-.confetti-piece {
-  position: fixed;
-  width: 10px; height: 10px;
-  opacity: 0;
-  animation: fall 3s ease-in forwards;
-  border-radius: 2px;
-  z-index: 999;
-  pointer-events: none;
-}
-@keyframes fall {
-  0%   { transform: translateY(-20px) rotate(0deg); opacity: 1; }
-  100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+.cf{position:fixed;width:10px;height:10px;opacity:0;
+  animation:cf-fall 3s ease-in forwards;border-radius:2px;z-index:999;pointer-events:none;}
+@keyframes cf-fall{0%{transform:translateY(-20px) rotate(0);opacity:1;}100%{transform:translateY(100vh) rotate(720deg);opacity:0;}}
+
+@media(max-width:580px){
+  .reminder-grid{grid-template-columns:repeat(2,1fr);}
+  .graph-row{grid-template-columns:100px 1fr;}
+  .pcard-head{flex-direction:column;align-items:flex-start;}
 }
 </style>
 </head>
 <body>
 
 <!-- HUD -->
-<div class="hud" id="main-hud" style="display:none">
+<div class="hud" id="hud" style="display:none">
   <div class="hud-logo">🎙️ רדיו שכבה ז׳</div>
   <div class="hud-stats">
-    <div class="hud-stat">🏆 <span class="val" id="hud-score">0</span> נק׳</div>
-    <div class="hud-stat">
-      📡
-      <div class="listener-bar"><div class="listener-fill" id="listener-fill"></div></div>
-      <span class="val" id="listener-pct">0%</span>
-    </div>
+    <div class="hud-chip">🏆 <span class="v" id="hud-sc">0</span> נק׳</div>
+    <div class="hud-chip">📡 <div class="lbar"><div class="lfill" id="lfill"></div></div> <span class="v" id="lpct">0%</span></div>
   </div>
 </div>
-
 <div class="toast" id="toast"></div>
 
-<!-- ============================================================
-     SCREEN 0 — INTRO
-     ============================================================ -->
+<!-- ══════════════ SCREEN 0 — INTRO ══════════════ -->
 <div class="screen active" id="screen-intro">
   <div class="radio-badge">📻 רדיו שכבה ז׳ — שידור חי!</div>
-
   <div class="intro-title">מצעד השכבה<br>🎧 משחק פיקטוגרמה</div>
-
   <div class="intro-card">
     <span class="intro-mic">🎙️</span>
     <p>
       <strong>שלום עורך המצעד!</strong><br>
-      <span class="hl">80 תלמידים</span> מחכים לראות
-      מה השיר שהכי אהוב בשכבה.<br><br>
-      בוא נעזור למועצה להציג את התוצאות
-      בדרך הכי <span class="hl2">מגניבה</span> שיש —<br>
-      בעזרת <strong>פיקטוגרמה!</strong>
+      <span class="hl">80 תלמידים</span> מחכים לראות מה השיר שהכי אהוב בשכבה.<br><br>
+      בוא נעזור למועצה להציג את התוצאות<br>
+      בדרך הכי <span class="hl2">מגניבה</span> שיש — בעזרת <strong>פיקטוגרמה!</strong>
     </p>
   </div>
-
   <button class="btn btn-purple" onclick="startGame()">בוא נתחיל! 🚀</button>
 </div>
 
-<!-- ============================================================
-     SCREEN 1 — DATA TABLE
-     ============================================================ -->
+<!-- ══════════════ SCREEN 1 — TABLE ══════════════ -->
 <div class="screen" id="screen-table">
-  <div class="progress-steps">
-    <div class="step current">1</div>
-    <div class="step">2</div><div class="step">3</div>
-    <div class="step">4</div><div class="step">5</div>
+  <div class="steps">
+    <div class="step cur">1</div><div class="step">2</div>
+    <div class="step">3</div><div class="step">4</div><div class="step">5</div>
   </div>
-
-  <div class="screen-title">📊 תוצאות הסקר</div>
-  <div class="screen-sub">80 תלמידי השכבה בחרו את הז׳אנר האהוב עליהם</div>
+  <div class="pg-title">📊 תוצאות הסקר</div>
+  <div class="pg-sub">80 תלמידי השכבה בחרו את הז׳אנר האהוב עליהם</div>
 
   <div class="data-card">
-    <table class="data-table">
-      <thead>
-        <tr><th>ז׳אנר</th><th>מספר תלמידים</th></tr>
-      </thead>
+    <table class="data-tbl">
+      <thead><tr><th>ז׳אנר</th><th>מספר תלמידים</th></tr></thead>
       <tbody>
-        <tr class="row-hiphop">
-          <td><span class="genre-pill pill-hiphop">🎤 היפ-הופ</span></td>
-          <td><span class="freq-big freq-hiphop">24</span></td>
-        </tr>
-        <tr class="row-pop">
-          <td><span class="genre-pill pill-pop">🌟 פופ</span></td>
-          <td><span class="freq-big freq-pop">20</span></td>
-        </tr>
-        <tr class="row-rock">
-          <td><span class="genre-pill pill-rock">🎸 רוק</span></td>
-          <td><span class="freq-big freq-rock">20</span></td>
-        </tr>
-        <tr class="row-med">
-          <td><span class="genre-pill pill-med">🌊 ים-תיכוני</span></td>
-          <td><span class="freq-big freq-med">16</span></td>
-        </tr>
-        <tr class="row-total">
-          <td><strong>סה״כ</strong></td>
-          <td><span class="freq-big freq-total">80</span></td>
-        </tr>
+        <tr class="r-hiphop"><td><span class="gpill gp-hiphop">🎤 היפ-הופ</span></td><td><span class="fnum fn-hiphop">24</span></td></tr>
+        <tr class="r-pop">   <td><span class="gpill gp-pop">🌟 פופ</span></td>   <td><span class="fnum fn-pop">20</span></td></tr>
+        <tr class="r-rock">  <td><span class="gpill gp-rock">🎸 רוק</span></td>  <td><span class="fnum fn-rock">20</span></td></tr>
+        <tr class="r-med">   <td><span class="gpill gp-med">🌊 ים-תיכוני</span></td><td><span class="fnum fn-med">16</span></td></tr>
+        <tr class="r-total"> <td><strong>סה״כ</strong></td><td><span class="fnum fn-tot">80</span></td></tr>
       </tbody>
     </table>
   </div>
-
-  <button class="btn btn-blue" onclick="goToLegend()">בחירת מקרא ←</button>
+  <button class="btn btn-blue" onclick="goLegend()">בחירת מקרא ←</button>
 </div>
 
-<!-- ============================================================
-     SCREEN 2 — LEGEND
-     ============================================================ -->
+<!-- ══════════════ SCREEN 2 — LEGEND ══════════════ -->
 <div class="screen" id="screen-legend">
-  <div class="progress-steps">
-    <div class="step done">✓</div>
-    <div class="step current">2</div>
+  <div class="steps">
+    <div class="step done">✓</div><div class="step cur">2</div>
     <div class="step">3</div><div class="step">4</div><div class="step">5</div>
   </div>
+  <div class="pg-title">🎧 בחר מקרא לפיקטוגרמה</div>
+  <div class="pg-sub">כמה תלמידים תייצג כל אוזנייה?</div>
 
-  <div class="screen-title">🎧 בחר מקרא לפיקטוגרמה</div>
-  <div class="screen-sub">כמה תלמידים תייצג כל אוזנייה?</div>
-
-  <div class="legend-hint">
-    💡 טיפ: בחר מספר שמחלק את כל השכיחויות (24, 20, 20, 16) בצורה נוחה — ללא שארית גדולה
+  <div class="leg-hint">
+    💡 בחר מספר שמחלק את 24 ,20 ,20 ,16 בצורה נוחה — ללא שארית גדולה
   </div>
 
-  <div class="legend-grid">
-    <div class="legend-option" onclick="pickLegend(2, this)">
-      <span class="big-sym">🎧</span>
+  <div class="leg-grid">
+    <div class="leg-opt" onclick="pickLeg(2,this)">
+      <span class="leg-sym">🎧</span>
       <div class="leg-val">= <span>2</span> תלמידים</div>
       <div class="leg-note">סה״כ 40 אוזניות</div>
     </div>
-    <div class="legend-option" onclick="pickLegend(4, this)">
-      <span class="big-sym">🎧</span>
+    <div class="leg-opt" onclick="pickLeg(4,this)">
+      <span class="leg-sym">🎧</span>
       <div class="leg-val">= <span>4</span> תלמידים</div>
       <div class="leg-note">סה״כ 20 אוזניות</div>
     </div>
-    <div class="legend-option" onclick="pickLegend(8, this)">
-      <span class="big-sym">🎧</span>
+    <div class="leg-opt" onclick="pickLeg(8,this)">
+      <span class="leg-sym">🎧</span>
       <div class="leg-val">= <span>8</span> תלמידים</div>
       <div class="leg-note">סה״כ 10 אוזניות</div>
     </div>
-    <div class="legend-option" onclick="pickLegend(10, this)">
-      <span class="big-sym">🎧</span>
+    <div class="leg-opt" onclick="pickLeg(10,this)">
+      <span class="leg-sym">🎧</span>
       <div class="leg-val">= <span>10</span> תלמידים</div>
       <div class="leg-note">סה״כ 8 אוזניות</div>
     </div>
   </div>
-
-  <button class="btn btn-pink" id="legend-next" disabled onclick="goToPicto()">בניית פיקטוגרמה ←</button>
+  <button class="btn btn-pink" id="leg-next" disabled onclick="goPicto()">בניית פיקטוגרמה ←</button>
 </div>
 
-<!-- ============================================================
-     SCREEN 3 — PICTOGRAM
-     ============================================================ -->
+<!-- ══════════════ SCREEN 3 — PICTOGRAM ══════════════ -->
 <div class="screen" id="screen-picto">
-  <div class="progress-steps">
+  <div class="steps">
     <div class="step done">✓</div><div class="step done">✓</div>
-    <div class="step current">3</div>
-    <div class="step">4</div><div class="step">5</div>
+    <div class="step cur">3</div><div class="step">4</div><div class="step">5</div>
+  </div>
+  <div class="pg-title">🎨 בנה את הפיקטוגרמה</div>
+
+  <div class="picto-legbar" id="plegbar">🎧 = ? תלמידים</div>
+  <div class="picto-tip">
+    לחץ <strong>➕ אוזנייה</strong> להוספה &nbsp;|&nbsp;
+    לחץ <strong>➕ חצי</strong> להוספת חצי סמל &nbsp;|&nbsp;
+    לחץ על אוזנייה כדי <strong>למחוק</strong> אותה
   </div>
 
-  <div class="screen-title">🎨 בנה את הפיקטוגרמה</div>
+  <!-- genre cards injected by JS -->
+  <div id="pboard" style="max-width:720px;width:100%;"></div>
 
-  <div class="picto-legend-bar" id="picto-leg-bar">🎧 = ? תלמידים</div>
-
-  <div class="picto-instructions">
-    לחץ <strong>➕🎧</strong> כדי להוסיף אוזנייה שלמה &nbsp;|&nbsp;
-    לחץ <strong>➕½</strong> כדי להוסיף חצי אוזנייה &nbsp;|&nbsp;
-    לחץ על אוזנייה כדי <strong>להסיר</strong> אותה
+  <!-- live pictogram graph -->
+  <div class="graph-wrap">
+    <div class="graph-title">📊 הפיקטוגרמה שלך — תצוגה חיה</div>
+    <div id="lgraph"></div>
+    <div class="graph-legend" id="glegend">🎧 = ? תלמידים</div>
   </div>
 
-  <div class="picto-board">
-    <div id="picto-rows"></div>
-  </div>
-
-  <div style="text-align:center;margin-top:28px;">
-    <button class="btn btn-green" onclick="checkAllRows()">✅ בדוק את כל הפיקטוגרמה</button>
+  <div class="check-all-wrap">
+    <button class="btn btn-green" onclick="checkAll()">✅ בדוק את כל הפיקטוגרמה</button>
   </div>
 </div>
 
-<!-- ============================================================
-     SCREEN 4 — ANALYSIS
-     ============================================================ -->
+<!-- ══════════════ SCREEN 4 — ANALYSIS ══════════════ -->
 <div class="screen" id="screen-analysis">
-  <div class="progress-steps">
+  <div class="steps">
     <div class="step done">✓</div><div class="step done">✓</div>
-    <div class="step done">✓</div>
-    <div class="step current">4</div><div class="step">5</div>
+    <div class="step done">✓</div><div class="step cur">4</div><div class="step">5</div>
   </div>
+  <div class="pg-title">🔍 ניתוח נתונים</div>
+  <div class="pg-sub">ענה על השאלות — הנתונים מוצגים כאן לנוחותך</div>
 
-  <div class="screen-title">🔍 ניתוח נתונים</div>
-  <div class="screen-sub">ענה על השאלות — הנתונים מוצגים כאן למטה לנוחותך</div>
-
-  <!-- mini data reminder -->
-  <div class="mini-data-card">
-    <div class="mini-data-title">📋 נתוני הסקר — תזכורת</div>
-    <div class="mini-table">
-      <div class="mini-cell">
-        <span class="mc-icon">🎤</span>
-        <div class="mc-name">היפ-הופ</div>
-        <div class="mc-num freq-hiphop">24</div>
-      </div>
-      <div class="mini-cell">
-        <span class="mc-icon">🌟</span>
-        <div class="mc-name">פופ</div>
-        <div class="mc-num freq-pop">20</div>
-      </div>
-      <div class="mini-cell">
-        <span class="mc-icon">🎸</span>
-        <div class="mc-name">רוק</div>
-        <div class="mc-num freq-rock">20</div>
-      </div>
-      <div class="mini-cell">
-        <span class="mc-icon">🌊</span>
-        <div class="mc-name">ים-תיכוני</div>
-        <div class="mc-num freq-med">16</div>
-      </div>
+  <div class="reminder-card">
+    <div class="reminder-title">📋 נתוני הסקר — תזכורת</div>
+    <div class="reminder-grid">
+      <div class="rem-cell"><span class="rem-icon">🎤</span><div class="rem-name">היפ-הופ</div><div class="rem-num fn-hiphop">24</div></div>
+      <div class="rem-cell"><span class="rem-icon">🌟</span><div class="rem-name">פופ</div>    <div class="rem-num fn-pop">20</div></div>
+      <div class="rem-cell"><span class="rem-icon">🎸</span><div class="rem-name">רוק</div>    <div class="rem-num fn-rock">20</div></div>
+      <div class="rem-cell"><span class="rem-icon">🌊</span><div class="rem-name">ים-תיכוני</div><div class="rem-num fn-med">16</div></div>
     </div>
-    <div style="text-align:center;margin-top:10px;font-size:0.9rem;font-weight:800;color:#4F46E5;">סה״כ: 80 תלמידים</div>
+    <div class="rem-tot">סה״כ: 80 תלמידים</div>
   </div>
 
-  <div class="questions-list">
+  <div class="qlist">
 
     <!-- Q1 -->
-    <div class="qcard" id="qcard-1">
-      <div class="qcard-header">
-        <div class="q-bubble">א</div>
-        <div class="qcard-text">מהו הז׳אנר <strong>השכיח ביותר</strong> בסקר?</div>
-      </div>
-      <div class="q-row">
-        <select class="q-input" id="q1-in">
-          <option value="">-- בחר ז׳אנר --</option>
+    <div class="qcard" id="qc1">
+      <div class="qhead"><div class="qbubble">א</div><div class="qtext">מהו הז׳אנר <strong>השכיח ביותר</strong> בסקר?</div></div>
+      <div class="qrow">
+        <select class="qi" id="q1">
+          <option value="">— בחר ז׳אנר —</option>
           <option value="hiphop">🎤 היפ-הופ</option>
           <option value="pop">🌟 פופ</option>
           <option value="rock">🎸 רוק</option>
           <option value="med">🌊 ים-תיכוני</option>
         </select>
-        <button class="q-check-btn" onclick="chkQ1()">בדוק ✓</button>
+        <button class="qbtn" onclick="ck1()">בדוק ✓</button>
       </div>
-      <div class="q-feedback-box" id="q1-fb"></div>
+      <div class="qfb" id="fb1"></div>
     </div>
 
     <!-- Q2 -->
-    <div class="qcard" id="qcard-2">
-      <div class="qcard-header">
-        <div class="q-bubble">ב</div>
-        <div class="qcard-text">חשב את <strong>השכיחות היחסית</strong> של ״ים-תיכוני״ (שבר פשוט מצומצם):</div>
-      </div>
-      <div class="q-row">
+    <div class="qcard" id="qc2">
+      <div class="qhead"><div class="qbubble">ב</div><div class="qtext">חשב את <strong>השכיחות היחסית</strong> של ״ים-תיכוני״ (שבר פשוט מצומצם):</div></div>
+      <div class="qrow">
         <span style="font-size:1rem;font-weight:800;color:var(--text2);">שכיחות יחסית =</span>
-        <div class="frac-wrap">
+        <div class="frac">
           <div class="frac-stack">
-            <input type="number" class="q-input frac-input" id="q2-num" placeholder="מונה" min="0" max="80">
+            <input type="number" class="qi frac-num" id="q2n" placeholder="מונה" min="0" max="80">
             <div class="frac-line"></div>
-            <input type="number" class="q-input frac-input" id="q2-den" placeholder="מכנה" min="1" max="80">
+            <input type="number" class="qi frac-num" id="q2d" placeholder="מכנה" min="1" max="80">
           </div>
         </div>
-        <button class="q-check-btn" onclick="chkQ2()">בדוק ✓</button>
+        <button class="qbtn" onclick="ck2()">בדוק ✓</button>
       </div>
-      <div class="q-feedback-box" id="q2-fb"></div>
+      <div class="qfb" id="fb2"></div>
     </div>
 
     <!-- Q3 -->
-    <div class="qcard" id="qcard-3">
-      <div class="qcard-header">
-        <div class="q-bubble">ג</div>
-        <div class="qcard-text">מהי <strong>השכיחות המצטברת</strong> של ״פופ״ ו״רוק״ יחד?</div>
-      </div>
-      <div class="q-row">
-        <input type="number" class="q-input" id="q3-in" placeholder="מספר תלמידים" min="0" max="80" style="width:180px;">
+    <div class="qcard" id="qc3">
+      <div class="qhead"><div class="qbubble">ג</div><div class="qtext">מהי <strong>השכיחות המצטברת</strong> של ״פופ״ ו״רוק״ יחד?</div></div>
+      <div class="qrow">
+        <input type="number" class="qi" id="q3" placeholder="כמה תלמידים?" min="0" max="80" style="width:170px;">
         <span style="font-size:1rem;font-weight:800;color:var(--text2);">תלמידים</span>
-        <button class="q-check-btn" onclick="chkQ3()">בדוק ✓</button>
+        <button class="qbtn" onclick="ck3()">בדוק ✓</button>
       </div>
-      <div class="q-feedback-box" id="q3-fb"></div>
+      <div class="qfb" id="fb3"></div>
     </div>
 
     <!-- Q4 -->
-    <div class="qcard" id="qcard-4">
-      <div class="qcard-header">
-        <div class="q-bubble">ד</div>
-        <div class="qcard-text">מהו <strong>אחוז</strong> התלמידים שאוהבים ״פופ״?</div>
-      </div>
-      <div class="q-row">
-        <input type="number" class="q-input" id="q4-in" placeholder="%" min="0" max="100" style="width:120px;">
+    <div class="qcard" id="qc4">
+      <div class="qhead"><div class="qbubble">ד</div><div class="qtext">מהו <strong>אחוז</strong> התלמידים שאוהבים ״פופ״?</div></div>
+      <div class="qrow">
+        <input type="number" class="qi" id="q4" placeholder="%" min="0" max="100" style="width:120px;">
         <span style="font-size:1.2rem;font-weight:900;color:var(--text2);">%</span>
-        <button class="q-check-btn" onclick="chkQ4()">בדוק ✓</button>
+        <button class="qbtn" onclick="ck4()">בדוק ✓</button>
       </div>
-      <div class="q-feedback-box" id="q4-fb"></div>
+      <div class="qfb" id="fb4"></div>
     </div>
 
   </div>
-
   <div style="margin-top:28px;">
-    <button class="btn btn-orange" id="analysis-next" style="display:none" onclick="goToMC()">לשאלת חשיבה ←</button>
+    <button class="btn btn-orange" id="anext" style="display:none" onclick="goMC()">לשאלת חשיבה ←</button>
   </div>
 </div>
 
-<!-- ============================================================
-     SCREEN 5 — MULTIPLE CHOICE
-     ============================================================ -->
+<!-- ══════════════ SCREEN 5 — MC ══════════════ -->
 <div class="screen" id="screen-mc">
-  <div class="progress-steps">
+  <div class="steps">
     <div class="step done">✓</div><div class="step done">✓</div>
-    <div class="step done">✓</div><div class="step done">✓</div>
-    <div class="step current">5</div>
+    <div class="step done">✓</div><div class="step done">✓</div><div class="step cur">5</div>
   </div>
-
-  <div class="screen-title">🧠 שאלת חשיבה</div>
-  <div class="screen-sub">קרא בעיון ובחר את התשובה הנכונה</div>
+  <div class="pg-title">🧠 שאלת חשיבה</div>
+  <div class="pg-sub">קרא בעיון ובחר את התשובה הנכונה</div>
 
   <div class="mc-card">
-    <div class="mc-q-box">
-      אם נשנה את <strong>המקרא</strong> של הפיקטוגרמה
-      (כמה תלמידים מייצגת כל אוזנייה) —
+    <div class="mc-qbox">
+      אם נשנה את <strong>המקרא</strong> של הפיקטוגרמה (כמה תלמידים מייצגת כל אוזנייה) —
       האם הז׳אנר השכיח ביותר <strong>ישתנה</strong>?
     </div>
-
-    <div class="mc-options">
-      <div class="mc-opt" onclick="pickMC(this, false)">
-        <div class="mc-letter">א</div>
-        <div>כן, הז׳אנר השכיח ישתנה לפי המקרא</div>
-      </div>
-      <div class="mc-opt" id="mc-b" onclick="pickMC(this, true)">
-        <div class="mc-letter">ב</div>
-        <div>לא — כי כמות השירים בפועל נשארת זהה. המקרא רק משנה את הייצוג הגרפי</div>
-      </div>
-      <div class="mc-opt" onclick="pickMC(this, false)">
-        <div class="mc-letter">ג</div>
-        <div>אי אפשר לדעת, תלוי בנתונים</div>
-      </div>
-      <div class="mc-opt" onclick="pickMC(this, false)">
-        <div class="mc-letter">ד</div>
-        <div>תלוי בז׳אנר הספציפי שנבחר</div>
-      </div>
+    <div class="mc-opts">
+      <div class="mc-opt" onclick="pickMC(this,false)"><div class="mc-let">א</div><div>כן, הז׳אנר השכיח ישתנה לפי המקרא</div></div>
+      <div class="mc-opt" id="mc-b" onclick="pickMC(this,true)"><div class="mc-let">ב</div><div>לא — כי כמות השירים בפועל נשארת זהה. המקרא רק משנה את הייצוג הגרפי</div></div>
+      <div class="mc-opt" onclick="pickMC(this,false)"><div class="mc-let">ג</div><div>אי אפשר לדעת, תלוי בנתונים</div></div>
+      <div class="mc-opt" onclick="pickMC(this,false)"><div class="mc-let">ד</div><div>תלוי בז׳אנר הספציפי שנבחר</div></div>
     </div>
-
     <div class="mc-fb" id="mc-fb"></div>
   </div>
-
   <div style="margin-top:28px;">
-    <button class="btn btn-green" id="mc-next" style="display:none" onclick="goToCert()">🏆 לתעודה!</button>
+    <button class="btn btn-green" id="mc-next" style="display:none" onclick="goCert()">🏆 לתעודה!</button>
   </div>
 </div>
 
-<!-- ============================================================
-     SCREEN 6 — CERTIFICATE
-     ============================================================ -->
+<!-- ══════════════ SCREEN 6 — CERTIFICATE ══════════════ -->
 <div class="screen" id="screen-certificate">
   <div class="cert">
-    <div class="cert-label">תחנת רדיו שכבה ז׳</div>
-    <div class="cert-title" id="cert-title">תעודת הצטיינות</div>
-    <span class="cert-icon" id="cert-icon">🎧</span>
-    <p class="cert-body" id="cert-body">
-      מוענקת בזאת לתלמיד/ה המצטיין/ת<br>
-      על השלמת <strong>מצעד השכבה</strong><br>
-      בהצלחה מרשימה!
-    </p>
-    <div class="cert-score-box">
-      <span class="cert-score-num" id="cert-num">0</span>
-      <span class="cert-score-lbl">נקודות מתוך 10</span>
+    <div class="cert-lbl">תחנת רדיו שכבה ז׳</div>
+    <div class="cert-ttl" id="ct">תעודת הצטיינות</div>
+    <span class="cert-icon" id="ci">🎧</span>
+    <p class="cert-body" id="cb">מוענקת בזאת לתלמיד/ה על השלמת<br><strong>מצעד השכבה</strong> בהצלחה!</p>
+    <div class="cert-score">
+      <span class="cert-snum" id="csn">0</span>
+      <span class="cert-slbl">נקודות מתוך 10</span>
     </div>
-    <div class="cert-rank" id="cert-rank"></div>
+    <div class="cert-rank" id="crk"></div>
   </div>
-
-  <button class="btn btn-purple" style="margin-top:24px;" onclick="restart()">🔄 שחק שוב</button>
+  <button class="btn btn-purple" style="margin-top:22px;" onclick="restart()">🔄 שחק שוב</button>
 </div>
 
-<!-- ============================================================
-     JAVASCRIPT
-     ============================================================ -->
+<!-- ══════════════ JAVASCRIPT ══════════════ -->
 <script>
-const genres = [
-  { key:'hiphop', name:'🎤 היפ-הופ', count:24, cls:'freq-hiphop' },
-  { key:'pop',    name:'🌟 פופ',     count:20, cls:'freq-pop'    },
-  { key:'rock',   name:'🎸 רוק',     count:20, cls:'freq-rock'   },
-  { key:'med',    name:'🌊 ים-תיכוני', count:16, cls:'freq-med'  }
+const GENRES = [
+  { key:'hiphop', name:'🎤 היפ-הופ',   count:24, acc:'acc-hiphop' },
+  { key:'pop',    name:'🌟 פופ',        count:20, acc:'acc-pop'    },
+  { key:'rock',   name:'🎸 רוק',        count:20, acc:'acc-rock'   },
+  { key:'med',    name:'🌊 ים-תיכוני',  count:16, acc:'acc-med'    },
 ];
 
-const state = {
-  score: 0,
-  listenerPct: 0,
-  legend: null,
-  rowCorrect: [false, false, false, false],
-  rowChecked: [false, false, false, false],
-  qAnswered: [false, false, false, false],
-  qCorrect:  [false, false, false, false],
-  mcDone: false
+const S = {
+  score:0, lPct:0, legend:null,
+  rowOk:[false,false,false,false],
+  qDone:[false,false,false,false],
+  qOk:  [false,false,false,false],
+  mcDone:false,
 };
 
-// ===== UTILS =====
-function show(id) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-  window.scrollTo(0, 0);
-}
+/* ── utils ── */
+function show(id){ document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); document.getElementById(id).classList.add('active'); scrollTo(0,0); }
+function toast(msg,err=false){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.toggle('err',err); t.classList.add('on'); clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove('on'),2800); }
+function pts(n){ S.score+=n; S.lPct=Math.min(100,S.lPct+n*10); document.getElementById('hud-sc').textContent=S.score; document.getElementById('lfill').style.width=S.lPct+'%'; document.getElementById('lpct').textContent=S.lPct+'%'; }
+function gcd(a,b){ return b===0?a:gcd(b,a%b); }
 
-function toast(msg, err=false) {
-  const el = document.getElementById('toast');
-  el.textContent = msg;
-  el.classList.toggle('error', err);
-  el.classList.add('show');
-  clearTimeout(el._t);
-  el._t = setTimeout(() => el.classList.remove('show'), 2800);
-}
-
-function addPts(n) {
-  state.score += n;
-  state.listenerPct = Math.min(100, state.listenerPct + n * 10);
-  document.getElementById('hud-score').textContent = state.score;
-  document.getElementById('listener-fill').style.width = state.listenerPct + '%';
-  document.getElementById('listener-pct').textContent = state.listenerPct + '%';
-}
-
-function gcd(a, b) { return b === 0 ? a : gcd(b, a % b); }
-
-// ===== NAV =====
-function startGame() {
-  document.getElementById('main-hud').style.display = 'flex';
-  show('screen-table');
-}
-
-function goToLegend() { show('screen-legend'); }
-
-function pickLegend(val, el) {
-  document.querySelectorAll('.legend-option').forEach(o => o.classList.remove('selected'));
-  el.classList.add('selected');
-  state.legend = val;
-  document.getElementById('legend-next').disabled = false;
-}
-
-function goToPicto() {
-  if (!state.legend) return;
-  buildBoard();
-  const half = state.legend / 2;
-  document.getElementById('picto-leg-bar').textContent =
-    `🎧 = ${state.legend} תלמידים  |  🎧½ = ${half} תלמידים`;
-  show('screen-picto');
-}
-
-function goToMC() { show('screen-mc'); }
-
-function goToCert() {
-  renderCert();
-  show('screen-certificate');
-  confetti();
-}
-
-function restart() {
-  Object.assign(state, {
-    score:0, listenerPct:0, legend:null,
-    rowCorrect:[false,false,false,false],
-    rowChecked:[false,false,false,false],
-    qAnswered:[false,false,false,false],
-    qCorrect:[false,false,false,false],
-    mcDone:false
-  });
-  document.getElementById('hud-score').textContent = 0;
-  document.getElementById('listener-fill').style.width = '0%';
-  document.getElementById('listener-pct').textContent = '0%';
-  document.querySelectorAll('.legend-option').forEach(o => o.classList.remove('selected'));
-  document.getElementById('legend-next').disabled = true;
-  document.getElementById('main-hud').style.display = 'none';
+/* ── nav ── */
+function startGame(){ document.getElementById('hud').style.display='flex'; show('screen-table'); }
+function goLegend(){ show('screen-legend'); }
+function pickLeg(v,el){ document.querySelectorAll('.leg-opt').forEach(o=>o.classList.remove('sel')); el.classList.add('sel'); S.legend=v; document.getElementById('leg-next').disabled=false; }
+function goPicto(){ if(!S.legend)return; buildBoard(); show('screen-picto'); }
+function goMC(){ show('screen-mc'); }
+function goCert(){ renderCert(); show('screen-certificate'); confetti(); }
+function restart(){
+  Object.assign(S,{score:0,lPct:0,legend:null,rowOk:[false,false,false,false],qDone:[false,false,false,false],qOk:[false,false,false,false],mcDone:false});
+  document.getElementById('hud-sc').textContent=0;
+  document.getElementById('lfill').style.width='0%';
+  document.getElementById('lpct').textContent='0%';
+  document.querySelectorAll('.leg-opt').forEach(o=>o.classList.remove('sel'));
+  document.getElementById('leg-next').disabled=true;
+  document.getElementById('hud').style.display='none';
   show('screen-intro');
 }
 
-// ===== PICTOGRAM =====
-function buildBoard() {
-  const wrap = document.getElementById('picto-rows');
-  wrap.innerHTML = '';
+/* ── build pictogram board ── */
+function buildBoard(){
+  const board=document.getElementById('pboard');
+  board.innerHTML='';
+  const half=S.legend/2;
+  document.getElementById('plegbar').textContent=`🎧 = ${S.legend} תלמידים${S.legend>1?`  |  🎧½ = ${half} תלמידים`:''}`;
+  document.getElementById('glegend').textContent=`🎧 = ${S.legend} תלמידים`;
 
-  genres.forEach((g, i) => {
-    const correctFull = Math.floor(g.count / state.legend);
-    const rem = g.count - correctFull * state.legend;
-    const correctHalf = rem >= state.legend / 2 ? 1 : 0;
-
-    const row = document.createElement('div');
-    row.className = 'picto-row';
-
-    const colorMap = { hiphop:'#DB2777', pop:'#B45309', rock:'#15803D', med:'#1D4ED8' };
-    const c = colorMap[g.key];
-
-    row.innerHTML = `
-      <div class="picto-label">
-        <div class="genre-label-name" style="color:${c}">${g.name}</div>
-        <div class="picto-add-btns">
-          <button class="add-btn" onclick="addSym(${i},false)">➕🎧 אוזנייה</button>
-          ${state.legend > 1
-            ? `<button class="add-btn" onclick="addSym(${i},true)">➕🎧½ חצי</button>`
-            : ''}
+  GENRES.forEach((g,i)=>{
+    const card=document.createElement('div');
+    card.className=`pcard ${g.acc}`;
+    card.id=`pc${i}`;
+    card.innerHTML=`
+      <div class="pcard-head">
+        <div class="pcard-info">
+          <span class="pcard-name">${g.name}</span>
+          <span class="pcard-count">${g.count} תלמידים</span>
         </div>
-        <button class="check-row-btn" onclick="chkRow(${i})">✓ בדוק שורה</button>
-        <div class="row-feedback" id="rf-${i}"></div>
+        <div class="pcard-btns">
+          <button class="add-btn" onclick="addSym(${i},false)">➕ 🎧 אוזנייה</button>
+          ${S.legend>1?`<button class="add-btn" onclick="addSym(${i},true)">➕ 🎧½ חצי</button>`:''}
+        </div>
       </div>
-      <div class="picto-zone" id="zone-${i}">
-        <div class="zone-ph" id="zph-${i}">לחץ ➕ להוספת סמלים</div>
+      <div class="picto-zone" id="zone${i}">
+        <span class="zone-ph" id="zph${i}">לחץ ➕ להוספת סמלים</span>
+      </div>
+      <div class="pcard-foot">
+        <button class="chk-row-btn" onclick="chkRow(${i})">✓ בדוק שורה</button>
+        <div class="rfb" id="rf${i}"></div>
       </div>
     `;
+    board.appendChild(card);
+  });
+  renderGraph();
+}
+
+function addSym(i,half){
+  const zone=document.getElementById(`zone${i}`);
+  const ph=document.getElementById(`zph${i}`);
+  if(ph) ph.style.display='none';
+  const sp=document.createElement('span');
+  sp.className='sym'; sp.dataset.h=half?'1':'0';
+  sp.textContent=half?'🎧½':'🎧'; sp.title='לחץ להסרה';
+  sp.onclick=()=>{ sp.remove(); if(!zone.querySelectorAll('.sym').length&&ph) ph.style.display='flex'; renderGraph(); };
+  zone.appendChild(sp);
+  renderGraph();
+}
+
+function chkRow(i){
+  if(S.rowOk[i]) return;
+  const zone=document.getElementById(`zone${i}`);
+  const syms=zone.querySelectorAll('.sym');
+  let full=0,half=0;
+  syms.forEach(s=>{ s.dataset.h==='1'?half++:full++; });
+
+  const g=GENRES[i];
+  const cf=Math.floor(g.count/S.legend);
+  const rem=g.count-cf*S.legend;
+  const ch=rem>=S.legend/2?1:0;
+  const ok=full===cf&&half===ch;
+
+  zone.classList.toggle('zok',ok); zone.classList.toggle('zbad',!ok);
+  const fb=document.getElementById(`rf${i}`);
+  if(ok){
+    fb.className='rfb rfb-ok'; fb.textContent='✅ כל הכבוד! נכון!';
+    S.rowOk[i]=true; pts(1); toast(`+1 נקודה! שורת ${g.name.split(' ').slice(1).join(' ')} נכונה! 🎉`);
+  } else {
+    fb.className='rfb rfb-bad'; fb.textContent='❌ לא מדויק — נסה שוב.';
+  }
+}
+
+function checkAll(){
+  GENRES.forEach((_,i)=>chkRow(i));
+  if(S.rowOk.every(Boolean)){
+    setTimeout(()=>{ toast('🎉 כל השורות נכונות! עוברים לניתוח!'); setTimeout(()=>show('screen-analysis'),1100); },400);
+  } else {
+    toast('חלק מהשורות עדיין שגויות — בדוק שוב!',true);
+  }
+}
+
+/* ── live graph ── */
+function renderGraph(){
+  const wrap=document.getElementById('lgraph');
+  wrap.innerHTML='';
+  GENRES.forEach((g,i)=>{
+    const zone=document.getElementById(`zone${i}`);
+    const syms=zone?zone.querySelectorAll('.sym'):[];
+    const row=document.createElement('div');
+    row.className='graph-row';
+    let symsHtml='';
+    if(syms.length===0){
+      symsHtml='<span class="graph-empty">אין סמלים עדיין</span>';
+    } else {
+      syms.forEach(s=>{ symsHtml+=`<span class="gsym">${s.textContent}</span>`; });
+    }
+    row.innerHTML=`<div class="graph-label" style="color:${g.acc.includes('hiphop')?'#BE185D':g.acc.includes('pop')?'#92400E':g.acc.includes('rock')?'#14532D':'#1E3A8A'}">${g.name}</div><div class="graph-syms">${symsHtml}</div>`;
     wrap.appendChild(row);
   });
 }
 
-function addSym(i, half) {
-  const zone = document.getElementById(`zone-${i}`);
-  const ph = document.getElementById(`zph-${i}`);
-  if (ph) ph.style.display = 'none';
-
-  const sp = document.createElement('span');
-  sp.className = 'sym-item';
-  sp.dataset.half = half ? '1' : '0';
-  sp.textContent = half ? '🎧½' : '🎧';
-  sp.title = 'לחץ להסרה';
-  sp.onclick = () => {
-    sp.remove();
-    const remaining = zone.querySelectorAll('.sym-item').length;
-    if (remaining === 0 && ph) ph.style.display = 'flex';
-  };
-  zone.appendChild(sp);
+/* ── analysis ── */
+function markQ(idx,ok,okMsg,badMsg){
+  S.qDone[idx]=true; S.qOk[idx]=ok;
+  document.getElementById(`qc${idx+1}`).classList.add(ok?'qok':'qbad');
+  document.querySelector(`#qc${idx+1} .qbtn`).disabled=true;
+  const fb=document.getElementById(`fb${idx+1}`);
+  fb.textContent=ok?okMsg:badMsg; fb.className=`qfb show ${ok?'ok':'bad'}`;
+  if(ok){ pts(1); toast('+1 נקודה! כל הכבוד! 🎵'); }
+  if(S.qDone.every(Boolean)) setTimeout(()=>{ document.getElementById('anext').style.display='inline-flex'; },700);
 }
 
-function chkRow(i) {
-  if (state.rowCorrect[i]) return;   // already correct — don't re-penalise
-
-  const zone = document.getElementById(`zone-${i}`);
-  const syms = zone.querySelectorAll('.sym-item');
-
-  let full = 0, half = 0;
-  syms.forEach(s => { s.dataset.half === '1' ? half++ : full++; });
-
-  const g = genres[i];
-  const cFull = Math.floor(g.count / state.legend);
-  const rem   = g.count - cFull * state.legend;
-  const cHalf = rem >= state.legend / 2 ? 1 : 0;
-
-  const ok = full === cFull && half === cHalf;
-  const fb = document.getElementById(`rf-${i}`);
-
-  zone.classList.toggle('zone-ok',  ok);
-  zone.classList.toggle('zone-bad', !ok);
-
-  if (ok) {
-    fb.className = 'row-feedback fb-ok';
-    fb.textContent = '✅ כל הכבוד! נכון!';
-    if (!state.rowCorrect[i]) {
-      state.rowCorrect[i] = true;
-      addPts(1);
-      toast(`+1 נקודה! שורת ${g.name.split(' ')[1]} נכונה! 🎉`);
-    }
-  } else {
-    fb.className = 'row-feedback fb-bad';
-    const hint = cFull + (cHalf ? ' + חצי' : '');
-    fb.textContent = `❌ לא מדויק — נסה שוב. (רמז: ${hint} אוזניות)`;
-  }
-  state.rowChecked[i] = true;
-}
-
-function checkAllRows() {
-  genres.forEach((_, i) => chkRow(i));
-  if (state.rowCorrect.every(Boolean)) {
-    setTimeout(() => {
-      toast('🎉 כל השורות נכונות! עוברים לניתוח!');
-      setTimeout(() => show('screen-analysis'), 1200);
-    }, 400);
-  } else {
-    toast('חלק מהשורות עדיין שגויות — בדוק שוב!', true);
-  }
-}
-
-// ===== ANALYSIS =====
-function markQ(idx, ok, okMsg, badMsg) {
-  state.qAnswered[idx] = true;
-  state.qCorrect[idx]  = ok;
-
-  const card = document.getElementById(`qcard-${idx+1}`);
-  card.classList.add(ok ? 'q-correct' : 'q-wrong');
-  card.querySelector('.q-check-btn').disabled = true;
-
-  const fb = document.getElementById(`q${idx+1}-fb`);
-  fb.textContent = ok ? okMsg : badMsg;
-  fb.className = `q-feedback-box show ${ok ? 'fok' : 'fbad'}`;
-
-  if (ok) { addPts(1); toast('+1 נקודה! כל הכבוד! 🎵'); }
-
-  if (state.qAnswered.every(Boolean)) {
-    setTimeout(() => {
-      document.getElementById('analysis-next').style.display = 'inline-flex';
-    }, 700);
-  }
-}
-
-function chkQ1() {
-  if (state.qAnswered[0]) return;
-  const v = document.getElementById('q1-in').value;
-  if (!v) { toast('בחר ז׳אנר קודם!', true); return; }
-  markQ(0, v === 'hiphop',
+function ck1(){
+  if(S.qDone[0])return;
+  const v=document.getElementById('q1').value;
+  if(!v){toast('בחר ז׳אנר קודם!',true);return;}
+  markQ(0,v==='hiphop',
     '✅ נכון! היפ-הופ הוא הז׳אנר השכיח ביותר עם 24 תלמידים.',
     '❌ לא נכון. השווה: היפ-הופ=24, פופ=20, רוק=20, ים-תיכוני=16 — מי הכי גדול?');
 }
 
-function chkQ2() {
-  if (state.qAnswered[1]) return;
-  const n = parseInt(document.getElementById('q2-num').value);
-  const d = parseInt(document.getElementById('q2-den').value);
-  if (isNaN(n) || isNaN(d) || d === 0) { toast('הכנס מונה ומכנה תקינים', true); return; }
-  const g = gcd(Math.abs(n), Math.abs(d));
-  const ok = (n/d) === (16/80) && (n/g) === 1 && (d/g) === 5;
-  markQ(1, ok,
+function ck2(){
+  if(S.qDone[1])return;
+  const n=parseInt(document.getElementById('q2n').value);
+  const d=parseInt(document.getElementById('q2d').value);
+  if(isNaN(n)||isNaN(d)||d===0){toast('הכנס מונה ומכנה תקינים',true);return;}
+  const g=gcd(Math.abs(n),Math.abs(d));
+  const ok=(n/d)===(16/80)&&(n/g)===1&&(d/g)===5;
+  markQ(1,ok,
     '✅ נכון! 16÷80 = 1/5. מכל 5 תלמידים — אחד אוהב ים-תיכוני.',
-    '❌ לא נכון. 16 מתוך 80 → שבר: 16/80. צמצם בגרסם המשותף הגדול (16): 1/5.');
+    '❌ לא נכון. 16 מתוך 80 → שבר: 16/80. צמצם: גרסם משותף גדול = 16, לכן 1/5.');
 }
 
-function chkQ3() {
-  if (state.qAnswered[2]) return;
-  const v = parseInt(document.getElementById('q3-in').value);
-  markQ(2, v === 40,
+function ck3(){
+  if(S.qDone[2])return;
+  markQ(2,parseInt(document.getElementById('q3').value)===40,
     '✅ נכון! פופ (20) + רוק (20) = 40 תלמידים.',
     '❌ לא נכון. פופ=20, רוק=20 → 20+20=?');
 }
 
-function chkQ4() {
-  if (state.qAnswered[3]) return;
-  const v = parseFloat(document.getElementById('q4-in').value);
-  markQ(3, Math.abs(v - 25) < 0.1,
+function ck4(){
+  if(S.qDone[3])return;
+  markQ(3,Math.abs(parseFloat(document.getElementById('q4').value)-25)<.1,
     '✅ נכון! (20÷80)×100 = 25%.',
     '❌ לא נכון. חשב: (20÷80)×100 = ?%');
 }
 
-// ===== MC =====
-function pickMC(el, correct) {
-  if (state.mcDone) return;
-  state.mcDone = true;
-
-  document.querySelectorAll('.mc-opt').forEach(o => o.classList.add('disabled'));
-  document.getElementById('mc-b').classList.add('opt-reveal');
-  el.classList.add(correct ? 'opt-correct' : 'opt-wrong');
-
-  const fb = document.getElementById('mc-fb');
-  if (correct) {
-    fb.textContent = '✅ מעולה! המקרא רק משנה את הגודל הגרפי של הסמלים — הנתונים האמיתיים לא משתנים, ולכן הז׳אנר השכיח נשאר אותו דבר!';
-    fb.className = 'mc-fb show fok';
-    addPts(1);
-    toast('+1 נקודה! חשיבה מבריקה! 🧠');
+/* ── MC ── */
+function pickMC(el,ok){
+  if(S.mcDone)return; S.mcDone=true;
+  document.querySelectorAll('.mc-opt').forEach(o=>o.classList.add('off'));
+  document.getElementById('mc-b').classList.add('reveal');
+  el.classList.add(ok?'ok':'wrong');
+  const fb=document.getElementById('mc-fb');
+  if(ok){
+    fb.textContent='✅ מעולה! המקרא רק משנה את הגודל הגרפי — הנתונים האמיתיים לא משתנים, ולכן גם לא הז׳אנר השכיח!';
+    fb.className='mc-fb show ok'; pts(1); toast('+1 נקודה! חשיבה מבריקה! 🧠');
   } else {
-    fb.textContent = '❌ לא נכון. התשובה הנכונה היא ב׳ — המקרא הוא רק ייצוג חזותי. הנתונים האמיתיים לא משתנים, ולכן גם לא הז׳אנר השכיח.';
-    fb.className = 'mc-fb show fbad';
+    fb.textContent='❌ לא נכון. התשובה הנכונה היא ב׳ — המקרא הוא ייצוג חזותי בלבד. הנתונים האמיתיים ממשיכים להיות אותם מספרים.';
+    fb.className='mc-fb show bad';
   }
-  setTimeout(() => {
-    document.getElementById('mc-next').style.display = 'inline-flex';
-  }, 900);
+  setTimeout(()=>{ document.getElementById('mc-next').style.display='inline-flex'; },900);
 }
 
-// ===== CERTIFICATE =====
-function renderCert() {
-  const s = state.score;
-  document.getElementById('cert-num').textContent = s;
-
-  if (s >= 10) {
-    document.getElementById('cert-title').textContent = '🏆 תעודת עורך מצעד בכיר!';
-    document.getElementById('cert-icon').textContent = '🥇';
-    document.getElementById('cert-rank').textContent = '★ ציון מושלם! אתה עורך מצעד בכיר! ★';
-    document.getElementById('cert-body').innerHTML =
-      'מוענקת בזאת לתלמיד/ה<br>על השלמה <strong>מושלמת ומרשימה</strong><br>של מצעד השכבה! 🎊';
-  } else if (s >= 7) {
-    document.getElementById('cert-title').textContent = '🎵 תעודת עורך מצעד מנוסה';
-    document.getElementById('cert-icon').textContent = '🥈';
-    document.getElementById('cert-rank').textContent = 'כל הכבוד! עוד קצת תגיע לשלמות!';
-  } else {
-    document.getElementById('cert-title').textContent = '🎧 תעודת השתתפות';
-    document.getElementById('cert-icon').textContent = '🎵';
-    document.getElementById('cert-rank').textContent = 'המשך להתאמן — אתה בדרך הנכונה!';
-  }
+/* ── certificate ── */
+function renderCert(){
+  const s=S.score;
+  document.getElementById('csn').textContent=s;
+  if(s>=10){ document.getElementById('ct').textContent='🏆 תעודת עורך מצעד בכיר!'; document.getElementById('ci').textContent='🥇'; document.getElementById('crk').textContent='★ ציון מושלם! אתה עורך מצעד בכיר! ★'; document.getElementById('cb').innerHTML='מוענקת בזאת לתלמיד/ה<br>על השלמה <strong>מושלמת ומרשימה</strong><br>של מצעד השכבה! 🎊'; }
+  else if(s>=7){ document.getElementById('ct').textContent='🎵 תעודת עורך מצעד מנוסה'; document.getElementById('ci').textContent='🥈'; document.getElementById('crk').textContent='כל הכבוד! עוד קצת ותגיע לשלמות!'; }
+  else { document.getElementById('ct').textContent='🎧 תעודת השתתפות'; document.getElementById('ci').textContent='🎵'; document.getElementById('crk').textContent='המשך להתאמן — אתה בדרך הנכונה!'; }
 }
 
-// ===== CONFETTI =====
-function confetti() {
-  const cols = ['#FF4FA3','#FBBF24','#22C55E','#3B82F6','#8B5CF6','#F97316','#06B6D4'];
-  for (let i = 0; i < 70; i++) {
-    const c = document.createElement('div');
-    c.className = 'confetti-piece';
-    c.style.cssText = `
-      left:${Math.random()*100}vw;
-      top:-20px;
-      background:${cols[i%cols.length]};
-      width:${6+Math.random()*10}px;
-      height:${6+Math.random()*10}px;
-      animation-delay:${Math.random()*2}s;
-      animation-duration:${2+Math.random()*2}s;
-      border-radius:${Math.random()>0.5?'50%':'3px'};
-    `;
-    document.body.appendChild(c);
-    setTimeout(() => c.remove(), 5000);
+/* ── confetti ── */
+function confetti(){
+  const cols=['#F43F8E','#FBBF24','#22C55E','#3B82F6','#8B5CF6','#F97316','#06B6D4'];
+  for(let i=0;i<70;i++){
+    const c=document.createElement('div'); c.className='cf';
+    c.style.cssText=`left:${Math.random()*100}vw;top:-20px;background:${cols[i%cols.length]};width:${6+Math.random()*10}px;height:${6+Math.random()*10}px;animation-delay:${Math.random()*2}s;animation-duration:${2+Math.random()*2}s;border-radius:${Math.random()>.5?'50%':'3px'};`;
+    document.body.appendChild(c); setTimeout(()=>c.remove(),5000);
   }
 }
 
