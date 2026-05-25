@@ -5,1272 +5,1302 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>🎧 מצעד השכבה - משחק פיקטוגרמה</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Heebo:wght@400;600;700;800;900&display=swap');
-
-  :root {
-    --hiphop: #FF6B6B;
-    --pop: #FFD93D;
-    --rock: #6BCB77;
-    --med: #4D96FF;
-    --bg: #0a0a1a;
-    --panel: #141428;
-    --panel2: #1e1e38;
-    --gold: #FFD700;
-    --neon-pink: #FF2D78;
-    --neon-blue: #00F5FF;
-    --neon-green: #39FF14;
-  }
-
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-
-  body {
-    font-family: 'Heebo', sans-serif;
-    background: var(--bg);
-    color: #fff;
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
-
-  /* Animated background */
-  body::before {
-    content: '';
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background:
-      radial-gradient(ellipse at 20% 50%, rgba(255,45,120,0.08) 0%, transparent 50%),
-      radial-gradient(ellipse at 80% 20%, rgba(0,245,255,0.08) 0%, transparent 50%),
-      radial-gradient(ellipse at 50% 80%, rgba(57,255,20,0.05) 0%, transparent 50%);
-    pointer-events: none;
-    z-index: 0;
-  }
-
-  .screen {
-    display: none;
-    position: relative;
-    z-index: 1;
-    min-height: 100vh;
-    padding: 20px;
-  }
-  .screen.active { display: flex; flex-direction: column; align-items: center; }
-
-  /* ===== HUD ===== */
-  .hud {
-    position: fixed;
-    top: 0; left: 0; right: 0;
-    z-index: 100;
-    background: rgba(10,10,26,0.95);
-    border-bottom: 2px solid var(--neon-pink);
-    padding: 8px 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    backdrop-filter: blur(10px);
-  }
-
-  .hud-logo {
-    font-size: 1.1rem;
-    font-weight: 900;
-    background: linear-gradient(90deg, var(--neon-pink), var(--neon-blue));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-
-  .hud-stats {
-    display: flex;
-    gap: 20px;
-    align-items: center;
-  }
-
-  .hud-stat {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    background: var(--panel2);
-    padding: 4px 12px;
-    border-radius: 20px;
-    font-size: 0.85rem;
-    font-weight: 700;
-    border: 1px solid rgba(255,255,255,0.1);
-  }
-
-  .hud-stat .value {
-    color: var(--gold);
-    font-size: 1rem;
-  }
-
-  /* Listener meter */
-  .listener-bar-wrap {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .listener-bar {
-    width: 100px;
-    height: 10px;
-    background: rgba(255,255,255,0.1);
-    border-radius: 5px;
-    overflow: hidden;
-    border: 1px solid rgba(0,245,255,0.3);
-  }
-
-  .listener-fill {
-    height: 100%;
-    background: linear-gradient(90deg, var(--neon-blue), var(--neon-green));
-    border-radius: 5px;
-    transition: width 0.5s ease;
-    width: 0%;
-    box-shadow: 0 0 8px var(--neon-blue);
-  }
-
-  /* ===== INTRO SCREEN ===== */
-  #screen-intro {
-    justify-content: center;
-    padding-top: 80px;
-    text-align: center;
-  }
-
-  .radio-station {
-    font-size: 0.9rem;
-    letter-spacing: 4px;
-    color: var(--neon-pink);
-    text-transform: uppercase;
-    margin-bottom: 10px;
-    animation: pulse 2s infinite;
-  }
-
-  @keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.5; }
-  }
-
-  .intro-title {
-    font-size: clamp(2rem, 5vw, 3.5rem);
-    font-weight: 900;
-    background: linear-gradient(135deg, var(--neon-pink), var(--neon-blue), var(--gold));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    margin-bottom: 20px;
-    line-height: 1.2;
-  }
-
-  .intro-card {
-    background: var(--panel);
-    border: 2px solid var(--neon-pink);
-    border-radius: 24px;
-    padding: 30px 40px;
-    max-width: 600px;
-    margin: 0 auto 30px;
-    box-shadow: 0 0 40px rgba(255,45,120,0.2), inset 0 0 40px rgba(0,0,0,0.3);
-    position: relative;
-    overflow: hidden;
-  }
-
-  .intro-card::before {
-    content: '';
-    position: absolute;
-    top: -50%; left: -50%;
-    width: 200%; height: 200%;
-    background: conic-gradient(transparent 0deg, rgba(255,45,120,0.05) 60deg, transparent 120deg);
-    animation: rotate 8s linear infinite;
-  }
-
-  @keyframes rotate {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-  }
-
-  .intro-card p {
-    font-size: 1.15rem;
-    line-height: 1.8;
-    color: #ddd;
-    position: relative;
-    z-index: 1;
-  }
-
-  .intro-card .highlight {
-    color: var(--neon-blue);
-    font-weight: 700;
-  }
-
-  .big-emoji {
-    font-size: 4rem;
-    margin-bottom: 15px;
-    display: block;
-    animation: bounce 1s ease infinite alternate;
-  }
-
-  @keyframes bounce {
-    from { transform: translateY(0); }
-    to { transform: translateY(-10px); }
-  }
-
-  .btn {
-    background: linear-gradient(135deg, var(--neon-pink), #c0006b);
-    color: #fff;
-    border: none;
-    padding: 14px 40px;
-    font-size: 1.1rem;
-    font-weight: 800;
-    border-radius: 50px;
-    cursor: pointer;
-    font-family: 'Heebo', sans-serif;
-    box-shadow: 0 0 20px rgba(255,45,120,0.5);
-    transition: all 0.2s;
-    letter-spacing: 1px;
-  }
-
-  .btn:hover {
-    transform: translateY(-3px) scale(1.03);
-    box-shadow: 0 0 30px rgba(255,45,120,0.8);
-  }
-
-  .btn:active { transform: scale(0.97); }
-
-  .btn-blue {
-    background: linear-gradient(135deg, var(--neon-blue), #0070a0);
-    box-shadow: 0 0 20px rgba(0,245,255,0.4);
-  }
-
-  .btn-blue:hover { box-shadow: 0 0 30px rgba(0,245,255,0.7); }
-
-  .btn-green {
-    background: linear-gradient(135deg, var(--neon-green), #1a8a0a);
-    color: #000;
-    box-shadow: 0 0 20px rgba(57,255,20,0.4);
-  }
-
-  .btn-green:hover { box-shadow: 0 0 30px rgba(57,255,20,0.7); }
-
-  /* ===== DATA TABLE SCREEN ===== */
-  #screen-table {
-    padding-top: 90px;
-  }
-
-  .screen-title {
-    font-size: 1.8rem;
-    font-weight: 900;
-    text-align: center;
-    margin-bottom: 6px;
-    background: linear-gradient(90deg, var(--neon-blue), var(--neon-pink));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-
-  .screen-sub {
-    text-align: center;
-    color: #888;
-    font-size: 0.95rem;
-    margin-bottom: 25px;
-  }
-
-  .data-table-wrap {
-    background: var(--panel);
-    border-radius: 20px;
-    padding: 24px;
-    border: 1px solid rgba(255,255,255,0.1);
-    box-shadow: 0 0 30px rgba(0,0,0,0.5);
-    max-width: 600px;
-    width: 100%;
-    margin-bottom: 24px;
-  }
-
-  .data-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 1rem;
-  }
-
-  .data-table th {
-    padding: 12px 16px;
-    text-align: center;
-    font-size: 0.85rem;
-    letter-spacing: 2px;
-    color: var(--neon-blue);
-    border-bottom: 2px solid var(--neon-blue);
-    font-weight: 800;
-  }
-
-  .data-table td {
-    padding: 14px 16px;
-    text-align: center;
-    border-bottom: 1px solid rgba(255,255,255,0.07);
-    font-weight: 600;
-    font-size: 1.05rem;
-  }
-
-  .data-table tr:last-child td { border-bottom: none; }
-
-  .genre-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 6px 14px;
-    border-radius: 30px;
-    font-weight: 700;
-    font-size: 0.95rem;
-  }
-
-  .badge-hiphop { background: rgba(255,107,107,0.2); color: var(--hiphop); border: 1px solid var(--hiphop); }
-  .badge-pop { background: rgba(255,217,61,0.2); color: var(--pop); border: 1px solid var(--pop); }
-  .badge-rock { background: rgba(107,203,119,0.2); color: var(--rock); border: 1px solid var(--rock); }
-  .badge-med { background: rgba(77,150,255,0.2); color: var(--med); border: 1px solid var(--med); }
-
-  .freq-num {
-    font-size: 1.4rem;
-    font-weight: 900;
-    color: var(--gold);
-  }
-
-  .total-row td {
-    background: rgba(255,215,0,0.08);
-    font-weight: 800;
-    font-size: 1.1rem;
-    color: var(--gold);
-    border-top: 2px solid rgba(255,215,0,0.3);
-  }
-
-  /* ===== LEGEND SCREEN ===== */
-  #screen-legend {
-    padding-top: 90px;
-  }
-
-  .legend-options {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-    gap: 15px;
-    max-width: 650px;
-    width: 100%;
-    margin: 20px 0;
-  }
-
-  .legend-option {
-    background: var(--panel);
-    border: 2px solid rgba(255,255,255,0.15);
-    border-radius: 16px;
-    padding: 20px;
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.25s;
-    user-select: none;
-  }
-
-  .legend-option:hover {
-    border-color: var(--neon-blue);
-    transform: translateY(-4px);
-    box-shadow: 0 10px 25px rgba(0,245,255,0.2);
-  }
-
-  .legend-option.selected {
-    border-color: var(--neon-pink);
-    background: rgba(255,45,120,0.12);
-    box-shadow: 0 0 20px rgba(255,45,120,0.3);
-  }
-
-  .legend-option .symbol { font-size: 2.5rem; display: block; margin-bottom: 8px; }
-  .legend-option .value { font-size: 1rem; font-weight: 700; color: #ccc; }
-  .legend-option .value span { color: var(--gold); font-size: 1.2rem; }
-
-  .legend-hint {
-    background: rgba(0,245,255,0.08);
-    border: 1px solid rgba(0,245,255,0.3);
-    border-radius: 12px;
-    padding: 12px 20px;
-    font-size: 0.9rem;
-    color: var(--neon-blue);
-    max-width: 550px;
-    text-align: center;
-    margin-bottom: 20px;
-  }
-
-  /* ===== PICTOGRAM SCREEN ===== */
-  #screen-picto {
-    padding-top: 90px;
-  }
-
-  .picto-instructions {
-    background: var(--panel2);
-    border-radius: 14px;
-    padding: 14px 20px;
-    margin-bottom: 20px;
-    max-width: 750px;
-    width: 100%;
-    text-align: center;
-    border: 1px solid rgba(255,255,255,0.08);
-    font-size: 0.95rem;
-    color: #bbb;
-  }
-
-  .picto-board {
-    background: var(--panel);
-    border-radius: 20px;
-    padding: 24px;
-    max-width: 800px;
-    width: 100%;
-    border: 1px solid rgba(255,255,255,0.1);
-    box-shadow: 0 0 40px rgba(0,0,0,0.5);
-  }
-
-  .picto-row {
-    display: grid;
-    grid-template-columns: 140px 1fr;
-    gap: 16px;
-    align-items: start;
-    margin-bottom: 18px;
-    padding-bottom: 18px;
-    border-bottom: 1px solid rgba(255,255,255,0.07);
-  }
-
-  .picto-row:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
-
-  .picto-label {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-  }
-
-  .picto-label .genre-name { font-weight: 800; font-size: 1rem; }
-  .picto-label .genre-count { font-size: 0.8rem; color: #888; }
-
-  .picto-drop-zone {
-    min-height: 60px;
-    background: rgba(255,255,255,0.03);
-    border: 2px dashed rgba(255,255,255,0.15);
-    border-radius: 12px;
-    padding: 10px;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px;
-    align-items: center;
-    transition: all 0.2s;
-    cursor: pointer;
-    position: relative;
-  }
-
-  .picto-drop-zone:hover { border-color: rgba(255,255,255,0.3); background: rgba(255,255,255,0.05); }
-  .picto-drop-zone.drag-over { border-color: var(--neon-blue); background: rgba(0,245,255,0.08); }
-  .picto-drop-zone.correct { border-color: var(--neon-green); background: rgba(57,255,20,0.05); }
-  .picto-drop-zone.wrong { border-color: var(--hiphop); background: rgba(255,107,107,0.05); }
-
-  .picto-drop-zone .placeholder-text {
-    color: rgba(255,255,255,0.2);
-    font-size: 0.85rem;
-    pointer-events: none;
-    position: absolute;
-    top: 50%; left: 50%; transform: translate(-50%, -50%);
-    width: 100%; text-align: center;
-  }
-
-  .symbol-in-zone {
-    font-size: 1.6rem;
-    cursor: pointer;
-    transition: transform 0.1s;
-    user-select: none;
-    line-height: 1;
-  }
-
-  .symbol-in-zone:hover { transform: scale(1.2); }
-
-  .picto-controls {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-    flex-wrap: wrap;
-  }
-
-  .symbol-btn {
-    background: var(--panel2);
-    border: 2px solid rgba(255,255,255,0.2);
-    color: white;
-    padding: 8px 16px;
-    border-radius: 10px;
-    cursor: pointer;
-    font-size: 1rem;
-    font-family: 'Heebo', sans-serif;
-    font-weight: 700;
-    transition: all 0.2s;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-
-  .symbol-btn:hover { border-color: var(--neon-pink); background: rgba(255,45,120,0.1); }
-
-  .symbol-btn.half-btn { opacity: 0.8; }
-
-  .count-display {
-    background: rgba(255,215,0,0.1);
-    border: 1px solid rgba(255,215,0,0.3);
-    border-radius: 8px;
-    padding: 6px 12px;
-    font-size: 0.85rem;
-    color: var(--gold);
-    font-weight: 700;
-    min-width: 100px;
-    text-align: center;
-  }
-
-  .check-btn {
-    margin-top: 6px;
-    padding: 6px 14px;
-    border-radius: 8px;
-    font-size: 0.8rem;
-    border: 1px solid rgba(255,255,255,0.2);
-    background: rgba(255,255,255,0.05);
-    color: white;
-    cursor: pointer;
-    font-family: 'Heebo', sans-serif;
-    font-weight: 600;
-    transition: all 0.2s;
-  }
-
-  .check-btn:hover { background: rgba(255,255,255,0.1); }
-
-  .row-feedback {
-    font-size: 0.85rem;
-    font-weight: 700;
-    margin-top: 4px;
-    min-height: 20px;
-    transition: all 0.3s;
-  }
-
-  .feedback-correct { color: var(--neon-green); }
-  .feedback-wrong { color: var(--hiphop); }
-
-  /* ===== ANALYSIS SCREEN ===== */
-  #screen-analysis {
-    padding-top: 90px;
-  }
-
-  .questions-grid {
-    display: grid;
-    gap: 18px;
-    max-width: 700px;
-    width: 100%;
-  }
-
-  .question-card {
-    background: var(--panel);
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 18px;
-    padding: 20px 24px;
-    transition: all 0.3s;
-  }
-
-  .question-card.answered-correct {
-    border-color: var(--neon-green);
-    background: rgba(57,255,20,0.04);
-  }
-
-  .question-card.answered-wrong {
-    border-color: var(--hiphop);
-    background: rgba(255,107,107,0.04);
-  }
-
-  .q-header {
-    display: flex;
-    align-items: flex-start;
-    gap: 12px;
-    margin-bottom: 14px;
-  }
-
-  .q-num {
-    background: linear-gradient(135deg, var(--neon-pink), #c0006b);
-    color: white;
-    width: 30px; height: 30px;
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-weight: 800;
-    font-size: 0.85rem;
-    flex-shrink: 0;
-  }
-
-  .q-text {
-    font-size: 1rem;
-    font-weight: 600;
-    line-height: 1.5;
-    color: #ddd;
-  }
-
-  .q-input-wrap {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-    flex-wrap: wrap;
-  }
-
-  .q-input {
-    background: var(--panel2);
-    border: 2px solid rgba(255,255,255,0.15);
-    border-radius: 10px;
-    color: white;
-    font-family: 'Heebo', sans-serif;
-    font-size: 1rem;
-    font-weight: 600;
-    padding: 10px 14px;
-    outline: none;
-    transition: border-color 0.2s;
-    min-width: 120px;
-    direction: rtl;
-  }
-
-  .q-input:focus { border-color: var(--neon-blue); }
-  .q-input.correct { border-color: var(--neon-green); background: rgba(57,255,20,0.08); }
-  .q-input.wrong { border-color: var(--hiphop); background: rgba(255,107,107,0.08); }
-
-  .q-submit {
-    background: var(--panel2);
-    border: 2px solid rgba(255,255,255,0.2);
-    color: white;
-    padding: 10px 20px;
-    border-radius: 10px;
-    cursor: pointer;
-    font-family: 'Heebo', sans-serif;
-    font-weight: 700;
-    font-size: 0.95rem;
-    transition: all 0.2s;
-  }
-
-  .q-submit:hover { border-color: var(--neon-blue); background: rgba(0,245,255,0.1); }
-  .q-submit:disabled { opacity: 0.5; cursor: default; }
-
-  .q-feedback {
-    margin-top: 10px;
-    padding: 10px 14px;
-    border-radius: 10px;
-    font-size: 0.9rem;
-    font-weight: 600;
-    display: none;
-    line-height: 1.4;
-  }
-
-  .q-feedback.show { display: block; }
-  .q-feedback.correct { background: rgba(57,255,20,0.1); color: var(--neon-green); border: 1px solid rgba(57,255,20,0.3); }
-  .q-feedback.wrong { background: rgba(255,107,107,0.1); color: var(--hiphop); border: 1px solid rgba(255,107,107,0.3); }
-
-  /* fraction input */
-  .fraction-input {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    flex-direction: row-reverse;
-  }
-
-  .fraction-stack {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 2px;
-  }
-
-  .fraction-line {
-    width: 50px;
-    height: 2px;
-    background: rgba(255,255,255,0.5);
-  }
-
-  .fraction-num-input {
-    width: 50px;
-    text-align: center;
-  }
-
-  /* ===== MULTIPLE CHOICE SCREEN ===== */
-  #screen-mc {
-    padding-top: 90px;
-  }
-
-  .mc-card {
-    background: var(--panel);
-    border-radius: 20px;
-    padding: 28px;
-    max-width: 650px;
-    width: 100%;
-    border: 1px solid rgba(255,255,255,0.1);
-    box-shadow: 0 0 40px rgba(0,0,0,0.5);
-  }
-
-  .mc-question {
-    font-size: 1.15rem;
-    font-weight: 700;
-    color: #fff;
-    margin-bottom: 20px;
-    line-height: 1.6;
-    padding: 14px;
-    background: rgba(255,215,0,0.08);
-    border-radius: 12px;
-    border-right: 4px solid var(--gold);
-  }
-
-  .mc-options {
-    display: grid;
-    gap: 12px;
-  }
-
-  .mc-option {
-    background: var(--panel2);
-    border: 2px solid rgba(255,255,255,0.12);
-    border-radius: 14px;
-    padding: 14px 18px;
-    cursor: pointer;
-    transition: all 0.2s;
-    font-size: 0.95rem;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    text-align: right;
-  }
-
-  .mc-option:hover { border-color: var(--neon-blue); background: rgba(0,245,255,0.08); transform: translateX(-4px); }
-
-  .mc-option.selected-correct { border-color: var(--neon-green); background: rgba(57,255,20,0.1); }
-  .mc-option.selected-wrong { border-color: var(--hiphop); background: rgba(255,107,107,0.1); }
-  .mc-option.reveal-correct { border-color: var(--neon-green); background: rgba(57,255,20,0.08); }
-  .mc-option.disabled { cursor: default; pointer-events: none; }
-
-  .mc-letter {
-    background: rgba(255,255,255,0.1);
-    width: 32px; height: 32px;
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-weight: 800;
-    font-size: 0.9rem;
-    flex-shrink: 0;
-  }
-
-  .mc-feedback {
-    margin-top: 16px;
-    padding: 14px 18px;
-    border-radius: 12px;
-    font-size: 0.95rem;
-    font-weight: 600;
-    display: none;
-    line-height: 1.5;
-  }
-
-  .mc-feedback.show { display: block; }
-  .mc-feedback.correct { background: rgba(57,255,20,0.1); color: var(--neon-green); border: 1px solid rgba(57,255,20,0.3); }
-  .mc-feedback.wrong { background: rgba(255,107,107,0.1); color: var(--hiphop); border: 1px solid rgba(255,107,107,0.3); }
-
-  /* ===== CERTIFICATE SCREEN ===== */
-  #screen-certificate {
-    padding-top: 80px;
-    text-align: center;
-    justify-content: center;
-  }
-
-  .cert-wrap {
-    background: linear-gradient(135deg, #1a1a2e, #0d0d1a);
-    border: 4px solid var(--gold);
-    border-radius: 24px;
-    padding: 40px;
-    max-width: 600px;
-    width: 100%;
-    box-shadow: 0 0 60px rgba(255,215,0,0.3), inset 0 0 40px rgba(255,215,0,0.05);
-    position: relative;
-    overflow: hidden;
-  }
-
-  .cert-wrap::before, .cert-wrap::after {
-    content: '🎵';
-    position: absolute;
-    font-size: 5rem;
-    opacity: 0.05;
-  }
-  .cert-wrap::before { top: -10px; right: -10px; transform: rotate(20deg); }
-  .cert-wrap::after { bottom: -10px; left: -10px; transform: rotate(-20deg); }
-
-  .cert-title {
-    font-size: 1rem;
-    letter-spacing: 4px;
-    color: var(--gold);
-    opacity: 0.8;
-    margin-bottom: 10px;
-  }
-
-  .cert-main-title {
-    font-size: clamp(1.8rem, 4vw, 2.8rem);
-    font-weight: 900;
-    background: linear-gradient(135deg, var(--gold), #fff, var(--gold));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    margin-bottom: 20px;
-  }
-
-  .cert-emoji { font-size: 5rem; display: block; margin: 15px 0; animation: spin 3s linear infinite; }
-  @keyframes spin {
-    0%, 90%, 100% { transform: rotate(0deg); }
-    95% { transform: rotate(15deg); }
-    97% { transform: rotate(-15deg); }
-  }
-
-  .cert-text {
-    font-size: 1rem;
-    color: #ccc;
-    line-height: 1.7;
-    margin: 15px 0;
-  }
-
-  .cert-score {
-    background: rgba(255,215,0,0.1);
-    border: 2px solid var(--gold);
-    border-radius: 14px;
-    padding: 16px 24px;
-    display: inline-block;
-    margin: 15px 0;
-  }
-
-  .cert-score .score-num {
-    font-size: 3rem;
-    font-weight: 900;
-    color: var(--gold);
-    display: block;
-  }
-
-  .cert-score .score-label {
-    font-size: 0.9rem;
-    color: #aaa;
-  }
-
-  /* ===== CONFETTI ===== */
-  .confetti-piece {
-    position: fixed;
-    width: 10px;
-    height: 10px;
-    opacity: 0;
-    animation: confetti-fall 3s ease-in forwards;
-    border-radius: 2px;
-    z-index: 999;
-  }
-
-  @keyframes confetti-fall {
-    0% { transform: translateY(-20px) rotate(0deg); opacity: 1; }
-    100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
-  }
-
-  /* ===== Feedback Toast ===== */
-  .toast {
-    position: fixed;
-    top: 80px;
-    left: 50%;
-    transform: translateX(-50%) translateY(-20px);
-    background: var(--panel);
-    border-radius: 12px;
-    padding: 12px 24px;
-    font-weight: 700;
-    font-size: 1rem;
-    z-index: 200;
-    opacity: 0;
-    transition: all 0.3s;
-    pointer-events: none;
-    border: 2px solid var(--neon-green);
-    box-shadow: 0 0 20px rgba(57,255,20,0.3);
-  }
-
-  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-  .toast.error { border-color: var(--hiphop); box-shadow: 0 0 20px rgba(255,107,107,0.3); }
-
-  /* ===== Progress Steps ===== */
-  .progress-steps {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 20px;
-    flex-wrap: wrap;
-    justify-content: center;
-  }
-
-  .step {
-    width: 36px; height: 36px;
-    border-radius: 50%;
-    border: 2px solid rgba(255,255,255,0.15);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 0.75rem;
-    font-weight: 700;
-    transition: all 0.3s;
-    color: rgba(255,255,255,0.4);
-  }
-
-  .step.current { border-color: var(--neon-pink); color: var(--neon-pink); box-shadow: 0 0 10px rgba(255,45,120,0.4); }
-  .step.done { background: var(--neon-green); border-color: var(--neon-green); color: #000; }
-
-  /* Responsive */
-  @media (max-width: 600px) {
-    .picto-row { grid-template-columns: 110px 1fr; gap: 10px; }
-    .hud-stats { gap: 8px; }
-    .listener-bar { width: 60px; }
-    .hud-stat { padding: 4px 8px; }
-  }
-
-  /* Legend display */
-  .legend-display {
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 10px;
-    padding: 8px 16px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 0.85rem;
-    color: #aaa;
-    margin-bottom: 16px;
-  }
-
-  .legend-display span { color: var(--gold); font-weight: 700; }
+@import url('https://fonts.googleapis.com/css2?family=Heebo:wght@400;600;700;800;900&display=swap');
+
+:root {
+  --pink:    #FF4FA3;
+  --purple:  #8B5CF6;
+  --blue:    #3B82F6;
+  --cyan:    #06B6D4;
+  --green:   #22C55E;
+  --yellow:  #FBBF24;
+  --orange:  #F97316;
+  --red:     #EF4444;
+
+  --hiphop:  #FF4FA3;
+  --pop:     #FBBF24;
+  --rock:    #22C55E;
+  --med:     #3B82F6;
+
+  --bg:      #F0F4FF;
+  --surface: #FFFFFF;
+  --surface2:#F8FAFF;
+  --border:  #E2E8F0;
+  --text:    #1E293B;
+  --text2:   #475569;
+  --shadow:  0 4px 20px rgba(99,102,241,0.12);
+  --shadow-lg: 0 8px 40px rgba(99,102,241,0.18);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Heebo', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  direction: rtl;
+  font-size: 18px;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 10% 20%, rgba(139,92,246,0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 90% 80%, rgba(6,182,212,0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 50%, rgba(251,191,36,0.05) 0%, transparent 60%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.screen {
+  display: none;
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+  padding: 20px 16px 40px;
+}
+.screen.active { display: flex; flex-direction: column; align-items: center; }
+
+/* ===== HUD ===== */
+.hud {
+  position: fixed;
+  top: 0; inset-inline-start: 0; inset-inline-end: 0;
+  z-index: 100;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  padding: 10px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 4px 20px rgba(102,126,234,0.4);
+}
+
+.hud-logo {
+  font-size: 1.1rem;
+  font-weight: 900;
+  color: #fff;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+.hud-stats { display: flex; gap: 12px; align-items: center; }
+
+.hud-stat {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255,255,255,0.2);
+  padding: 6px 14px;
+  border-radius: 30px;
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: #fff;
+  backdrop-filter: blur(4px);
+}
+
+.hud-stat .val { font-size: 1.1rem; color: #FFE55C; }
+
+.listener-bar {
+  width: 80px; height: 10px;
+  background: rgba(255,255,255,0.25);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.listener-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #FFE55C, #FFC107);
+  border-radius: 6px;
+  width: 0%;
+  transition: width 0.6s cubic-bezier(.34,1.56,.64,1);
+}
+
+/* ===== BUTTONS ===== */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 36px;
+  font-family: 'Heebo', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 800;
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(.34,1.56,.64,1);
+  text-decoration: none;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+}
+
+.btn:hover  { transform: translateY(-3px) scale(1.03); }
+.btn:active { transform: scale(0.97); }
+
+.btn-purple { background: linear-gradient(135deg, #8B5CF6, #6D28D9); color: #fff; }
+.btn-pink   { background: linear-gradient(135deg, #FF4FA3, #DB2777); color: #fff; }
+.btn-blue   { background: linear-gradient(135deg, #3B82F6, #1D4ED8); color: #fff; }
+.btn-green  { background: linear-gradient(135deg, #22C55E, #15803D); color: #fff; }
+.btn-orange { background: linear-gradient(135deg, #F97316, #C2410C); color: #fff; }
+
+/* ===== CARD ===== */
+.card {
+  background: var(--surface);
+  border-radius: 24px;
+  box-shadow: var(--shadow);
+  border: 2px solid var(--border);
+  width: 100%;
+  max-width: 700px;
+}
+
+/* ===== PROGRESS STEPS ===== */
+.progress-steps {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 24px;
+  justify-content: center;
+  direction: ltr;
+}
+
+.step {
+  width: 38px; height: 38px;
+  border-radius: 50%;
+  border: 3px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: #94A3B8;
+  transition: all 0.3s;
+  background: var(--surface);
+}
+
+.step.current {
+  border-color: var(--purple);
+  color: var(--purple);
+  box-shadow: 0 0 0 4px rgba(139,92,246,0.2);
+  background: rgba(139,92,246,0.08);
+}
+
+.step.done {
+  background: var(--green);
+  border-color: var(--green);
+  color: #fff;
+}
+
+/* ===== SCREEN TITLE ===== */
+.screen-title {
+  font-size: 2rem;
+  font-weight: 900;
+  text-align: center;
+  margin-bottom: 6px;
+  color: var(--text);
+}
+
+.screen-sub {
+  font-size: 1rem;
+  text-align: center;
+  color: var(--text2);
+  margin-bottom: 24px;
+  font-weight: 600;
+}
+
+/* ===== TOAST ===== */
+.toast {
+  position: fixed;
+  top: 80px;
+  left: 50%;
+  transform: translateX(-50%) translateY(-20px);
+  background: var(--surface);
+  border-radius: 14px;
+  padding: 14px 28px;
+  font-weight: 800;
+  font-size: 1rem;
+  z-index: 200;
+  opacity: 0;
+  transition: all 0.3s cubic-bezier(.34,1.56,.64,1);
+  pointer-events: none;
+  border: 3px solid var(--green);
+  color: var(--green);
+  box-shadow: var(--shadow-lg);
+  white-space: nowrap;
+}
+
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+.toast.error { border-color: var(--red); color: var(--red); }
+
+/* ============================================================
+   SCREEN 0 — INTRO
+   ============================================================ */
+#screen-intro {
+  justify-content: center;
+  padding-top: 30px;
+  text-align: center;
+  gap: 20px;
+}
+
+.radio-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #FF4FA3, #F97316);
+  color: #fff;
+  padding: 8px 20px;
+  border-radius: 30px;
+  font-size: 0.9rem;
+  font-weight: 800;
+  letter-spacing: 1px;
+  box-shadow: 0 4px 15px rgba(255,79,163,0.4);
+  animation: pulse-badge 2s ease infinite;
+}
+
+@keyframes pulse-badge {
+  0%,100% { box-shadow: 0 4px 15px rgba(255,79,163,0.4); }
+  50%      { box-shadow: 0 4px 30px rgba(255,79,163,0.7); }
+}
+
+.intro-title {
+  font-size: clamp(2.2rem, 6vw, 3.5rem);
+  font-weight: 900;
+  background: linear-gradient(135deg, #8B5CF6, #3B82F6, #FF4FA3);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1.2;
+}
+
+.intro-card {
+  background: var(--surface);
+  border-radius: 28px;
+  padding: 32px 36px;
+  max-width: 580px;
+  width: 100%;
+  box-shadow: var(--shadow-lg);
+  border: 3px solid rgba(139,92,246,0.2);
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.intro-card::before {
+  content: '';
+  position: absolute;
+  top: -60px; right: -60px;
+  width: 180px; height: 180px;
+  background: radial-gradient(circle, rgba(255,79,163,0.12), transparent 70%);
+  pointer-events: none;
+}
+
+.intro-card::after {
+  content: '';
+  position: absolute;
+  bottom: -60px; left: -60px;
+  width: 180px; height: 180px;
+  background: radial-gradient(circle, rgba(6,182,212,0.12), transparent 70%);
+  pointer-events: none;
+}
+
+.intro-mic {
+  font-size: 5rem;
+  display: block;
+  animation: rock 2s ease-in-out infinite alternate;
+  margin-bottom: 12px;
+}
+
+@keyframes rock {
+  from { transform: rotate(-8deg); }
+  to   { transform: rotate(8deg); }
+}
+
+.intro-card p {
+  font-size: 1.15rem;
+  line-height: 1.9;
+  color: var(--text2);
+  font-weight: 600;
+  position: relative;
+  z-index: 1;
+}
+
+.intro-card .hl { color: var(--purple); font-weight: 900; }
+.intro-card .hl2 { color: var(--pink);   font-weight: 900; }
+
+/* ============================================================
+   SCREEN 1 — DATA TABLE
+   ============================================================ */
+#screen-table { padding-top: 90px; }
+
+.data-card {
+  background: var(--surface);
+  border-radius: 24px;
+  padding: 28px;
+  box-shadow: var(--shadow-lg);
+  border: 2px solid var(--border);
+  max-width: 620px;
+  width: 100%;
+  margin-bottom: 28px;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 8px;
+}
+
+.data-table th {
+  font-size: 0.85rem;
+  font-weight: 800;
+  letter-spacing: 2px;
+  color: var(--text2);
+  text-transform: uppercase;
+  padding: 0 16px 8px;
+  text-align: center;
+  border-bottom: 2px solid var(--border);
+}
+
+.data-table td {
+  padding: 14px 16px;
+  text-align: center;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.data-table tbody tr td:first-child {
+  border-radius: 14px 0 0 14px;
+}
+.data-table tbody tr td:last-child {
+  border-radius: 0 14px 14px 0;
+}
+
+.row-hiphop td { background: rgba(255,79,163,0.08); }
+.row-pop    td { background: rgba(251,191,36,0.12); }
+.row-rock   td { background: rgba(34,197,94,0.08); }
+.row-med    td { background: rgba(59,130,246,0.08); }
+.row-total  td { background: rgba(99,102,241,0.08); font-size: 1.15rem; }
+
+.genre-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 18px;
+  border-radius: 30px;
+  font-weight: 800;
+  font-size: 1rem;
+  white-space: nowrap;
+}
+
+.pill-hiphop { background: rgba(255,79,163,0.15); color: #DB2777; border: 2px solid rgba(255,79,163,0.4); }
+.pill-pop    { background: rgba(251,191,36,0.2);  color: #B45309; border: 2px solid rgba(251,191,36,0.5); }
+.pill-rock   { background: rgba(34,197,94,0.15);  color: #15803D; border: 2px solid rgba(34,197,94,0.4); }
+.pill-med    { background: rgba(59,130,246,0.15); color: #1D4ED8; border: 2px solid rgba(59,130,246,0.4); }
+
+.freq-big { font-size: 1.6rem; font-weight: 900; }
+.freq-hiphop { color: #DB2777; }
+.freq-pop    { color: #B45309; }
+.freq-rock   { color: #15803D; }
+.freq-med    { color: #1D4ED8; }
+.freq-total  { color: #4F46E5; }
+
+/* ============================================================
+   SCREEN 2 — LEGEND
+   ============================================================ */
+#screen-legend { padding-top: 90px; }
+
+.legend-hint {
+  background: linear-gradient(135deg, rgba(6,182,212,0.1), rgba(59,130,246,0.1));
+  border: 2px solid rgba(6,182,212,0.35);
+  border-radius: 16px;
+  padding: 14px 22px;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #0369A1;
+  max-width: 580px;
+  text-align: center;
+  margin-bottom: 24px;
+  line-height: 1.6;
+}
+
+.legend-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  max-width: 560px;
+  width: 100%;
+  margin-bottom: 28px;
+}
+
+.legend-option {
+  background: var(--surface);
+  border: 3px solid var(--border);
+  border-radius: 20px;
+  padding: 24px 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(.34,1.56,.64,1);
+  user-select: none;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+}
+
+.legend-option:hover {
+  border-color: var(--purple);
+  transform: translateY(-6px);
+  box-shadow: 0 12px 30px rgba(139,92,246,0.2);
+}
+
+.legend-option.selected {
+  border-color: var(--pink);
+  background: rgba(255,79,163,0.06);
+  box-shadow: 0 8px 30px rgba(255,79,163,0.25);
+}
+
+.legend-option .big-sym { font-size: 3rem; display: block; margin-bottom: 10px; }
+.legend-option .leg-val { font-size: 1.05rem; font-weight: 800; color: var(--text); }
+.legend-option .leg-val span { color: var(--purple); font-size: 1.3rem; }
+.legend-option .leg-note { font-size: 0.85rem; color: var(--text2); font-weight: 600; margin-top: 4px; }
+
+/* ============================================================
+   SCREEN 3 — PICTOGRAM
+   ============================================================ */
+#screen-picto { padding-top: 90px; }
+
+.picto-legend-bar {
+  background: linear-gradient(135deg, rgba(139,92,246,0.1), rgba(59,130,246,0.1));
+  border: 2px solid rgba(139,92,246,0.25);
+  border-radius: 16px;
+  padding: 12px 22px;
+  font-size: 1rem;
+  font-weight: 800;
+  color: #4F46E5;
+  max-width: 680px;
+  width: 100%;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.picto-instructions {
+  background: rgba(251,191,36,0.12);
+  border: 2px solid rgba(251,191,36,0.4);
+  border-radius: 14px;
+  padding: 12px 20px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #92400E;
+  max-width: 680px;
+  width: 100%;
+  text-align: center;
+  margin-bottom: 20px;
+  line-height: 1.6;
+}
+
+.picto-board {
+  background: var(--surface);
+  border-radius: 24px;
+  padding: 28px;
+  max-width: 780px;
+  width: 100%;
+  box-shadow: var(--shadow-lg);
+  border: 2px solid var(--border);
+}
+
+.picto-row {
+  display: grid;
+  grid-template-columns: 160px 1fr;
+  gap: 20px;
+  align-items: start;
+  margin-bottom: 24px;
+  padding-bottom: 24px;
+  border-bottom: 2px dashed var(--border);
+}
+
+.picto-row:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+
+.picto-label { display: flex; flex-direction: column; gap: 8px; }
+
+.genre-label-name {
+  font-weight: 900;
+  font-size: 1.05rem;
+}
+
+.picto-add-btns {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.add-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 2px solid var(--border);
+  background: var(--surface2);
+  cursor: pointer;
+  font-family: 'Heebo', sans-serif;
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--text);
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.add-btn:hover { background: rgba(139,92,246,0.08); border-color: var(--purple); color: var(--purple); }
+.add-btn:active { transform: scale(0.96); }
+
+.check-row-btn {
+  margin-top: 8px;
+  padding: 12px 18px;
+  border-radius: 12px;
+  border: 3px solid var(--blue);
+  background: rgba(59,130,246,0.08);
+  cursor: pointer;
+  font-family: 'Heebo', sans-serif;
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--blue);
+  transition: all 0.2s;
+  text-align: center;
+}
+
+.check-row-btn:hover { background: rgba(59,130,246,0.18); transform: translateY(-2px); }
+
+.row-feedback {
+  font-size: 0.95rem;
+  font-weight: 800;
+  margin-top: 6px;
+  min-height: 24px;
+  line-height: 1.4;
+}
+
+.fb-ok  { color: var(--green); }
+.fb-bad { color: var(--red); }
+
+.picto-zone {
+  min-height: 70px;
+  background: var(--surface2);
+  border: 3px dashed var(--border);
+  border-radius: 16px;
+  padding: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  transition: all 0.2s;
+  position: relative;
+}
+
+.picto-zone.zone-ok  { border-color: var(--green); background: rgba(34,197,94,0.06); }
+.picto-zone.zone-bad { border-color: var(--red);   background: rgba(239,68,68,0.06); }
+
+.zone-ph {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #CBD5E1;
+  font-size: 0.9rem;
+  font-weight: 700;
+  pointer-events: none;
+}
+
+.sym-item {
+  font-size: 2rem;
+  cursor: pointer;
+  line-height: 1;
+  transition: transform 0.15s;
+  user-select: none;
+}
+
+.sym-item:hover { transform: scale(1.3); }
+
+/* ============================================================
+   SCREEN 4 — ANALYSIS
+   ============================================================ */
+#screen-analysis { padding-top: 90px; }
+
+/* inline data table */
+.mini-data-card {
+  background: linear-gradient(135deg, rgba(139,92,246,0.06), rgba(59,130,246,0.06));
+  border: 2px solid rgba(139,92,246,0.2);
+  border-radius: 20px;
+  padding: 20px 24px;
+  max-width: 700px;
+  width: 100%;
+  margin-bottom: 24px;
+}
+
+.mini-data-title {
+  font-size: 0.85rem;
+  font-weight: 800;
+  letter-spacing: 2px;
+  color: var(--purple);
+  text-align: center;
+  margin-bottom: 14px;
+}
+
+.mini-table {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+.mini-cell {
+  background: var(--surface);
+  border-radius: 14px;
+  padding: 12px 8px;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  border: 2px solid var(--border);
+}
+
+.mini-cell .mc-icon { font-size: 1.5rem; display: block; margin-bottom: 4px; }
+.mini-cell .mc-name { font-size: 0.8rem; font-weight: 800; color: var(--text2); margin-bottom: 4px; }
+.mini-cell .mc-num  { font-size: 1.5rem; font-weight: 900; }
+
+.questions-list { display: grid; gap: 18px; max-width: 700px; width: 100%; }
+
+.qcard {
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: 20px;
+  padding: 22px 26px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  transition: all 0.3s;
+}
+
+.qcard.q-correct { border-color: var(--green); background: rgba(34,197,94,0.04); }
+.qcard.q-wrong   { border-color: var(--red);   background: rgba(239,68,68,0.04); }
+
+.qcard-header { display: flex; gap: 14px; align-items: flex-start; margin-bottom: 16px; }
+
+.q-bubble {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #8B5CF6, #6D28D9);
+  color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 900;
+  font-size: 1rem;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(109,40,217,0.4);
+}
+
+.qcard-text {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.6;
+}
+
+.q-row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.q-input {
+  background: var(--surface2);
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  color: var(--text);
+  font-family: 'Heebo', sans-serif;
+  font-size: 1.05rem;
+  font-weight: 700;
+  padding: 10px 16px;
+  outline: none;
+  transition: border-color 0.2s;
+  direction: rtl;
+}
+
+.q-input:focus { border-color: var(--purple); }
+.q-input.inp-ok  { border-color: var(--green); background: rgba(34,197,94,0.08); }
+.q-input.inp-bad { border-color: var(--red);   background: rgba(239,68,68,0.08); }
+
+select.q-input { cursor: pointer; min-width: 180px; }
+
+.q-check-btn {
+  padding: 10px 24px;
+  border-radius: 12px;
+  border: 3px solid var(--blue);
+  background: rgba(59,130,246,0.1);
+  cursor: pointer;
+  font-family: 'Heebo', sans-serif;
+  font-weight: 800;
+  font-size: 1rem;
+  color: var(--blue);
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.q-check-btn:hover { background: rgba(59,130,246,0.2); }
+.q-check-btn:disabled { opacity: 0.4; cursor: default; }
+
+.q-feedback-box {
+  display: none;
+  margin-top: 12px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+.q-feedback-box.show { display: block; }
+.q-feedback-box.fok  { background: rgba(34,197,94,0.1); color: #15803D; border: 2px solid rgba(34,197,94,0.3); }
+.q-feedback-box.fbad { background: rgba(239,68,68,0.1); color: #B91C1C; border: 2px solid rgba(239,68,68,0.3); }
+
+/* fraction inputs */
+.frac-wrap { display: inline-flex; align-items: center; gap: 8px; flex-direction: row-reverse; }
+.frac-stack { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+.frac-line { width: 56px; height: 3px; background: #94A3B8; border-radius: 2px; }
+.frac-input { width: 56px; text-align: center; }
+
+/* ============================================================
+   SCREEN 5 — MULTIPLE CHOICE
+   ============================================================ */
+#screen-mc { padding-top: 90px; }
+
+.mc-card {
+  background: var(--surface);
+  border-radius: 24px;
+  padding: 30px;
+  max-width: 660px;
+  width: 100%;
+  box-shadow: var(--shadow-lg);
+  border: 2px solid var(--border);
+}
+
+.mc-q-box {
+  background: linear-gradient(135deg, rgba(251,191,36,0.15), rgba(249,115,22,0.1));
+  border-right: 5px solid var(--yellow);
+  border-radius: 14px;
+  padding: 18px 20px;
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--text);
+  margin-bottom: 22px;
+  line-height: 1.7;
+}
+
+.mc-options { display: grid; gap: 12px; }
+
+.mc-opt {
+  background: var(--surface2);
+  border: 2.5px solid var(--border);
+  border-radius: 16px;
+  padding: 16px 20px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(.34,1.56,.64,1);
+  font-size: 1rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  text-align: right;
+  color: var(--text);
+}
+
+.mc-opt:hover { border-color: var(--purple); background: rgba(139,92,246,0.06); transform: translateX(4px); }
+.mc-opt.opt-correct { border-color: var(--green); background: rgba(34,197,94,0.1); }
+.mc-opt.opt-wrong   { border-color: var(--red);   background: rgba(239,68,68,0.1); }
+.mc-opt.opt-reveal  { border-color: var(--green); background: rgba(34,197,94,0.07); }
+.mc-opt.disabled    { cursor: default; pointer-events: none; }
+
+.mc-letter {
+  background: rgba(139,92,246,0.12);
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 900;
+  font-size: 0.95rem;
+  flex-shrink: 0;
+  color: var(--purple);
+}
+
+.mc-fb {
+  display: none;
+  margin-top: 18px;
+  padding: 16px 20px;
+  border-radius: 14px;
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.6;
+}
+
+.mc-fb.show { display: block; }
+.mc-fb.fok  { background: rgba(34,197,94,0.1); color: #15803D; border: 2px solid rgba(34,197,94,0.3); }
+.mc-fb.fbad { background: rgba(239,68,68,0.1); color: #B91C1C; border: 2px solid rgba(239,68,68,0.3); }
+
+/* ============================================================
+   SCREEN 6 — CERTIFICATE
+   ============================================================ */
+#screen-certificate { padding-top: 80px; justify-content: center; text-align: center; gap: 20px; }
+
+.cert {
+  background: var(--surface);
+  border-radius: 28px;
+  padding: 44px 40px;
+  max-width: 580px;
+  width: 100%;
+  box-shadow: 0 12px 60px rgba(251,191,36,0.25), 0 4px 20px rgba(0,0,0,0.08);
+  border: 4px solid var(--yellow);
+  position: relative;
+  overflow: hidden;
+}
+
+.cert::before, .cert::after {
+  content: '🎵';
+  position: absolute;
+  font-size: 6rem;
+  opacity: 0.06;
+  pointer-events: none;
+}
+.cert::before { top: -20px; right: -20px; transform: rotate(20deg); }
+.cert::after  { bottom: -20px; left: -20px; transform: rotate(-20deg); }
+
+.cert-label {
+  font-size: 0.85rem;
+  font-weight: 800;
+  letter-spacing: 4px;
+  color: #B45309;
+  margin-bottom: 10px;
+}
+
+.cert-title {
+  font-size: clamp(1.8rem, 4vw, 2.6rem);
+  font-weight: 900;
+  background: linear-gradient(135deg, #F97316, #FBBF24, #F97316);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 16px;
+  line-height: 1.3;
+}
+
+.cert-icon { font-size: 5rem; display: block; margin: 10px 0; animation: wiggle 3s ease infinite; }
+@keyframes wiggle {
+  0%,90%,100% { transform: rotate(0); }
+  93%  { transform: rotate(12deg); }
+  96%  { transform: rotate(-12deg); }
+}
+
+.cert-body { font-size: 1.05rem; color: var(--text2); line-height: 1.8; font-weight: 600; margin: 12px 0; }
+
+.cert-score-box {
+  display: inline-block;
+  background: linear-gradient(135deg, rgba(251,191,36,0.15), rgba(249,115,22,0.1));
+  border: 3px solid var(--yellow);
+  border-radius: 18px;
+  padding: 18px 32px;
+  margin: 14px 0;
+}
+
+.cert-score-num { font-size: 3.5rem; font-weight: 900; color: #D97706; display: block; }
+.cert-score-lbl { font-size: 0.95rem; color: var(--text2); font-weight: 700; }
+.cert-rank { font-size: 1.15rem; font-weight: 900; color: #D97706; margin-top: 10px; }
+
+/* confetti */
+.confetti-piece {
+  position: fixed;
+  width: 10px; height: 10px;
+  opacity: 0;
+  animation: fall 3s ease-in forwards;
+  border-radius: 2px;
+  z-index: 999;
+  pointer-events: none;
+}
+@keyframes fall {
+  0%   { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+}
 </style>
 </head>
 <body>
 
-<!-- HUD (hidden on intro) -->
-<div class="hud" id="main-hud" style="display:none;">
-  <div class="hud-logo">🎙️ רדיו שכבה ז'</div>
+<!-- HUD -->
+<div class="hud" id="main-hud" style="display:none">
+  <div class="hud-logo">🎙️ רדיו שכבה ז׳</div>
   <div class="hud-stats">
-    <div class="hud-stat">🏆 <span class="value" id="hud-score">0</span> נקודות</div>
-    <div class="hud-stat listener-bar-wrap">
-      📡 מאזינים
+    <div class="hud-stat">🏆 <span class="val" id="hud-score">0</span> נק׳</div>
+    <div class="hud-stat">
+      📡
       <div class="listener-bar"><div class="listener-fill" id="listener-fill"></div></div>
-      <span class="value" id="listener-pct">0%</span>
+      <span class="val" id="listener-pct">0%</span>
     </div>
   </div>
 </div>
 
-<!-- Toast notification -->
 <div class="toast" id="toast"></div>
 
-<!-- ===== SCREEN 0: INTRO ===== -->
+<!-- ============================================================
+     SCREEN 0 — INTRO
+     ============================================================ -->
 <div class="screen active" id="screen-intro">
-  <div class="radio-station">📻 רדיו שכבה ז׳ — בשידור חי</div>
-  <div class="intro-title">מצעד השכבה<br>🎧 המשחק הדיגיטלי</div>
+  <div class="radio-badge">📻 רדיו שכבה ז׳ — שידור חי!</div>
+
+  <div class="intro-title">מצעד השכבה<br>🎧 משחק פיקטוגרמה</div>
 
   <div class="intro-card">
-    <span class="big-emoji">🎙️</span>
+    <span class="intro-mic">🎙️</span>
     <p>
-      <strong style="color:#fff;">שלום עורך המצעד!</strong><br><br>
-      <span class="highlight">80 תלמידים</span> מחכים לראות מה השיר שהכי אהוב בשכבה.<br><br>
-      בוא נעזור למועצה להציג להם את התוצאות בדרך הכי <span class="highlight">מגניבה</span> שיש —<br>
-      בעזרת <strong style="color:#fff;">פיקטוגרמה!</strong>
+      <strong>שלום עורך המצעד!</strong><br>
+      <span class="hl">80 תלמידים</span> מחכים לראות
+      מה השיר שהכי אהוב בשכבה.<br><br>
+      בוא נעזור למועצה להציג את התוצאות
+      בדרך הכי <span class="hl2">מגניבה</span> שיש —<br>
+      בעזרת <strong>פיקטוגרמה!</strong>
     </p>
   </div>
 
-  <button class="btn" onclick="startGame()">בוא נתחיל! 🚀</button>
+  <button class="btn btn-purple" onclick="startGame()">בוא נתחיל! 🚀</button>
 </div>
 
-<!-- ===== SCREEN 1: DATA TABLE ===== -->
+<!-- ============================================================
+     SCREEN 1 — DATA TABLE
+     ============================================================ -->
 <div class="screen" id="screen-table">
-  <div class="progress-steps" id="steps-table">
+  <div class="progress-steps">
     <div class="step current">1</div>
-    <div class="step">2</div>
-    <div class="step">3</div>
-    <div class="step">4</div>
-    <div class="step">5</div>
+    <div class="step">2</div><div class="step">3</div>
+    <div class="step">4</div><div class="step">5</div>
   </div>
 
   <div class="screen-title">📊 תוצאות הסקר</div>
   <div class="screen-sub">80 תלמידי השכבה בחרו את הז׳אנר האהוב עליהם</div>
 
-  <div class="data-table-wrap">
+  <div class="data-card">
     <table class="data-table">
       <thead>
-        <tr>
-          <th>ז׳אנר</th>
-          <th>שכיחות (מספר תלמידים)</th>
-        </tr>
+        <tr><th>ז׳אנר</th><th>מספר תלמידים</th></tr>
       </thead>
       <tbody>
-        <tr>
-          <td><span class="genre-badge badge-hiphop">🎤 היפ-הופ</span></td>
-          <td><span class="freq-num">24</span></td>
+        <tr class="row-hiphop">
+          <td><span class="genre-pill pill-hiphop">🎤 היפ-הופ</span></td>
+          <td><span class="freq-big freq-hiphop">24</span></td>
         </tr>
-        <tr>
-          <td><span class="genre-badge badge-pop">🌟 פופ</span></td>
-          <td><span class="freq-num">20</span></td>
+        <tr class="row-pop">
+          <td><span class="genre-pill pill-pop">🌟 פופ</span></td>
+          <td><span class="freq-big freq-pop">20</span></td>
         </tr>
-        <tr>
-          <td><span class="genre-badge badge-rock">🎸 רוק</span></td>
-          <td><span class="freq-num">20</span></td>
+        <tr class="row-rock">
+          <td><span class="genre-pill pill-rock">🎸 רוק</span></td>
+          <td><span class="freq-big freq-rock">20</span></td>
         </tr>
-        <tr>
-          <td><span class="genre-badge badge-med">🌊 ים-תיכוני</span></td>
-          <td><span class="freq-num">16</span></td>
+        <tr class="row-med">
+          <td><span class="genre-pill pill-med">🌊 ים-תיכוני</span></td>
+          <td><span class="freq-big freq-med">16</span></td>
         </tr>
-        <tr class="total-row">
+        <tr class="row-total">
           <td><strong>סה״כ</strong></td>
-          <td><strong>80</strong></td>
+          <td><span class="freq-big freq-total">80</span></td>
         </tr>
       </tbody>
     </table>
   </div>
 
-  <button class="btn btn-blue" onclick="goToLegend()">בחירת מקרא ➡️</button>
+  <button class="btn btn-blue" onclick="goToLegend()">בחירת מקרא ←</button>
 </div>
 
-<!-- ===== SCREEN 2: LEGEND CHOICE ===== -->
+<!-- ============================================================
+     SCREEN 2 — LEGEND
+     ============================================================ -->
 <div class="screen" id="screen-legend">
   <div class="progress-steps">
     <div class="step done">✓</div>
     <div class="step current">2</div>
-    <div class="step">3</div>
-    <div class="step">4</div>
-    <div class="step">5</div>
+    <div class="step">3</div><div class="step">4</div><div class="step">5</div>
   </div>
 
   <div class="screen-title">🎧 בחר מקרא לפיקטוגרמה</div>
-  <div class="screen-sub">כמה תלמידים מייצגת כל אוזנייה?</div>
+  <div class="screen-sub">כמה תלמידים תייצג כל אוזנייה?</div>
 
   <div class="legend-hint">
-    💡 זכור: בחר מספר שמחלק את כל השכיחויות בצורה נוחה (ללא שארית גדולה)
+    💡 טיפ: בחר מספר שמחלק את כל השכיחויות (24, 20, 20, 16) בצורה נוחה — ללא שארית גדולה
   </div>
 
-  <div class="legend-options">
-    <div class="legend-option" onclick="selectLegend(2, this)">
-      <span class="symbol">🎧</span>
-      <div class="value">= <span>2</span> תלמידים</div>
-      <div style="font-size:0.75rem;color:#666;margin-top:4px;">40 אוזניות סה״כ</div>
+  <div class="legend-grid">
+    <div class="legend-option" onclick="pickLegend(2, this)">
+      <span class="big-sym">🎧</span>
+      <div class="leg-val">= <span>2</span> תלמידים</div>
+      <div class="leg-note">סה״כ 40 אוזניות</div>
     </div>
-    <div class="legend-option" onclick="selectLegend(4, this)">
-      <span class="symbol">🎧</span>
-      <div class="value">= <span>4</span> תלמידים</div>
-      <div style="font-size:0.75rem;color:#666;margin-top:4px;">20 אוזניות סה״כ</div>
+    <div class="legend-option" onclick="pickLegend(4, this)">
+      <span class="big-sym">🎧</span>
+      <div class="leg-val">= <span>4</span> תלמידים</div>
+      <div class="leg-note">סה״כ 20 אוזניות</div>
     </div>
-    <div class="legend-option" onclick="selectLegend(8, this)">
-      <span class="symbol">🎧</span>
-      <div class="value">= <span>8</span> תלמידים</div>
-      <div style="font-size:0.75rem;color:#999;margin-top:4px;">10 אוזניות סה״כ</div>
+    <div class="legend-option" onclick="pickLegend(8, this)">
+      <span class="big-sym">🎧</span>
+      <div class="leg-val">= <span>8</span> תלמידים</div>
+      <div class="leg-note">סה״כ 10 אוזניות</div>
     </div>
-    <div class="legend-option" onclick="selectLegend(10, this)">
-      <span class="symbol">🎧</span>
-      <div class="value">= <span>10</span> תלמידים</div>
-      <div style="font-size:0.75rem;color:#999;margin-top:4px;">8 אוזניות סה״כ</div>
+    <div class="legend-option" onclick="pickLegend(10, this)">
+      <span class="big-sym">🎧</span>
+      <div class="leg-val">= <span>10</span> תלמידים</div>
+      <div class="leg-note">סה״כ 8 אוזניות</div>
     </div>
   </div>
 
-  <button class="btn btn-blue" id="legend-next-btn" disabled onclick="goToPicto()">בניית הפיקטוגרמה ➡️</button>
+  <button class="btn btn-pink" id="legend-next" disabled onclick="goToPicto()">בניית פיקטוגרמה ←</button>
 </div>
 
-<!-- ===== SCREEN 3: PICTOGRAM ===== -->
+<!-- ============================================================
+     SCREEN 3 — PICTOGRAM
+     ============================================================ -->
 <div class="screen" id="screen-picto">
   <div class="progress-steps">
-    <div class="step done">✓</div>
-    <div class="step done">✓</div>
+    <div class="step done">✓</div><div class="step done">✓</div>
     <div class="step current">3</div>
-    <div class="step">4</div>
-    <div class="step">5</div>
+    <div class="step">4</div><div class="step">5</div>
   </div>
 
   <div class="screen-title">🎨 בנה את הפיקטוגרמה</div>
-  <div class="screen-sub">לחץ על + כדי להוסיף סמל, או על האוזנייה כדי להסיר</div>
 
-  <div class="legend-display" id="legend-display-text">
-    🎧 = <span id="legend-val-display">?</span> תלמידים &nbsp;|&nbsp; 🎧½ = <span id="legend-half-display">?</span> תלמידים
+  <div class="picto-legend-bar" id="picto-leg-bar">🎧 = ? תלמידים</div>
+
+  <div class="picto-instructions">
+    לחץ <strong>➕🎧</strong> כדי להוסיף אוזנייה שלמה &nbsp;|&nbsp;
+    לחץ <strong>➕½</strong> כדי להוסיף חצי אוזנייה &nbsp;|&nbsp;
+    לחץ על אוזנייה כדי <strong>להסיר</strong> אותה
   </div>
 
   <div class="picto-board">
-    <!-- rows built by JS -->
     <div id="picto-rows"></div>
   </div>
 
-  <div style="text-align:center;margin-top:20px;">
-    <button class="btn" onclick="checkAllRows()">בדוק את הפיקטוגרמה ✅</button>
+  <div style="text-align:center;margin-top:28px;">
+    <button class="btn btn-green" onclick="checkAllRows()">✅ בדוק את כל הפיקטוגרמה</button>
   </div>
 </div>
 
-<!-- ===== SCREEN 4: ANALYSIS ===== -->
+<!-- ============================================================
+     SCREEN 4 — ANALYSIS
+     ============================================================ -->
 <div class="screen" id="screen-analysis">
   <div class="progress-steps">
+    <div class="step done">✓</div><div class="step done">✓</div>
     <div class="step done">✓</div>
-    <div class="step done">✓</div>
-    <div class="step done">✓</div>
-    <div class="step current">4</div>
-    <div class="step">5</div>
+    <div class="step current">4</div><div class="step">5</div>
   </div>
 
   <div class="screen-title">🔍 ניתוח נתונים</div>
-  <div class="screen-sub">ענה על השאלות הבאות על פי הפיקטוגרמה שבנית</div>
+  <div class="screen-sub">ענה על השאלות — הנתונים מוצגים כאן למטה לנוחותך</div>
 
-  <div class="questions-grid">
+  <!-- mini data reminder -->
+  <div class="mini-data-card">
+    <div class="mini-data-title">📋 נתוני הסקר — תזכורת</div>
+    <div class="mini-table">
+      <div class="mini-cell">
+        <span class="mc-icon">🎤</span>
+        <div class="mc-name">היפ-הופ</div>
+        <div class="mc-num freq-hiphop">24</div>
+      </div>
+      <div class="mini-cell">
+        <span class="mc-icon">🌟</span>
+        <div class="mc-name">פופ</div>
+        <div class="mc-num freq-pop">20</div>
+      </div>
+      <div class="mini-cell">
+        <span class="mc-icon">🎸</span>
+        <div class="mc-name">רוק</div>
+        <div class="mc-num freq-rock">20</div>
+      </div>
+      <div class="mini-cell">
+        <span class="mc-icon">🌊</span>
+        <div class="mc-name">ים-תיכוני</div>
+        <div class="mc-num freq-med">16</div>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:10px;font-size:0.9rem;font-weight:800;color:#4F46E5;">סה״כ: 80 תלמידים</div>
+  </div>
+
+  <div class="questions-list">
 
     <!-- Q1 -->
-    <div class="question-card" id="qcard-1">
-      <div class="q-header">
-        <div class="q-num">א</div>
-        <div class="q-text">מהו הז׳אנר השכיח ביותר בסקר?</div>
+    <div class="qcard" id="qcard-1">
+      <div class="qcard-header">
+        <div class="q-bubble">א</div>
+        <div class="qcard-text">מהו הז׳אנר <strong>השכיח ביותר</strong> בסקר?</div>
       </div>
-      <div class="q-input-wrap">
-        <select class="q-input" id="q1-input" style="min-width:160px;background:#1e1e38;cursor:pointer;">
-          <option value="">-- בחר --</option>
-          <option value="hiphop">היפ-הופ</option>
-          <option value="pop">פופ</option>
-          <option value="rock">רוק</option>
-          <option value="med">ים-תיכוני</option>
+      <div class="q-row">
+        <select class="q-input" id="q1-in">
+          <option value="">-- בחר ז׳אנר --</option>
+          <option value="hiphop">🎤 היפ-הופ</option>
+          <option value="pop">🌟 פופ</option>
+          <option value="rock">🎸 רוק</option>
+          <option value="med">🌊 ים-תיכוני</option>
         </select>
-        <button class="q-submit" onclick="checkQ1()">בדוק</button>
+        <button class="q-check-btn" onclick="chkQ1()">בדוק ✓</button>
       </div>
-      <div class="q-feedback" id="q1-feedback"></div>
+      <div class="q-feedback-box" id="q1-fb"></div>
     </div>
 
     <!-- Q2 -->
-    <div class="question-card" id="qcard-2">
-      <div class="q-header">
-        <div class="q-num">ב</div>
-        <div class="q-text">חשב את השכיחות היחסית של ״ים-תיכוני״ (הצג כשבר פשוט מצומצם):</div>
+    <div class="qcard" id="qcard-2">
+      <div class="qcard-header">
+        <div class="q-bubble">ב</div>
+        <div class="qcard-text">חשב את <strong>השכיחות היחסית</strong> של ״ים-תיכוני״ (שבר פשוט מצומצם):</div>
       </div>
-      <div class="q-input-wrap">
-        <div class="fraction-input">
-          <div class="fraction-stack">
-            <input type="number" class="q-input fraction-num-input" id="q2-num" placeholder="מונה" min="0" max="80">
-            <div class="fraction-line"></div>
-            <input type="number" class="q-input fraction-num-input" id="q2-den" placeholder="מכנה" min="1" max="80">
+      <div class="q-row">
+        <span style="font-size:1rem;font-weight:800;color:var(--text2);">שכיחות יחסית =</span>
+        <div class="frac-wrap">
+          <div class="frac-stack">
+            <input type="number" class="q-input frac-input" id="q2-num" placeholder="מונה" min="0" max="80">
+            <div class="frac-line"></div>
+            <input type="number" class="q-input frac-input" id="q2-den" placeholder="מכנה" min="1" max="80">
           </div>
-          <span style="font-size:1.2rem;color:#888;">שכיחות יחסית =</span>
         </div>
-        <button class="q-submit" onclick="checkQ2()">בדוק</button>
+        <button class="q-check-btn" onclick="chkQ2()">בדוק ✓</button>
       </div>
-      <div class="q-feedback" id="q2-feedback"></div>
+      <div class="q-feedback-box" id="q2-fb"></div>
     </div>
 
     <!-- Q3 -->
-    <div class="question-card" id="qcard-3">
-      <div class="q-header">
-        <div class="q-num">ג</div>
-        <div class="q-text">מהי השכיחות המצטברת של ״פופ״ ו״רוק״ יחד?</div>
+    <div class="qcard" id="qcard-3">
+      <div class="qcard-header">
+        <div class="q-bubble">ג</div>
+        <div class="qcard-text">מהי <strong>השכיחות המצטברת</strong> של ״פופ״ ו״רוק״ יחד?</div>
       </div>
-      <div class="q-input-wrap">
-        <input type="number" class="q-input" id="q3-input" placeholder="מספר תלמידים" min="0" max="80" style="width:160px;">
-        <span style="color:#888;">תלמידים</span>
-        <button class="q-submit" onclick="checkQ3()">בדוק</button>
+      <div class="q-row">
+        <input type="number" class="q-input" id="q3-in" placeholder="מספר תלמידים" min="0" max="80" style="width:180px;">
+        <span style="font-size:1rem;font-weight:800;color:var(--text2);">תלמידים</span>
+        <button class="q-check-btn" onclick="chkQ3()">בדוק ✓</button>
       </div>
-      <div class="q-feedback" id="q3-feedback"></div>
+      <div class="q-feedback-box" id="q3-fb"></div>
     </div>
 
     <!-- Q4 -->
-    <div class="question-card" id="qcard-4">
-      <div class="q-header">
-        <div class="q-num">ד</div>
-        <div class="q-text">מהו אחוז התלמידים שאוהבים ״פופ״?</div>
+    <div class="qcard" id="qcard-4">
+      <div class="qcard-header">
+        <div class="q-bubble">ד</div>
+        <div class="qcard-text">מהו <strong>אחוז</strong> התלמידים שאוהבים ״פופ״?</div>
       </div>
-      <div class="q-input-wrap">
-        <input type="number" class="q-input" id="q4-input" placeholder="%" min="0" max="100" style="width:100px;">
-        <span style="color:#888;">%</span>
-        <button class="q-submit" onclick="checkQ4()">בדוק</button>
+      <div class="q-row">
+        <input type="number" class="q-input" id="q4-in" placeholder="%" min="0" max="100" style="width:120px;">
+        <span style="font-size:1.2rem;font-weight:900;color:var(--text2);">%</span>
+        <button class="q-check-btn" onclick="chkQ4()">בדוק ✓</button>
       </div>
-      <div class="q-feedback" id="q4-feedback"></div>
+      <div class="q-feedback-box" id="q4-fb"></div>
     </div>
 
   </div>
 
-  <div style="margin-top:24px;">
-    <button class="btn btn-blue" id="analysis-next-btn" style="display:none;" onclick="goToMC()">שאלה אמריקאית ➡️</button>
+  <div style="margin-top:28px;">
+    <button class="btn btn-orange" id="analysis-next" style="display:none" onclick="goToMC()">לשאלת חשיבה ←</button>
   </div>
 </div>
 
-<!-- ===== SCREEN 5: MULTIPLE CHOICE ===== -->
+<!-- ============================================================
+     SCREEN 5 — MULTIPLE CHOICE
+     ============================================================ -->
 <div class="screen" id="screen-mc">
   <div class="progress-steps">
-    <div class="step done">✓</div>
-    <div class="step done">✓</div>
-    <div class="step done">✓</div>
-    <div class="step done">✓</div>
+    <div class="step done">✓</div><div class="step done">✓</div>
+    <div class="step done">✓</div><div class="step done">✓</div>
     <div class="step current">5</div>
   </div>
 
   <div class="screen-title">🧠 שאלת חשיבה</div>
-  <div class="screen-sub">קראי בעיון ובחר את התשובה הנכונה</div>
+  <div class="screen-sub">קרא בעיון ובחר את התשובה הנכונה</div>
 
   <div class="mc-card">
-    <div class="mc-question">
-      אם נשנה את המקרא של הפיקטוגרמה (כמה תלמידים מייצגת כל אוזנייה) — האם הז׳אנר השכיח ביותר ישתנה?
+    <div class="mc-q-box">
+      אם נשנה את <strong>המקרא</strong> של הפיקטוגרמה
+      (כמה תלמידים מייצגת כל אוזנייה) —
+      האם הז׳אנר השכיח ביותר <strong>ישתנה</strong>?
     </div>
 
     <div class="mc-options">
-      <div class="mc-option" onclick="selectMC(this, false)" id="mc-a">
+      <div class="mc-opt" onclick="pickMC(this, false)">
         <div class="mc-letter">א</div>
         <div>כן, הז׳אנר השכיח ישתנה לפי המקרא</div>
       </div>
-      <div class="mc-option" onclick="selectMC(this, true)" id="mc-b">
+      <div class="mc-opt" id="mc-b" onclick="pickMC(this, true)">
         <div class="mc-letter">ב</div>
         <div>לא — כי כמות השירים בפועל נשארת זהה. המקרא רק משנה את הייצוג הגרפי</div>
       </div>
-      <div class="mc-option" onclick="selectMC(this, false)" id="mc-c">
+      <div class="mc-opt" onclick="pickMC(this, false)">
         <div class="mc-letter">ג</div>
         <div>אי אפשר לדעת, תלוי בנתונים</div>
       </div>
-      <div class="mc-option" onclick="selectMC(this, false)" id="mc-d">
+      <div class="mc-opt" onclick="pickMC(this, false)">
         <div class="mc-letter">ד</div>
         <div>תלוי בז׳אנר הספציפי שנבחר</div>
       </div>
     </div>
 
-    <div class="mc-feedback" id="mc-feedback"></div>
+    <div class="mc-fb" id="mc-fb"></div>
   </div>
 
-  <div style="margin-top:24px;">
-    <button class="btn btn-green" id="mc-next-btn" style="display:none;" onclick="goToCertificate()">🏆 לתעודה!</button>
+  <div style="margin-top:28px;">
+    <button class="btn btn-green" id="mc-next" style="display:none" onclick="goToCert()">🏆 לתעודה!</button>
   </div>
 </div>
 
-<!-- ===== SCREEN 6: CERTIFICATE ===== -->
+<!-- ============================================================
+     SCREEN 6 — CERTIFICATE
+     ============================================================ -->
 <div class="screen" id="screen-certificate">
-  <div class="cert-wrap">
-    <div class="cert-title">תחנת רדיו שכבה ז׳</div>
-    <div class="cert-main-title" id="cert-title-text">תעודת הצטיינות</div>
-    <span class="cert-emoji" id="cert-emoji">🎧</span>
-    <p class="cert-text" id="cert-text">
+  <div class="cert">
+    <div class="cert-label">תחנת רדיו שכבה ז׳</div>
+    <div class="cert-title" id="cert-title">תעודת הצטיינות</div>
+    <span class="cert-icon" id="cert-icon">🎧</span>
+    <p class="cert-body" id="cert-body">
       מוענקת בזאת לתלמיד/ה המצטיין/ת<br>
       על השלמת <strong>מצעד השכבה</strong><br>
       בהצלחה מרשימה!
     </p>
-    <div class="cert-score">
-      <span class="score-num" id="cert-score-num">0</span>
-      <span class="score-label">נקודות מתוך 10</span>
+    <div class="cert-score-box">
+      <span class="cert-score-num" id="cert-num">0</span>
+      <span class="cert-score-lbl">נקודות מתוך 10</span>
     </div>
-    <p class="cert-text" id="cert-rank-text" style="margin-top:10px;color:var(--gold);font-weight:700;font-size:1.1rem;"></p>
+    <div class="cert-rank" id="cert-rank"></div>
   </div>
 
-  <button class="btn" style="margin-top:24px;" onclick="restartGame()">🔄 שחק שוב</button>
+  <button class="btn btn-purple" style="margin-top:24px;" onclick="restart()">🔄 שחק שוב</button>
 </div>
 
+<!-- ============================================================
+     JAVASCRIPT
+     ============================================================ -->
 <script>
-// ===== GAME STATE =====
+const genres = [
+  { key:'hiphop', name:'🎤 היפ-הופ', count:24, cls:'freq-hiphop' },
+  { key:'pop',    name:'🌟 פופ',     count:20, cls:'freq-pop'    },
+  { key:'rock',   name:'🎸 רוק',     count:20, cls:'freq-rock'   },
+  { key:'med',    name:'🌊 ים-תיכוני', count:16, cls:'freq-med'  }
+];
+
 const state = {
   score: 0,
   listenerPct: 0,
-  legendValue: null,
-  rowChecked: [false, false, false, false],
+  legend: null,
   rowCorrect: [false, false, false, false],
-  analysisAnswered: [false, false, false, false],
-  analysisCorrect: [false, false, false, false],
-  mcAnswered: false,
-  mcCorrect: false
+  rowChecked: [false, false, false, false],
+  qAnswered: [false, false, false, false],
+  qCorrect:  [false, false, false, false],
+  mcDone: false
 };
 
-const genres = [
-  { key: 'hiphop', name: '🎤 היפ-הופ', count: 24, color: '#FF6B6B' },
-  { key: 'pop',    name: '🌟 פופ',     count: 20, color: '#FFD93D' },
-  { key: 'rock',   name: '🎸 רוק',     count: 20, color: '#6BCB77' },
-  { key: 'med',    name: '🌊 ים-תיכוני', count: 16, color: '#4D96FF' }
-];
-
-// ===== UTILITY =====
-function showScreen(id) {
+// ===== UTILS =====
+function show(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   window.scrollTo(0, 0);
 }
 
-function showToast(msg, isError = false) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.toggle('error', isError);
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2500);
+function toast(msg, err=false) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.toggle('error', err);
+  el.classList.add('show');
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.classList.remove('show'), 2800);
 }
 
-function addScore(pts) {
-  state.score += pts;
-  state.listenerPct = Math.min(100, state.listenerPct + pts * 10);
+function addPts(n) {
+  state.score += n;
+  state.listenerPct = Math.min(100, state.listenerPct + n * 10);
   document.getElementById('hud-score').textContent = state.score;
   document.getElementById('listener-fill').style.width = state.listenerPct + '%';
   document.getElementById('listener-pct').textContent = state.listenerPct + '%';
@@ -1278,326 +1308,285 @@ function addScore(pts) {
 
 function gcd(a, b) { return b === 0 ? a : gcd(b, a % b); }
 
-// ===== NAVIGATION =====
+// ===== NAV =====
 function startGame() {
   document.getElementById('main-hud').style.display = 'flex';
-  showScreen('screen-table');
+  show('screen-table');
 }
 
-function goToLegend() {
-  showScreen('screen-legend');
-}
+function goToLegend() { show('screen-legend'); }
 
-function selectLegend(val, el) {
+function pickLegend(val, el) {
   document.querySelectorAll('.legend-option').forEach(o => o.classList.remove('selected'));
   el.classList.add('selected');
-  state.legendValue = val;
-  document.getElementById('legend-next-btn').disabled = false;
+  state.legend = val;
+  document.getElementById('legend-next').disabled = false;
 }
 
 function goToPicto() {
-  if (!state.legendValue) return;
-  buildPictoBoard();
-  document.getElementById('legend-val-display').textContent = state.legendValue;
-  document.getElementById('legend-half-display').textContent = state.legendValue / 2;
-  showScreen('screen-picto');
+  if (!state.legend) return;
+  buildBoard();
+  const half = state.legend / 2;
+  document.getElementById('picto-leg-bar').textContent =
+    `🎧 = ${state.legend} תלמידים  |  🎧½ = ${half} תלמידים`;
+  show('screen-picto');
 }
 
-function goToMC() {
-  showScreen('screen-mc');
+function goToMC() { show('screen-mc'); }
+
+function goToCert() {
+  renderCert();
+  show('screen-certificate');
+  confetti();
 }
 
-function goToCertificate() {
-  showCertificate();
-  showScreen('screen-certificate');
-  launchConfetti();
-}
-
-function restartGame() {
-  state.score = 0;
-  state.listenerPct = 0;
-  state.legendValue = null;
-  state.rowChecked = [false, false, false, false];
-  state.rowCorrect = [false, false, false, false];
-  state.analysisAnswered = [false, false, false, false];
-  state.analysisCorrect = [false, false, false, false];
-  state.mcAnswered = false;
-  state.mcCorrect = false;
+function restart() {
+  Object.assign(state, {
+    score:0, listenerPct:0, legend:null,
+    rowCorrect:[false,false,false,false],
+    rowChecked:[false,false,false,false],
+    qAnswered:[false,false,false,false],
+    qCorrect:[false,false,false,false],
+    mcDone:false
+  });
   document.getElementById('hud-score').textContent = 0;
   document.getElementById('listener-fill').style.width = '0%';
   document.getElementById('listener-pct').textContent = '0%';
   document.querySelectorAll('.legend-option').forEach(o => o.classList.remove('selected'));
-  document.getElementById('legend-next-btn').disabled = true;
+  document.getElementById('legend-next').disabled = true;
   document.getElementById('main-hud').style.display = 'none';
-  showScreen('screen-intro');
+  show('screen-intro');
 }
 
 // ===== PICTOGRAM =====
-function buildPictoBoard() {
-  const container = document.getElementById('picto-rows');
-  container.innerHTML = '';
+function buildBoard() {
+  const wrap = document.getElementById('picto-rows');
+  wrap.innerHTML = '';
 
-  genres.forEach((g, idx) => {
-    const correctFull = Math.floor(g.count / state.legendValue);
-    const correctHalf = (g.count % state.legendValue) >= (state.legendValue / 2) ? 1 : 0;
+  genres.forEach((g, i) => {
+    const correctFull = Math.floor(g.count / state.legend);
+    const rem = g.count - correctFull * state.legend;
+    const correctHalf = rem >= state.legend / 2 ? 1 : 0;
 
     const row = document.createElement('div');
     row.className = 'picto-row';
-    row.dataset.idx = idx;
+
+    const colorMap = { hiphop:'#DB2777', pop:'#B45309', rock:'#15803D', med:'#1D4ED8' };
+    const c = colorMap[g.key];
 
     row.innerHTML = `
       <div class="picto-label">
-        <div class="genre-name" style="color:${g.color}">${g.name}</div>
-        <div class="genre-count">${g.count} תלמידים</div>
-        <div class="picto-controls" style="margin-top:8px;">
-          <button class="symbol-btn" onclick="addSymbol(${idx}, false)" title="הוסף אוזנייה">➕🎧</button>
-          ${state.legendValue > 1 ? `<button class="symbol-btn half-btn" onclick="addSymbol(${idx}, true)" title="הוסף חצי אוזנייה">➕🎧½</button>` : ''}
+        <div class="genre-label-name" style="color:${c}">${g.name}</div>
+        <div class="picto-add-btns">
+          <button class="add-btn" onclick="addSym(${i},false)">➕🎧 אוזנייה</button>
+          ${state.legend > 1
+            ? `<button class="add-btn" onclick="addSym(${i},true)">➕🎧½ חצי</button>`
+            : ''}
         </div>
-        <div class="count-display" id="count-${idx}">0 / ${correctFull + (correctHalf ? 0.5 : 0)} 🎧</div>
-        <button class="check-btn" onclick="checkRow(${idx})">בדוק שורה ✓</button>
-        <div class="row-feedback" id="row-fb-${idx}"></div>
+        <button class="check-row-btn" onclick="chkRow(${i})">✓ בדוק שורה</button>
+        <div class="row-feedback" id="rf-${i}"></div>
       </div>
-      <div class="picto-drop-zone" id="zone-${idx}">
-        <span class="placeholder-text">לחץ ➕ להוספת סמלים</span>
+      <div class="picto-zone" id="zone-${i}">
+        <div class="zone-ph" id="zph-${i}">לחץ ➕ להוספת סמלים</div>
       </div>
     `;
-    container.appendChild(row);
+    wrap.appendChild(row);
   });
 }
 
-function addSymbol(idx, isHalf) {
-  const zone = document.getElementById(`zone-${idx}`);
-  // Remove placeholder
-  const ph = zone.querySelector('.placeholder-text');
-  if (ph) ph.remove();
+function addSym(i, half) {
+  const zone = document.getElementById(`zone-${i}`);
+  const ph = document.getElementById(`zph-${i}`);
+  if (ph) ph.style.display = 'none';
 
-  const sym = document.createElement('span');
-  sym.className = 'symbol-in-zone';
-  sym.title = 'לחץ להסרה';
-  sym.dataset.half = isHalf ? '1' : '0';
-  sym.textContent = isHalf ? '🎧½' : '🎧';
-  sym.onclick = () => { sym.remove(); updateCount(idx); };
-  zone.appendChild(sym);
-  updateCount(idx);
+  const sp = document.createElement('span');
+  sp.className = 'sym-item';
+  sp.dataset.half = half ? '1' : '0';
+  sp.textContent = half ? '🎧½' : '🎧';
+  sp.title = 'לחץ להסרה';
+  sp.onclick = () => {
+    sp.remove();
+    const remaining = zone.querySelectorAll('.sym-item').length;
+    if (remaining === 0 && ph) ph.style.display = 'flex';
+  };
+  zone.appendChild(sp);
 }
 
-function updateCount(idx) {
-  const zone = document.getElementById(`zone-${idx}`);
-  const syms = zone.querySelectorAll('.symbol-in-zone');
-  let total = 0;
-  syms.forEach(s => { total += s.dataset.half === '1' ? 0.5 : 1; });
+function chkRow(i) {
+  if (state.rowCorrect[i]) return;   // already correct — don't re-penalise
 
-  const g = genres[idx];
-  const correctFull = Math.floor(g.count / state.legendValue);
-  const correctHalf = (g.count % state.legendValue) >= (state.legendValue / 2) ? 1 : 0;
-  const correctTotal = correctFull + correctHalf * 0.5;
+  const zone = document.getElementById(`zone-${i}`);
+  const syms = zone.querySelectorAll('.sym-item');
 
-  document.getElementById(`count-${idx}`).textContent = `${total} / ${correctTotal} 🎧`;
-}
+  let full = 0, half = 0;
+  syms.forEach(s => { s.dataset.half === '1' ? half++ : full++; });
 
-function checkRow(idx) {
-  if (state.rowChecked[idx] && state.rowCorrect[idx]) return;
+  const g = genres[i];
+  const cFull = Math.floor(g.count / state.legend);
+  const rem   = g.count - cFull * state.legend;
+  const cHalf = rem >= state.legend / 2 ? 1 : 0;
 
-  const zone = document.getElementById(`zone-${idx}`);
-  const syms = zone.querySelectorAll('.symbol-in-zone');
-  let fullCount = 0, halfCount = 0;
-  syms.forEach(s => {
-    if (s.dataset.half === '1') halfCount++;
-    else fullCount++;
-  });
+  const ok = full === cFull && half === cHalf;
+  const fb = document.getElementById(`rf-${i}`);
 
-  const g = genres[idx];
-  const correctFull = Math.floor(g.count / state.legendValue);
-  const remStudents = g.count - correctFull * state.legendValue;
-  const correctHalf = remStudents >= state.legendValue / 2 ? 1 : 0;
+  zone.classList.toggle('zone-ok',  ok);
+  zone.classList.toggle('zone-bad', !ok);
 
-  const isCorrect = fullCount === correctFull && halfCount === correctHalf;
-  const fb = document.getElementById(`row-fb-${idx}`);
-
-  if (isCorrect) {
-    zone.classList.add('correct'); zone.classList.remove('wrong');
-    fb.className = 'row-feedback feedback-correct';
-    fb.textContent = '✅ מעולה! נכון!';
-    if (!state.rowCorrect[idx]) {
-      state.rowCorrect[idx] = true;
-      addScore(1);
-      showToast(`+1 נקודה! שורת ${g.name} נכונה! 🎉`);
+  if (ok) {
+    fb.className = 'row-feedback fb-ok';
+    fb.textContent = '✅ כל הכבוד! נכון!';
+    if (!state.rowCorrect[i]) {
+      state.rowCorrect[i] = true;
+      addPts(1);
+      toast(`+1 נקודה! שורת ${g.name.split(' ')[1]} נכונה! 🎉`);
     }
   } else {
-    zone.classList.add('wrong'); zone.classList.remove('correct');
-    fb.className = 'row-feedback feedback-wrong';
-    const expected = correctFull + (correctHalf ? ' + חצי' : '');
-    fb.textContent = `❌ לא מדויק. נסה שוב. (רמז: ${expected} אוזניות)`;
+    fb.className = 'row-feedback fb-bad';
+    const hint = cFull + (cHalf ? ' + חצי' : '');
+    fb.textContent = `❌ לא מדויק — נסה שוב. (רמז: ${hint} אוזניות)`;
   }
-  state.rowChecked[idx] = true;
+  state.rowChecked[i] = true;
 }
 
 function checkAllRows() {
-  genres.forEach((_, idx) => checkRow(idx));
-  const allCorrect = state.rowCorrect.every(Boolean);
-  if (allCorrect) {
+  genres.forEach((_, i) => chkRow(i));
+  if (state.rowCorrect.every(Boolean)) {
     setTimeout(() => {
-      showToast('🎉 כל השורות נכונות! עוברים לניתוח!');
-      setTimeout(() => showScreen('screen-analysis'), 1000);
-    }, 500);
+      toast('🎉 כל השורות נכונות! עוברים לניתוח!');
+      setTimeout(() => show('screen-analysis'), 1200);
+    }, 400);
   } else {
-    showToast('חלק מהשורות עדיין לא נכונות. בדוק שוב!', true);
+    toast('חלק מהשורות עדיין שגויות — בדוק שוב!', true);
   }
 }
 
-// ===== ANALYSIS QUESTIONS =====
-function checkQ1() {
-  if (state.analysisAnswered[0]) return;
-  const val = document.getElementById('q1-input').value;
-  if (!val) { showToast('בחר תשובה קודם', true); return; }
-
-  const isCorrect = val === 'hiphop';
-  markAnalysis(0, isCorrect,
-    isCorrect ? '✅ נכון! היפ-הופ הוא הז׳אנר השכיח ביותר עם 24 תלמידים.' :
-    '❌ לא נכון. השוו את השכיחויות: היפ-הופ=24, פופ=20, רוק=20, ים-תיכוני=16. מי גדול?');
-}
-
-function checkQ2() {
-  if (state.analysisAnswered[1]) return;
-  const num = parseInt(document.getElementById('q2-num').value);
-  const den = parseInt(document.getElementById('q2-den').value);
-
-  if (isNaN(num) || isNaN(den) || den === 0) {
-    showToast('הכנס מונה ומכנה תקינים', true); return;
-  }
-
-  // Correct: 16/80 = 1/5
-  const g = gcd(Math.abs(num), Math.abs(den));
-  const reducedNum = num / g;
-  const reducedDen = den / g;
-  // Accept 16/80 or 1/5 or 2/10 etc. — check if equivalent to 1/5
-  const isCorrect = (num / den) === (16 / 80) && reducedNum === 1 && reducedDen === 5;
-
-  markAnalysis(1, isCorrect,
-    isCorrect ? '✅ נכון! 16/80 = 1/5. כל 5 תלמיד אחד אוהב ים-תיכוני.' :
-    `❌ לא נכון. ים-תיכוני: 16 תלמידים מתוך 80. השבר הוא 16/80. צמצם: גרסם ב-16 → 1/5.`);
-}
-
-function checkQ3() {
-  if (state.analysisAnswered[2]) return;
-  const val = parseInt(document.getElementById('q3-input').value);
-  const isCorrect = val === 40;
-  markAnalysis(2, isCorrect,
-    isCorrect ? '✅ נכון! פופ (20) + רוק (20) = 40 תלמידים יחד.' :
-    '❌ לא נכון. שכיחות מצטברת: פופ=20, רוק=20. צרף אותם: 20+20=?');
-}
-
-function checkQ4() {
-  if (state.analysisAnswered[3]) return;
-  const val = parseFloat(document.getElementById('q4-input').value);
-  const isCorrect = Math.abs(val - 25) < 0.5;
-  markAnalysis(3, isCorrect,
-    isCorrect ? '✅ נכון! 20 מתוך 80 = 20÷80×100 = 25%.' :
-    '❌ לא נכון. פופ = 20 תלמידים, סה״כ = 80. חשב: (20÷80)×100 = ?%');
-}
-
-function markAnalysis(idx, isCorrect, message) {
-  state.analysisAnswered[idx] = true;
-  state.analysisCorrect[idx] = isCorrect;
+// ===== ANALYSIS =====
+function markQ(idx, ok, okMsg, badMsg) {
+  state.qAnswered[idx] = true;
+  state.qCorrect[idx]  = ok;
 
   const card = document.getElementById(`qcard-${idx+1}`);
-  card.classList.add(isCorrect ? 'answered-correct' : 'answered-wrong');
+  card.classList.add(ok ? 'q-correct' : 'q-wrong');
+  card.querySelector('.q-check-btn').disabled = true;
 
-  const fb = document.getElementById(`q${idx+1}-feedback`);
-  fb.textContent = message;
-  fb.className = `q-feedback show ${isCorrect ? 'correct' : 'wrong'}`;
+  const fb = document.getElementById(`q${idx+1}-fb`);
+  fb.textContent = ok ? okMsg : badMsg;
+  fb.className = `q-feedback-box show ${ok ? 'fok' : 'fbad'}`;
 
-  const submitBtn = card.querySelector('.q-submit');
-  submitBtn.disabled = true;
+  if (ok) { addPts(1); toast('+1 נקודה! כל הכבוד! 🎵'); }
 
-  if (isCorrect) {
-    addScore(1);
-    showToast('+1 נקודה! כל הכבוד! 🎵');
-  }
-
-  // Check if all answered
-  if (state.analysisAnswered.every(Boolean)) {
+  if (state.qAnswered.every(Boolean)) {
     setTimeout(() => {
-      document.getElementById('analysis-next-btn').style.display = 'inline-block';
-    }, 800);
+      document.getElementById('analysis-next').style.display = 'inline-flex';
+    }, 700);
   }
 }
 
-// ===== MULTIPLE CHOICE =====
-function selectMC(el, isCorrect) {
-  if (state.mcAnswered) return;
-  state.mcAnswered = true;
-  state.mcCorrect = isCorrect;
+function chkQ1() {
+  if (state.qAnswered[0]) return;
+  const v = document.getElementById('q1-in').value;
+  if (!v) { toast('בחר ז׳אנר קודם!', true); return; }
+  markQ(0, v === 'hiphop',
+    '✅ נכון! היפ-הופ הוא הז׳אנר השכיח ביותר עם 24 תלמידים.',
+    '❌ לא נכון. השווה: היפ-הופ=24, פופ=20, רוק=20, ים-תיכוני=16 — מי הכי גדול?');
+}
 
-  document.querySelectorAll('.mc-option').forEach(o => o.classList.add('disabled'));
-  document.getElementById('mc-b').classList.add('reveal-correct');
+function chkQ2() {
+  if (state.qAnswered[1]) return;
+  const n = parseInt(document.getElementById('q2-num').value);
+  const d = parseInt(document.getElementById('q2-den').value);
+  if (isNaN(n) || isNaN(d) || d === 0) { toast('הכנס מונה ומכנה תקינים', true); return; }
+  const g = gcd(Math.abs(n), Math.abs(d));
+  const ok = (n/d) === (16/80) && (n/g) === 1 && (d/g) === 5;
+  markQ(1, ok,
+    '✅ נכון! 16÷80 = 1/5. מכל 5 תלמידים — אחד אוהב ים-תיכוני.',
+    '❌ לא נכון. 16 מתוך 80 → שבר: 16/80. צמצם בגרסם המשותף הגדול (16): 1/5.');
+}
 
-  if (isCorrect) {
-    el.classList.add('selected-correct');
+function chkQ3() {
+  if (state.qAnswered[2]) return;
+  const v = parseInt(document.getElementById('q3-in').value);
+  markQ(2, v === 40,
+    '✅ נכון! פופ (20) + רוק (20) = 40 תלמידים.',
+    '❌ לא נכון. פופ=20, רוק=20 → 20+20=?');
+}
+
+function chkQ4() {
+  if (state.qAnswered[3]) return;
+  const v = parseFloat(document.getElementById('q4-in').value);
+  markQ(3, Math.abs(v - 25) < 0.1,
+    '✅ נכון! (20÷80)×100 = 25%.',
+    '❌ לא נכון. חשב: (20÷80)×100 = ?%');
+}
+
+// ===== MC =====
+function pickMC(el, correct) {
+  if (state.mcDone) return;
+  state.mcDone = true;
+
+  document.querySelectorAll('.mc-opt').forEach(o => o.classList.add('disabled'));
+  document.getElementById('mc-b').classList.add('opt-reveal');
+  el.classList.add(correct ? 'opt-correct' : 'opt-wrong');
+
+  const fb = document.getElementById('mc-fb');
+  if (correct) {
+    fb.textContent = '✅ מעולה! המקרא רק משנה את הגודל הגרפי של הסמלים — הנתונים האמיתיים לא משתנים, ולכן הז׳אנר השכיח נשאר אותו דבר!';
+    fb.className = 'mc-fb show fok';
+    addPts(1);
+    toast('+1 נקודה! חשיבה מבריקה! 🧠');
   } else {
-    el.classList.add('selected-wrong');
+    fb.textContent = '❌ לא נכון. התשובה הנכונה היא ב׳ — המקרא הוא רק ייצוג חזותי. הנתונים האמיתיים לא משתנים, ולכן גם לא הז׳אנר השכיח.';
+    fb.className = 'mc-fb show fbad';
   }
-
-  const fb = document.getElementById('mc-feedback');
-  if (isCorrect) {
-    fb.textContent = '✅ מעולה! המקרא רק משנה את הגודל החזותי של הסמלים — הנתונים האמיתיים (כמה תלמידים בכל ז׳אנר) לא משתנים!';
-    fb.className = 'mc-feedback show correct';
-    addScore(1);
-    showToast('+1 נקודה! חשיבה מעולה! 🧠');
-  } else {
-    fb.textContent = '❌ לא נכון. התשובה הנכונה היא ב׳ — המקרא רק משנה את הייצוג הגרפי. הנתונים עצמם נשארים זהים, ולכן הז׳אנר השכיח לא ישתנה.';
-    fb.className = 'mc-feedback show wrong';
-  }
-
   setTimeout(() => {
-    document.getElementById('mc-next-btn').style.display = 'inline-block';
-  }, 1000);
+    document.getElementById('mc-next').style.display = 'inline-flex';
+  }, 900);
 }
 
 // ===== CERTIFICATE =====
-function showCertificate() {
-  const total = state.score;
-  document.getElementById('cert-score-num').textContent = total;
+function renderCert() {
+  const s = state.score;
+  document.getElementById('cert-num').textContent = s;
 
-  if (total >= 10) {
-    document.getElementById('cert-title-text').textContent = '🏆 תעודת עורך מצעד בכיר!';
-    document.getElementById('cert-emoji').textContent = '🥇';
-    document.getElementById('cert-rank-text').textContent = '★ ציון מושלם! אתה עורך מצעד בכיר! ★';
-    document.getElementById('cert-text').innerHTML = `
-      מוענקת בזאת לתלמיד/ה המצטיין/ת<br>
-      על השלמה <strong>מושלמת</strong> של מצעד השכבה<br>
-      בהצלחה יוצאת מן הכלל! 🎊
-    `;
-  } else if (total >= 7) {
-    document.getElementById('cert-title-text').textContent = '🎵 תעודת עורך מצעד מנוסה';
-    document.getElementById('cert-emoji').textContent = '🥈';
-    document.getElementById('cert-rank-text').textContent = 'כל הכבוד! עוד קצת ותגיע לשלמות!';
+  if (s >= 10) {
+    document.getElementById('cert-title').textContent = '🏆 תעודת עורך מצעד בכיר!';
+    document.getElementById('cert-icon').textContent = '🥇';
+    document.getElementById('cert-rank').textContent = '★ ציון מושלם! אתה עורך מצעד בכיר! ★';
+    document.getElementById('cert-body').innerHTML =
+      'מוענקת בזאת לתלמיד/ה<br>על השלמה <strong>מושלמת ומרשימה</strong><br>של מצעד השכבה! 🎊';
+  } else if (s >= 7) {
+    document.getElementById('cert-title').textContent = '🎵 תעודת עורך מצעד מנוסה';
+    document.getElementById('cert-icon').textContent = '🥈';
+    document.getElementById('cert-rank').textContent = 'כל הכבוד! עוד קצת תגיע לשלמות!';
   } else {
-    document.getElementById('cert-title-text').textContent = '🎧 תעודת השתתפות';
-    document.getElementById('cert-emoji').textContent = '🎵';
-    document.getElementById('cert-rank-text').textContent = 'המשך להתאמן — תצליח!';
+    document.getElementById('cert-title').textContent = '🎧 תעודת השתתפות';
+    document.getElementById('cert-icon').textContent = '🎵';
+    document.getElementById('cert-rank').textContent = 'המשך להתאמן — אתה בדרך הנכונה!';
   }
 }
 
-function launchConfetti() {
-  const colors = ['#FF6B6B','#FFD93D','#6BCB77','#4D96FF','#FF2D78','#00F5FF','#FFD700'];
-  for (let i = 0; i < 60; i++) {
+// ===== CONFETTI =====
+function confetti() {
+  const cols = ['#FF4FA3','#FBBF24','#22C55E','#3B82F6','#8B5CF6','#F97316','#06B6D4'];
+  for (let i = 0; i < 70; i++) {
     const c = document.createElement('div');
     c.className = 'confetti-piece';
-    c.style.left = Math.random() * 100 + 'vw';
-    c.style.top = '-20px';
-    c.style.background = colors[Math.floor(Math.random() * colors.length)];
-    c.style.width = (Math.random() * 8 + 6) + 'px';
-    c.style.height = (Math.random() * 8 + 6) + 'px';
-    c.style.animationDelay = Math.random() * 2 + 's';
-    c.style.animationDuration = (Math.random() * 2 + 2) + 's';
+    c.style.cssText = `
+      left:${Math.random()*100}vw;
+      top:-20px;
+      background:${cols[i%cols.length]};
+      width:${6+Math.random()*10}px;
+      height:${6+Math.random()*10}px;
+      animation-delay:${Math.random()*2}s;
+      animation-duration:${2+Math.random()*2}s;
+      border-radius:${Math.random()>0.5?'50%':'3px'};
+    `;
     document.body.appendChild(c);
     setTimeout(() => c.remove(), 5000);
   }
 }
 
-// Init
-showScreen('screen-intro');
+show('screen-intro');
 </script>
 </body>
 </html>
