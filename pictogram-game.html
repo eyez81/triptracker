@@ -354,29 +354,77 @@ body::before{
 }
 
 /* ════════════════ SCREEN 2 — LEGEND ════════════════ */
-#screen-legend{padding-top:86px;}
+#screen-legend{
+  padding-top:86px;
+  background:linear-gradient(160deg,#130429 0%,#2e0657 28%,#5b21b6 62%,#3730a3 100%);
+  overflow:hidden;
+}
+#screen-legend::after{
+  content:'';position:absolute;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(ellipse 70% 45% at 50% 100%,rgba(99,102,241,.22) 0%,transparent 70%);
+}
+#screen-legend .steps{position:relative;z-index:2;}
+#screen-legend .step{background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.25);color:rgba(255,255,255,.5);}
+#screen-legend .step.cur{background:rgba(255,255,255,.95);border-color:#fff;color:var(--purple);box-shadow:0 0 0 4px rgba(255,255,255,.2);}
+#screen-legend .step.done{background:var(--green);border-color:var(--green);color:#fff;}
+#screen-legend .pg-title{
+  position:relative;z-index:2;color:#fff;font-size:2.5rem;
+  text-shadow:0 0 30px rgba(255,255,255,.2),0 4px 14px rgba(0,0,0,.5);
+}
+#screen-legend .pg-sub{position:relative;z-index:2;color:rgba(255,255,255,.82);font-size:1.05rem;}
 
 .leg-hint{
-  background:rgba(37,99,235,.08);border:2px solid rgba(37,99,235,.25);
-  border-radius:16px;padding:14px 22px;font-size:1rem;font-weight:700;
-  color:#1E40AF;max-width:560px;text-align:center;margin-bottom:24px;line-height:1.7;
+  background:rgba(255,255,255,.12);border:2px solid rgba(255,255,255,.3);
+  border-radius:16px;padding:13px 22px;font-size:1rem;font-weight:700;
+  color:rgba(255,255,255,.92);max-width:580px;text-align:center;
+  margin-bottom:22px;line-height:1.7;backdrop-filter:blur(8px);
+  position:relative;z-index:2;
 }
+
 .leg-grid{
   display:grid;grid-template-columns:repeat(2,1fr);gap:16px;
-  max-width:520px;width:100%;margin-bottom:28px;
+  max-width:560px;width:100%;margin-bottom:28px;position:relative;z-index:2;
 }
+
+/* base card */
 .leg-opt{
-  background:var(--white);border:3px solid var(--border);border-radius:20px;
-  padding:24px 16px;text-align:center;cursor:pointer;
-  transition:all .25s cubic-bezier(.34,1.56,.64,1);
-  box-shadow:0 2px 10px rgba(0,0,0,.06);user-select:none;
+  border-radius:22px;padding:28px 18px 20px;text-align:center;cursor:pointer;
+  transition:all .28s cubic-bezier(.34,1.56,.64,1);
+  box-shadow:0 4px 20px rgba(0,0,0,.18);user-select:none;
+  border:3px solid transparent;position:relative;overflow:hidden;
 }
-.leg-opt:hover{border-color:var(--purple);transform:translateY(-5px);box-shadow:0 12px 28px rgba(124,58,237,.18);}
-.leg-opt.sel{border-color:var(--pink);background:rgba(244,63,142,.05);box-shadow:0 8px 28px rgba(244,63,142,.22);}
-.leg-sym{font-size:3rem;display:block;margin-bottom:10px;}
-.leg-val{font-size:1rem;font-weight:800;color:var(--text);}
-.leg-val span{color:var(--purple);font-size:1.25rem;}
-.leg-note{font-size:.82rem;color:var(--text2);font-weight:600;margin-top:4px;}
+.leg-opt::before{
+  content:'';position:absolute;inset:0;border-radius:20px;
+  background:rgba(255,255,255,.08);transition:opacity .2s;opacity:0;
+}
+.leg-opt:hover{transform:translateY(-6px) scale(1.03);box-shadow:0 14px 36px rgba(0,0,0,.28);}
+.leg-opt:hover::before{opacity:1;}
+.leg-opt.sel{border-color:#fff;box-shadow:0 0 0 4px rgba(255,255,255,.35),0 12px 36px rgba(0,0,0,.28);}
+
+/* per-option colors */
+.leg-opt-1{background:linear-gradient(145deg,#FFD6E7,#FFAFD1);}
+.leg-opt-2{background:linear-gradient(145deg,#E0D4FF,#C4B5FD);}
+.leg-opt-3{background:linear-gradient(145deg,#C7F9E0,#A7F3D0);}
+.leg-opt-4{background:linear-gradient(145deg,#BFE9FF,#93DCFF);}
+
+.leg-sym{font-size:4rem;display:block;margin-bottom:12px;filter:drop-shadow(0 4px 8px rgba(0,0,0,.15));}
+
+.leg-val{font-size:1.05rem;font-weight:800;color:#1E293B;}
+.leg-val span{font-size:1.6rem;font-weight:900;color:#BE185D;}
+
+.leg-note{font-size:.85rem;color:#475569;font-weight:700;margin-top:5px;}
+
+/* glowing button for legend screen */
+#screen-legend .btn-pink{
+  background:linear-gradient(135deg,#F43F8E,#7C3AED);
+  box-shadow:0 0 28px rgba(244,63,142,.6),0 6px 20px rgba(0,0,0,.4);
+  animation:btng 2s ease infinite alternate;
+  position:relative;z-index:2;font-size:1.1rem;padding:15px 44px;
+}
+#screen-legend .btn-pink:disabled{
+  background:rgba(255,255,255,.2);box-shadow:none;animation:none;
+  color:rgba(255,255,255,.4);cursor:default;
+}
 
 /* ════════════════ SCREEN 3 — PICTOGRAM ════════════════ */
 #screen-picto{padding-top:86px;}
@@ -802,34 +850,56 @@ input[type="number"].qi::-webkit-outer-spin-button{-webkit-appearance:none;}
 
 <!-- ══════════════ SCREEN 2 — LEGEND ══════════════ -->
 <div class="screen" id="screen-legend">
+
+  <!-- Studio decorations -->
+  <div class="sl sl1"><span class="sl-head">💡</span><div class="sl-cone"></div></div>
+  <div class="sl sl2"><span class="sl-head">💡</span><div class="sl-cone"></div></div>
+  <div class="sl sl3"><span class="sl-head">💡</span><div class="sl-cone"></div></div>
+  <div class="nsign nsign-onair">ON AIR</div>
+  <div class="nsign nsign-live">🎙️ LIVE</div>
+  <span class="fnote fn1">♪</span>
+  <span class="fnote fn3">🎵</span>
+  <span class="fnote fn4">🎶</span>
+  <span class="fnote fn6">♫</span>
+  <div class="eq-bars">
+    <div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div>
+    <div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div>
+    <div class="eq-bar"></div>
+  </div>
+  <div class="eq-bars eq-bars-l">
+    <div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div>
+    <div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div>
+    <div class="eq-bar"></div>
+  </div>
+
   <div class="steps">
     <div class="step done">✓</div><div class="step cur">2</div>
     <div class="step">3</div><div class="step">4</div><div class="step">5</div>
   </div>
   <div class="pg-title">🎧 בחר מקרא לפיקטוגרמה</div>
-  <div class="pg-sub">כמה תלמידים תייצג כל אוזנייה?</div>
+  <div class="pg-sub">כמה תלמידים מייצג כל אוזנייה?</div>
 
   <div class="leg-hint">
     💡 בחר מספר שמחלק את 24 ,20 ,20 ,16 בצורה נוחה — ללא שארית גדולה
   </div>
 
   <div class="leg-grid">
-    <div class="leg-opt" onclick="pickLeg(2,this)">
+    <div class="leg-opt leg-opt-1" onclick="pickLeg(2,this)">
       <span class="leg-sym">🎧</span>
       <div class="leg-val">= <span>2</span> תלמידים</div>
       <div class="leg-note">סה״כ 40 אוזניות</div>
     </div>
-    <div class="leg-opt" onclick="pickLeg(4,this)">
+    <div class="leg-opt leg-opt-2" onclick="pickLeg(4,this)">
       <span class="leg-sym">🎧</span>
       <div class="leg-val">= <span>4</span> תלמידים</div>
       <div class="leg-note">סה״כ 20 אוזניות</div>
     </div>
-    <div class="leg-opt" onclick="pickLeg(8,this)">
+    <div class="leg-opt leg-opt-3" onclick="pickLeg(8,this)">
       <span class="leg-sym">🎧</span>
       <div class="leg-val">= <span>8</span> תלמידים</div>
       <div class="leg-note">סה״כ 10 אוזניות</div>
     </div>
-    <div class="leg-opt" onclick="pickLeg(10,this)">
+    <div class="leg-opt leg-opt-4" onclick="pickLeg(10,this)">
       <span class="leg-sym">🎧</span>
       <div class="leg-val">= <span>10</span> תלמידים</div>
       <div class="leg-note">סה״כ 8 אוזניות</div>
