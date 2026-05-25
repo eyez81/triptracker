@@ -1,0 +1,1603 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🎧 מצעד השכבה - משחק פיקטוגרמה</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Heebo:wght@400;600;700;800;900&display=swap');
+
+  :root {
+    --hiphop: #FF6B6B;
+    --pop: #FFD93D;
+    --rock: #6BCB77;
+    --med: #4D96FF;
+    --bg: #0a0a1a;
+    --panel: #141428;
+    --panel2: #1e1e38;
+    --gold: #FFD700;
+    --neon-pink: #FF2D78;
+    --neon-blue: #00F5FF;
+    --neon-green: #39FF14;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Heebo', sans-serif;
+    background: var(--bg);
+    color: #fff;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Animated background */
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background:
+      radial-gradient(ellipse at 20% 50%, rgba(255,45,120,0.08) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 20%, rgba(0,245,255,0.08) 0%, transparent 50%),
+      radial-gradient(ellipse at 50% 80%, rgba(57,255,20,0.05) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .screen {
+    display: none;
+    position: relative;
+    z-index: 1;
+    min-height: 100vh;
+    padding: 20px;
+  }
+  .screen.active { display: flex; flex-direction: column; align-items: center; }
+
+  /* ===== HUD ===== */
+  .hud {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    background: rgba(10,10,26,0.95);
+    border-bottom: 2px solid var(--neon-pink);
+    padding: 8px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    backdrop-filter: blur(10px);
+  }
+
+  .hud-logo {
+    font-size: 1.1rem;
+    font-weight: 900;
+    background: linear-gradient(90deg, var(--neon-pink), var(--neon-blue));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .hud-stats {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+  }
+
+  .hud-stat {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--panel2);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+
+  .hud-stat .value {
+    color: var(--gold);
+    font-size: 1rem;
+  }
+
+  /* Listener meter */
+  .listener-bar-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .listener-bar {
+    width: 100px;
+    height: 10px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 5px;
+    overflow: hidden;
+    border: 1px solid rgba(0,245,255,0.3);
+  }
+
+  .listener-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--neon-blue), var(--neon-green));
+    border-radius: 5px;
+    transition: width 0.5s ease;
+    width: 0%;
+    box-shadow: 0 0 8px var(--neon-blue);
+  }
+
+  /* ===== INTRO SCREEN ===== */
+  #screen-intro {
+    justify-content: center;
+    padding-top: 80px;
+    text-align: center;
+  }
+
+  .radio-station {
+    font-size: 0.9rem;
+    letter-spacing: 4px;
+    color: var(--neon-pink);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+
+  .intro-title {
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    font-weight: 900;
+    background: linear-gradient(135deg, var(--neon-pink), var(--neon-blue), var(--gold));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 20px;
+    line-height: 1.2;
+  }
+
+  .intro-card {
+    background: var(--panel);
+    border: 2px solid var(--neon-pink);
+    border-radius: 24px;
+    padding: 30px 40px;
+    max-width: 600px;
+    margin: 0 auto 30px;
+    box-shadow: 0 0 40px rgba(255,45,120,0.2), inset 0 0 40px rgba(0,0,0,0.3);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .intro-card::before {
+    content: '';
+    position: absolute;
+    top: -50%; left: -50%;
+    width: 200%; height: 200%;
+    background: conic-gradient(transparent 0deg, rgba(255,45,120,0.05) 60deg, transparent 120deg);
+    animation: rotate 8s linear infinite;
+  }
+
+  @keyframes rotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+
+  .intro-card p {
+    font-size: 1.15rem;
+    line-height: 1.8;
+    color: #ddd;
+    position: relative;
+    z-index: 1;
+  }
+
+  .intro-card .highlight {
+    color: var(--neon-blue);
+    font-weight: 700;
+  }
+
+  .big-emoji {
+    font-size: 4rem;
+    margin-bottom: 15px;
+    display: block;
+    animation: bounce 1s ease infinite alternate;
+  }
+
+  @keyframes bounce {
+    from { transform: translateY(0); }
+    to { transform: translateY(-10px); }
+  }
+
+  .btn {
+    background: linear-gradient(135deg, var(--neon-pink), #c0006b);
+    color: #fff;
+    border: none;
+    padding: 14px 40px;
+    font-size: 1.1rem;
+    font-weight: 800;
+    border-radius: 50px;
+    cursor: pointer;
+    font-family: 'Heebo', sans-serif;
+    box-shadow: 0 0 20px rgba(255,45,120,0.5);
+    transition: all 0.2s;
+    letter-spacing: 1px;
+  }
+
+  .btn:hover {
+    transform: translateY(-3px) scale(1.03);
+    box-shadow: 0 0 30px rgba(255,45,120,0.8);
+  }
+
+  .btn:active { transform: scale(0.97); }
+
+  .btn-blue {
+    background: linear-gradient(135deg, var(--neon-blue), #0070a0);
+    box-shadow: 0 0 20px rgba(0,245,255,0.4);
+  }
+
+  .btn-blue:hover { box-shadow: 0 0 30px rgba(0,245,255,0.7); }
+
+  .btn-green {
+    background: linear-gradient(135deg, var(--neon-green), #1a8a0a);
+    color: #000;
+    box-shadow: 0 0 20px rgba(57,255,20,0.4);
+  }
+
+  .btn-green:hover { box-shadow: 0 0 30px rgba(57,255,20,0.7); }
+
+  /* ===== DATA TABLE SCREEN ===== */
+  #screen-table {
+    padding-top: 90px;
+  }
+
+  .screen-title {
+    font-size: 1.8rem;
+    font-weight: 900;
+    text-align: center;
+    margin-bottom: 6px;
+    background: linear-gradient(90deg, var(--neon-blue), var(--neon-pink));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .screen-sub {
+    text-align: center;
+    color: #888;
+    font-size: 0.95rem;
+    margin-bottom: 25px;
+  }
+
+  .data-table-wrap {
+    background: var(--panel);
+    border-radius: 20px;
+    padding: 24px;
+    border: 1px solid rgba(255,255,255,0.1);
+    box-shadow: 0 0 30px rgba(0,0,0,0.5);
+    max-width: 600px;
+    width: 100%;
+    margin-bottom: 24px;
+  }
+
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 1rem;
+  }
+
+  .data-table th {
+    padding: 12px 16px;
+    text-align: center;
+    font-size: 0.85rem;
+    letter-spacing: 2px;
+    color: var(--neon-blue);
+    border-bottom: 2px solid var(--neon-blue);
+    font-weight: 800;
+  }
+
+  .data-table td {
+    padding: 14px 16px;
+    text-align: center;
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+    font-weight: 600;
+    font-size: 1.05rem;
+  }
+
+  .data-table tr:last-child td { border-bottom: none; }
+
+  .genre-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 14px;
+    border-radius: 30px;
+    font-weight: 700;
+    font-size: 0.95rem;
+  }
+
+  .badge-hiphop { background: rgba(255,107,107,0.2); color: var(--hiphop); border: 1px solid var(--hiphop); }
+  .badge-pop { background: rgba(255,217,61,0.2); color: var(--pop); border: 1px solid var(--pop); }
+  .badge-rock { background: rgba(107,203,119,0.2); color: var(--rock); border: 1px solid var(--rock); }
+  .badge-med { background: rgba(77,150,255,0.2); color: var(--med); border: 1px solid var(--med); }
+
+  .freq-num {
+    font-size: 1.4rem;
+    font-weight: 900;
+    color: var(--gold);
+  }
+
+  .total-row td {
+    background: rgba(255,215,0,0.08);
+    font-weight: 800;
+    font-size: 1.1rem;
+    color: var(--gold);
+    border-top: 2px solid rgba(255,215,0,0.3);
+  }
+
+  /* ===== LEGEND SCREEN ===== */
+  #screen-legend {
+    padding-top: 90px;
+  }
+
+  .legend-options {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 15px;
+    max-width: 650px;
+    width: 100%;
+    margin: 20px 0;
+  }
+
+  .legend-option {
+    background: var(--panel);
+    border: 2px solid rgba(255,255,255,0.15);
+    border-radius: 16px;
+    padding: 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.25s;
+    user-select: none;
+  }
+
+  .legend-option:hover {
+    border-color: var(--neon-blue);
+    transform: translateY(-4px);
+    box-shadow: 0 10px 25px rgba(0,245,255,0.2);
+  }
+
+  .legend-option.selected {
+    border-color: var(--neon-pink);
+    background: rgba(255,45,120,0.12);
+    box-shadow: 0 0 20px rgba(255,45,120,0.3);
+  }
+
+  .legend-option .symbol { font-size: 2.5rem; display: block; margin-bottom: 8px; }
+  .legend-option .value { font-size: 1rem; font-weight: 700; color: #ccc; }
+  .legend-option .value span { color: var(--gold); font-size: 1.2rem; }
+
+  .legend-hint {
+    background: rgba(0,245,255,0.08);
+    border: 1px solid rgba(0,245,255,0.3);
+    border-radius: 12px;
+    padding: 12px 20px;
+    font-size: 0.9rem;
+    color: var(--neon-blue);
+    max-width: 550px;
+    text-align: center;
+    margin-bottom: 20px;
+  }
+
+  /* ===== PICTOGRAM SCREEN ===== */
+  #screen-picto {
+    padding-top: 90px;
+  }
+
+  .picto-instructions {
+    background: var(--panel2);
+    border-radius: 14px;
+    padding: 14px 20px;
+    margin-bottom: 20px;
+    max-width: 750px;
+    width: 100%;
+    text-align: center;
+    border: 1px solid rgba(255,255,255,0.08);
+    font-size: 0.95rem;
+    color: #bbb;
+  }
+
+  .picto-board {
+    background: var(--panel);
+    border-radius: 20px;
+    padding: 24px;
+    max-width: 800px;
+    width: 100%;
+    border: 1px solid rgba(255,255,255,0.1);
+    box-shadow: 0 0 40px rgba(0,0,0,0.5);
+  }
+
+  .picto-row {
+    display: grid;
+    grid-template-columns: 140px 1fr;
+    gap: 16px;
+    align-items: start;
+    margin-bottom: 18px;
+    padding-bottom: 18px;
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+  }
+
+  .picto-row:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+
+  .picto-label {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .picto-label .genre-name { font-weight: 800; font-size: 1rem; }
+  .picto-label .genre-count { font-size: 0.8rem; color: #888; }
+
+  .picto-drop-zone {
+    min-height: 60px;
+    background: rgba(255,255,255,0.03);
+    border: 2px dashed rgba(255,255,255,0.15);
+    border-radius: 12px;
+    padding: 10px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    align-items: center;
+    transition: all 0.2s;
+    cursor: pointer;
+    position: relative;
+  }
+
+  .picto-drop-zone:hover { border-color: rgba(255,255,255,0.3); background: rgba(255,255,255,0.05); }
+  .picto-drop-zone.drag-over { border-color: var(--neon-blue); background: rgba(0,245,255,0.08); }
+  .picto-drop-zone.correct { border-color: var(--neon-green); background: rgba(57,255,20,0.05); }
+  .picto-drop-zone.wrong { border-color: var(--hiphop); background: rgba(255,107,107,0.05); }
+
+  .picto-drop-zone .placeholder-text {
+    color: rgba(255,255,255,0.2);
+    font-size: 0.85rem;
+    pointer-events: none;
+    position: absolute;
+    top: 50%; left: 50%; transform: translate(-50%, -50%);
+    width: 100%; text-align: center;
+  }
+
+  .symbol-in-zone {
+    font-size: 1.6rem;
+    cursor: pointer;
+    transition: transform 0.1s;
+    user-select: none;
+    line-height: 1;
+  }
+
+  .symbol-in-zone:hover { transform: scale(1.2); }
+
+  .picto-controls {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .symbol-btn {
+    background: var(--panel2);
+    border: 2px solid rgba(255,255,255,0.2);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-family: 'Heebo', sans-serif;
+    font-weight: 700;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .symbol-btn:hover { border-color: var(--neon-pink); background: rgba(255,45,120,0.1); }
+
+  .symbol-btn.half-btn { opacity: 0.8; }
+
+  .count-display {
+    background: rgba(255,215,0,0.1);
+    border: 1px solid rgba(255,215,0,0.3);
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-size: 0.85rem;
+    color: var(--gold);
+    font-weight: 700;
+    min-width: 100px;
+    text-align: center;
+  }
+
+  .check-btn {
+    margin-top: 6px;
+    padding: 6px 14px;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    border: 1px solid rgba(255,255,255,0.2);
+    background: rgba(255,255,255,0.05);
+    color: white;
+    cursor: pointer;
+    font-family: 'Heebo', sans-serif;
+    font-weight: 600;
+    transition: all 0.2s;
+  }
+
+  .check-btn:hover { background: rgba(255,255,255,0.1); }
+
+  .row-feedback {
+    font-size: 0.85rem;
+    font-weight: 700;
+    margin-top: 4px;
+    min-height: 20px;
+    transition: all 0.3s;
+  }
+
+  .feedback-correct { color: var(--neon-green); }
+  .feedback-wrong { color: var(--hiphop); }
+
+  /* ===== ANALYSIS SCREEN ===== */
+  #screen-analysis {
+    padding-top: 90px;
+  }
+
+  .questions-grid {
+    display: grid;
+    gap: 18px;
+    max-width: 700px;
+    width: 100%;
+  }
+
+  .question-card {
+    background: var(--panel);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 18px;
+    padding: 20px 24px;
+    transition: all 0.3s;
+  }
+
+  .question-card.answered-correct {
+    border-color: var(--neon-green);
+    background: rgba(57,255,20,0.04);
+  }
+
+  .question-card.answered-wrong {
+    border-color: var(--hiphop);
+    background: rgba(255,107,107,0.04);
+  }
+
+  .q-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+
+  .q-num {
+    background: linear-gradient(135deg, var(--neon-pink), #c0006b);
+    color: white;
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800;
+    font-size: 0.85rem;
+    flex-shrink: 0;
+  }
+
+  .q-text {
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.5;
+    color: #ddd;
+  }
+
+  .q-input-wrap {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .q-input {
+    background: var(--panel2);
+    border: 2px solid rgba(255,255,255,0.15);
+    border-radius: 10px;
+    color: white;
+    font-family: 'Heebo', sans-serif;
+    font-size: 1rem;
+    font-weight: 600;
+    padding: 10px 14px;
+    outline: none;
+    transition: border-color 0.2s;
+    min-width: 120px;
+    direction: rtl;
+  }
+
+  .q-input:focus { border-color: var(--neon-blue); }
+  .q-input.correct { border-color: var(--neon-green); background: rgba(57,255,20,0.08); }
+  .q-input.wrong { border-color: var(--hiphop); background: rgba(255,107,107,0.08); }
+
+  .q-submit {
+    background: var(--panel2);
+    border: 2px solid rgba(255,255,255,0.2);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-family: 'Heebo', sans-serif;
+    font-weight: 700;
+    font-size: 0.95rem;
+    transition: all 0.2s;
+  }
+
+  .q-submit:hover { border-color: var(--neon-blue); background: rgba(0,245,255,0.1); }
+  .q-submit:disabled { opacity: 0.5; cursor: default; }
+
+  .q-feedback {
+    margin-top: 10px;
+    padding: 10px 14px;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    display: none;
+    line-height: 1.4;
+  }
+
+  .q-feedback.show { display: block; }
+  .q-feedback.correct { background: rgba(57,255,20,0.1); color: var(--neon-green); border: 1px solid rgba(57,255,20,0.3); }
+  .q-feedback.wrong { background: rgba(255,107,107,0.1); color: var(--hiphop); border: 1px solid rgba(255,107,107,0.3); }
+
+  /* fraction input */
+  .fraction-input {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-direction: row-reverse;
+  }
+
+  .fraction-stack {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+  }
+
+  .fraction-line {
+    width: 50px;
+    height: 2px;
+    background: rgba(255,255,255,0.5);
+  }
+
+  .fraction-num-input {
+    width: 50px;
+    text-align: center;
+  }
+
+  /* ===== MULTIPLE CHOICE SCREEN ===== */
+  #screen-mc {
+    padding-top: 90px;
+  }
+
+  .mc-card {
+    background: var(--panel);
+    border-radius: 20px;
+    padding: 28px;
+    max-width: 650px;
+    width: 100%;
+    border: 1px solid rgba(255,255,255,0.1);
+    box-shadow: 0 0 40px rgba(0,0,0,0.5);
+  }
+
+  .mc-question {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 20px;
+    line-height: 1.6;
+    padding: 14px;
+    background: rgba(255,215,0,0.08);
+    border-radius: 12px;
+    border-right: 4px solid var(--gold);
+  }
+
+  .mc-options {
+    display: grid;
+    gap: 12px;
+  }
+
+  .mc-option {
+    background: var(--panel2);
+    border: 2px solid rgba(255,255,255,0.12);
+    border-radius: 14px;
+    padding: 14px 18px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.95rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-align: right;
+  }
+
+  .mc-option:hover { border-color: var(--neon-blue); background: rgba(0,245,255,0.08); transform: translateX(-4px); }
+
+  .mc-option.selected-correct { border-color: var(--neon-green); background: rgba(57,255,20,0.1); }
+  .mc-option.selected-wrong { border-color: var(--hiphop); background: rgba(255,107,107,0.1); }
+  .mc-option.reveal-correct { border-color: var(--neon-green); background: rgba(57,255,20,0.08); }
+  .mc-option.disabled { cursor: default; pointer-events: none; }
+
+  .mc-letter {
+    background: rgba(255,255,255,0.1);
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800;
+    font-size: 0.9rem;
+    flex-shrink: 0;
+  }
+
+  .mc-feedback {
+    margin-top: 16px;
+    padding: 14px 18px;
+    border-radius: 12px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    display: none;
+    line-height: 1.5;
+  }
+
+  .mc-feedback.show { display: block; }
+  .mc-feedback.correct { background: rgba(57,255,20,0.1); color: var(--neon-green); border: 1px solid rgba(57,255,20,0.3); }
+  .mc-feedback.wrong { background: rgba(255,107,107,0.1); color: var(--hiphop); border: 1px solid rgba(255,107,107,0.3); }
+
+  /* ===== CERTIFICATE SCREEN ===== */
+  #screen-certificate {
+    padding-top: 80px;
+    text-align: center;
+    justify-content: center;
+  }
+
+  .cert-wrap {
+    background: linear-gradient(135deg, #1a1a2e, #0d0d1a);
+    border: 4px solid var(--gold);
+    border-radius: 24px;
+    padding: 40px;
+    max-width: 600px;
+    width: 100%;
+    box-shadow: 0 0 60px rgba(255,215,0,0.3), inset 0 0 40px rgba(255,215,0,0.05);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .cert-wrap::before, .cert-wrap::after {
+    content: '🎵';
+    position: absolute;
+    font-size: 5rem;
+    opacity: 0.05;
+  }
+  .cert-wrap::before { top: -10px; right: -10px; transform: rotate(20deg); }
+  .cert-wrap::after { bottom: -10px; left: -10px; transform: rotate(-20deg); }
+
+  .cert-title {
+    font-size: 1rem;
+    letter-spacing: 4px;
+    color: var(--gold);
+    opacity: 0.8;
+    margin-bottom: 10px;
+  }
+
+  .cert-main-title {
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
+    font-weight: 900;
+    background: linear-gradient(135deg, var(--gold), #fff, var(--gold));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 20px;
+  }
+
+  .cert-emoji { font-size: 5rem; display: block; margin: 15px 0; animation: spin 3s linear infinite; }
+  @keyframes spin {
+    0%, 90%, 100% { transform: rotate(0deg); }
+    95% { transform: rotate(15deg); }
+    97% { transform: rotate(-15deg); }
+  }
+
+  .cert-text {
+    font-size: 1rem;
+    color: #ccc;
+    line-height: 1.7;
+    margin: 15px 0;
+  }
+
+  .cert-score {
+    background: rgba(255,215,0,0.1);
+    border: 2px solid var(--gold);
+    border-radius: 14px;
+    padding: 16px 24px;
+    display: inline-block;
+    margin: 15px 0;
+  }
+
+  .cert-score .score-num {
+    font-size: 3rem;
+    font-weight: 900;
+    color: var(--gold);
+    display: block;
+  }
+
+  .cert-score .score-label {
+    font-size: 0.9rem;
+    color: #aaa;
+  }
+
+  /* ===== CONFETTI ===== */
+  .confetti-piece {
+    position: fixed;
+    width: 10px;
+    height: 10px;
+    opacity: 0;
+    animation: confetti-fall 3s ease-in forwards;
+    border-radius: 2px;
+    z-index: 999;
+  }
+
+  @keyframes confetti-fall {
+    0% { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+  }
+
+  /* ===== Feedback Toast ===== */
+  .toast {
+    position: fixed;
+    top: 80px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-20px);
+    background: var(--panel);
+    border-radius: 12px;
+    padding: 12px 24px;
+    font-weight: 700;
+    font-size: 1rem;
+    z-index: 200;
+    opacity: 0;
+    transition: all 0.3s;
+    pointer-events: none;
+    border: 2px solid var(--neon-green);
+    box-shadow: 0 0 20px rgba(57,255,20,0.3);
+  }
+
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  .toast.error { border-color: var(--hiphop); box-shadow: 0 0 20px rgba(255,107,107,0.3); }
+
+  /* ===== Progress Steps ===== */
+  .progress-steps {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .step {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    border: 2px solid rgba(255,255,255,0.15);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 700;
+    transition: all 0.3s;
+    color: rgba(255,255,255,0.4);
+  }
+
+  .step.current { border-color: var(--neon-pink); color: var(--neon-pink); box-shadow: 0 0 10px rgba(255,45,120,0.4); }
+  .step.done { background: var(--neon-green); border-color: var(--neon-green); color: #000; }
+
+  /* Responsive */
+  @media (max-width: 600px) {
+    .picto-row { grid-template-columns: 110px 1fr; gap: 10px; }
+    .hud-stats { gap: 8px; }
+    .listener-bar { width: 60px; }
+    .hud-stat { padding: 4px 8px; }
+  }
+
+  /* Legend display */
+  .legend-display {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 10px;
+    padding: 8px 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85rem;
+    color: #aaa;
+    margin-bottom: 16px;
+  }
+
+  .legend-display span { color: var(--gold); font-weight: 700; }
+</style>
+</head>
+<body>
+
+<!-- HUD (hidden on intro) -->
+<div class="hud" id="main-hud" style="display:none;">
+  <div class="hud-logo">🎙️ רדיו שכבה ז'</div>
+  <div class="hud-stats">
+    <div class="hud-stat">🏆 <span class="value" id="hud-score">0</span> נקודות</div>
+    <div class="hud-stat listener-bar-wrap">
+      📡 מאזינים
+      <div class="listener-bar"><div class="listener-fill" id="listener-fill"></div></div>
+      <span class="value" id="listener-pct">0%</span>
+    </div>
+  </div>
+</div>
+
+<!-- Toast notification -->
+<div class="toast" id="toast"></div>
+
+<!-- ===== SCREEN 0: INTRO ===== -->
+<div class="screen active" id="screen-intro">
+  <div class="radio-station">📻 רדיו שכבה ז׳ — בשידור חי</div>
+  <div class="intro-title">מצעד השכבה<br>🎧 המשחק הדיגיטלי</div>
+
+  <div class="intro-card">
+    <span class="big-emoji">🎙️</span>
+    <p>
+      <strong style="color:#fff;">שלום עורך המצעד!</strong><br><br>
+      <span class="highlight">80 תלמידים</span> מחכים לראות מה השיר שהכי אהוב בשכבה.<br><br>
+      בוא נעזור למועצה להציג להם את התוצאות בדרך הכי <span class="highlight">מגניבה</span> שיש —<br>
+      בעזרת <strong style="color:#fff;">פיקטוגרמה!</strong>
+    </p>
+  </div>
+
+  <button class="btn" onclick="startGame()">בוא נתחיל! 🚀</button>
+</div>
+
+<!-- ===== SCREEN 1: DATA TABLE ===== -->
+<div class="screen" id="screen-table">
+  <div class="progress-steps" id="steps-table">
+    <div class="step current">1</div>
+    <div class="step">2</div>
+    <div class="step">3</div>
+    <div class="step">4</div>
+    <div class="step">5</div>
+  </div>
+
+  <div class="screen-title">📊 תוצאות הסקר</div>
+  <div class="screen-sub">80 תלמידי השכבה בחרו את הז׳אנר האהוב עליהם</div>
+
+  <div class="data-table-wrap">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>ז׳אנר</th>
+          <th>שכיחות (מספר תלמידים)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="genre-badge badge-hiphop">🎤 היפ-הופ</span></td>
+          <td><span class="freq-num">24</span></td>
+        </tr>
+        <tr>
+          <td><span class="genre-badge badge-pop">🌟 פופ</span></td>
+          <td><span class="freq-num">20</span></td>
+        </tr>
+        <tr>
+          <td><span class="genre-badge badge-rock">🎸 רוק</span></td>
+          <td><span class="freq-num">20</span></td>
+        </tr>
+        <tr>
+          <td><span class="genre-badge badge-med">🌊 ים-תיכוני</span></td>
+          <td><span class="freq-num">16</span></td>
+        </tr>
+        <tr class="total-row">
+          <td><strong>סה״כ</strong></td>
+          <td><strong>80</strong></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <button class="btn btn-blue" onclick="goToLegend()">בחירת מקרא ➡️</button>
+</div>
+
+<!-- ===== SCREEN 2: LEGEND CHOICE ===== -->
+<div class="screen" id="screen-legend">
+  <div class="progress-steps">
+    <div class="step done">✓</div>
+    <div class="step current">2</div>
+    <div class="step">3</div>
+    <div class="step">4</div>
+    <div class="step">5</div>
+  </div>
+
+  <div class="screen-title">🎧 בחר מקרא לפיקטוגרמה</div>
+  <div class="screen-sub">כמה תלמידים מייצגת כל אוזנייה?</div>
+
+  <div class="legend-hint">
+    💡 זכור: בחר מספר שמחלק את כל השכיחויות בצורה נוחה (ללא שארית גדולה)
+  </div>
+
+  <div class="legend-options">
+    <div class="legend-option" onclick="selectLegend(2, this)">
+      <span class="symbol">🎧</span>
+      <div class="value">= <span>2</span> תלמידים</div>
+      <div style="font-size:0.75rem;color:#666;margin-top:4px;">40 אוזניות סה״כ</div>
+    </div>
+    <div class="legend-option" onclick="selectLegend(4, this)">
+      <span class="symbol">🎧</span>
+      <div class="value">= <span>4</span> תלמידים</div>
+      <div style="font-size:0.75rem;color:#666;margin-top:4px;">20 אוזניות סה״כ</div>
+    </div>
+    <div class="legend-option" onclick="selectLegend(8, this)">
+      <span class="symbol">🎧</span>
+      <div class="value">= <span>8</span> תלמידים</div>
+      <div style="font-size:0.75rem;color:#999;margin-top:4px;">10 אוזניות סה״כ</div>
+    </div>
+    <div class="legend-option" onclick="selectLegend(10, this)">
+      <span class="symbol">🎧</span>
+      <div class="value">= <span>10</span> תלמידים</div>
+      <div style="font-size:0.75rem;color:#999;margin-top:4px;">8 אוזניות סה״כ</div>
+    </div>
+  </div>
+
+  <button class="btn btn-blue" id="legend-next-btn" disabled onclick="goToPicto()">בניית הפיקטוגרמה ➡️</button>
+</div>
+
+<!-- ===== SCREEN 3: PICTOGRAM ===== -->
+<div class="screen" id="screen-picto">
+  <div class="progress-steps">
+    <div class="step done">✓</div>
+    <div class="step done">✓</div>
+    <div class="step current">3</div>
+    <div class="step">4</div>
+    <div class="step">5</div>
+  </div>
+
+  <div class="screen-title">🎨 בנה את הפיקטוגרמה</div>
+  <div class="screen-sub">לחץ על + כדי להוסיף סמל, או על האוזנייה כדי להסיר</div>
+
+  <div class="legend-display" id="legend-display-text">
+    🎧 = <span id="legend-val-display">?</span> תלמידים &nbsp;|&nbsp; 🎧½ = <span id="legend-half-display">?</span> תלמידים
+  </div>
+
+  <div class="picto-board">
+    <!-- rows built by JS -->
+    <div id="picto-rows"></div>
+  </div>
+
+  <div style="text-align:center;margin-top:20px;">
+    <button class="btn" onclick="checkAllRows()">בדוק את הפיקטוגרמה ✅</button>
+  </div>
+</div>
+
+<!-- ===== SCREEN 4: ANALYSIS ===== -->
+<div class="screen" id="screen-analysis">
+  <div class="progress-steps">
+    <div class="step done">✓</div>
+    <div class="step done">✓</div>
+    <div class="step done">✓</div>
+    <div class="step current">4</div>
+    <div class="step">5</div>
+  </div>
+
+  <div class="screen-title">🔍 ניתוח נתונים</div>
+  <div class="screen-sub">ענה על השאלות הבאות על פי הפיקטוגרמה שבנית</div>
+
+  <div class="questions-grid">
+
+    <!-- Q1 -->
+    <div class="question-card" id="qcard-1">
+      <div class="q-header">
+        <div class="q-num">א</div>
+        <div class="q-text">מהו הז׳אנר השכיח ביותר בסקר?</div>
+      </div>
+      <div class="q-input-wrap">
+        <select class="q-input" id="q1-input" style="min-width:160px;background:#1e1e38;cursor:pointer;">
+          <option value="">-- בחר --</option>
+          <option value="hiphop">היפ-הופ</option>
+          <option value="pop">פופ</option>
+          <option value="rock">רוק</option>
+          <option value="med">ים-תיכוני</option>
+        </select>
+        <button class="q-submit" onclick="checkQ1()">בדוק</button>
+      </div>
+      <div class="q-feedback" id="q1-feedback"></div>
+    </div>
+
+    <!-- Q2 -->
+    <div class="question-card" id="qcard-2">
+      <div class="q-header">
+        <div class="q-num">ב</div>
+        <div class="q-text">חשב את השכיחות היחסית של ״ים-תיכוני״ (הצג כשבר פשוט מצומצם):</div>
+      </div>
+      <div class="q-input-wrap">
+        <div class="fraction-input">
+          <div class="fraction-stack">
+            <input type="number" class="q-input fraction-num-input" id="q2-num" placeholder="מונה" min="0" max="80">
+            <div class="fraction-line"></div>
+            <input type="number" class="q-input fraction-num-input" id="q2-den" placeholder="מכנה" min="1" max="80">
+          </div>
+          <span style="font-size:1.2rem;color:#888;">שכיחות יחסית =</span>
+        </div>
+        <button class="q-submit" onclick="checkQ2()">בדוק</button>
+      </div>
+      <div class="q-feedback" id="q2-feedback"></div>
+    </div>
+
+    <!-- Q3 -->
+    <div class="question-card" id="qcard-3">
+      <div class="q-header">
+        <div class="q-num">ג</div>
+        <div class="q-text">מהי השכיחות המצטברת של ״פופ״ ו״רוק״ יחד?</div>
+      </div>
+      <div class="q-input-wrap">
+        <input type="number" class="q-input" id="q3-input" placeholder="מספר תלמידים" min="0" max="80" style="width:160px;">
+        <span style="color:#888;">תלמידים</span>
+        <button class="q-submit" onclick="checkQ3()">בדוק</button>
+      </div>
+      <div class="q-feedback" id="q3-feedback"></div>
+    </div>
+
+    <!-- Q4 -->
+    <div class="question-card" id="qcard-4">
+      <div class="q-header">
+        <div class="q-num">ד</div>
+        <div class="q-text">מהו אחוז התלמידים שאוהבים ״פופ״?</div>
+      </div>
+      <div class="q-input-wrap">
+        <input type="number" class="q-input" id="q4-input" placeholder="%" min="0" max="100" style="width:100px;">
+        <span style="color:#888;">%</span>
+        <button class="q-submit" onclick="checkQ4()">בדוק</button>
+      </div>
+      <div class="q-feedback" id="q4-feedback"></div>
+    </div>
+
+  </div>
+
+  <div style="margin-top:24px;">
+    <button class="btn btn-blue" id="analysis-next-btn" style="display:none;" onclick="goToMC()">שאלה אמריקאית ➡️</button>
+  </div>
+</div>
+
+<!-- ===== SCREEN 5: MULTIPLE CHOICE ===== -->
+<div class="screen" id="screen-mc">
+  <div class="progress-steps">
+    <div class="step done">✓</div>
+    <div class="step done">✓</div>
+    <div class="step done">✓</div>
+    <div class="step done">✓</div>
+    <div class="step current">5</div>
+  </div>
+
+  <div class="screen-title">🧠 שאלת חשיבה</div>
+  <div class="screen-sub">קראי בעיון ובחר את התשובה הנכונה</div>
+
+  <div class="mc-card">
+    <div class="mc-question">
+      אם נשנה את המקרא של הפיקטוגרמה (כמה תלמידים מייצגת כל אוזנייה) — האם הז׳אנר השכיח ביותר ישתנה?
+    </div>
+
+    <div class="mc-options">
+      <div class="mc-option" onclick="selectMC(this, false)" id="mc-a">
+        <div class="mc-letter">א</div>
+        <div>כן, הז׳אנר השכיח ישתנה לפי המקרא</div>
+      </div>
+      <div class="mc-option" onclick="selectMC(this, true)" id="mc-b">
+        <div class="mc-letter">ב</div>
+        <div>לא — כי כמות השירים בפועל נשארת זהה. המקרא רק משנה את הייצוג הגרפי</div>
+      </div>
+      <div class="mc-option" onclick="selectMC(this, false)" id="mc-c">
+        <div class="mc-letter">ג</div>
+        <div>אי אפשר לדעת, תלוי בנתונים</div>
+      </div>
+      <div class="mc-option" onclick="selectMC(this, false)" id="mc-d">
+        <div class="mc-letter">ד</div>
+        <div>תלוי בז׳אנר הספציפי שנבחר</div>
+      </div>
+    </div>
+
+    <div class="mc-feedback" id="mc-feedback"></div>
+  </div>
+
+  <div style="margin-top:24px;">
+    <button class="btn btn-green" id="mc-next-btn" style="display:none;" onclick="goToCertificate()">🏆 לתעודה!</button>
+  </div>
+</div>
+
+<!-- ===== SCREEN 6: CERTIFICATE ===== -->
+<div class="screen" id="screen-certificate">
+  <div class="cert-wrap">
+    <div class="cert-title">תחנת רדיו שכבה ז׳</div>
+    <div class="cert-main-title" id="cert-title-text">תעודת הצטיינות</div>
+    <span class="cert-emoji" id="cert-emoji">🎧</span>
+    <p class="cert-text" id="cert-text">
+      מוענקת בזאת לתלמיד/ה המצטיין/ת<br>
+      על השלמת <strong>מצעד השכבה</strong><br>
+      בהצלחה מרשימה!
+    </p>
+    <div class="cert-score">
+      <span class="score-num" id="cert-score-num">0</span>
+      <span class="score-label">נקודות מתוך 10</span>
+    </div>
+    <p class="cert-text" id="cert-rank-text" style="margin-top:10px;color:var(--gold);font-weight:700;font-size:1.1rem;"></p>
+  </div>
+
+  <button class="btn" style="margin-top:24px;" onclick="restartGame()">🔄 שחק שוב</button>
+</div>
+
+<script>
+// ===== GAME STATE =====
+const state = {
+  score: 0,
+  listenerPct: 0,
+  legendValue: null,
+  rowChecked: [false, false, false, false],
+  rowCorrect: [false, false, false, false],
+  analysisAnswered: [false, false, false, false],
+  analysisCorrect: [false, false, false, false],
+  mcAnswered: false,
+  mcCorrect: false
+};
+
+const genres = [
+  { key: 'hiphop', name: '🎤 היפ-הופ', count: 24, color: '#FF6B6B' },
+  { key: 'pop',    name: '🌟 פופ',     count: 20, color: '#FFD93D' },
+  { key: 'rock',   name: '🎸 רוק',     count: 20, color: '#6BCB77' },
+  { key: 'med',    name: '🌊 ים-תיכוני', count: 16, color: '#4D96FF' }
+];
+
+// ===== UTILITY =====
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+function showToast(msg, isError = false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.toggle('error', isError);
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+function addScore(pts) {
+  state.score += pts;
+  state.listenerPct = Math.min(100, state.listenerPct + pts * 10);
+  document.getElementById('hud-score').textContent = state.score;
+  document.getElementById('listener-fill').style.width = state.listenerPct + '%';
+  document.getElementById('listener-pct').textContent = state.listenerPct + '%';
+}
+
+function gcd(a, b) { return b === 0 ? a : gcd(b, a % b); }
+
+// ===== NAVIGATION =====
+function startGame() {
+  document.getElementById('main-hud').style.display = 'flex';
+  showScreen('screen-table');
+}
+
+function goToLegend() {
+  showScreen('screen-legend');
+}
+
+function selectLegend(val, el) {
+  document.querySelectorAll('.legend-option').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+  state.legendValue = val;
+  document.getElementById('legend-next-btn').disabled = false;
+}
+
+function goToPicto() {
+  if (!state.legendValue) return;
+  buildPictoBoard();
+  document.getElementById('legend-val-display').textContent = state.legendValue;
+  document.getElementById('legend-half-display').textContent = state.legendValue / 2;
+  showScreen('screen-picto');
+}
+
+function goToMC() {
+  showScreen('screen-mc');
+}
+
+function goToCertificate() {
+  showCertificate();
+  showScreen('screen-certificate');
+  launchConfetti();
+}
+
+function restartGame() {
+  state.score = 0;
+  state.listenerPct = 0;
+  state.legendValue = null;
+  state.rowChecked = [false, false, false, false];
+  state.rowCorrect = [false, false, false, false];
+  state.analysisAnswered = [false, false, false, false];
+  state.analysisCorrect = [false, false, false, false];
+  state.mcAnswered = false;
+  state.mcCorrect = false;
+  document.getElementById('hud-score').textContent = 0;
+  document.getElementById('listener-fill').style.width = '0%';
+  document.getElementById('listener-pct').textContent = '0%';
+  document.querySelectorAll('.legend-option').forEach(o => o.classList.remove('selected'));
+  document.getElementById('legend-next-btn').disabled = true;
+  document.getElementById('main-hud').style.display = 'none';
+  showScreen('screen-intro');
+}
+
+// ===== PICTOGRAM =====
+function buildPictoBoard() {
+  const container = document.getElementById('picto-rows');
+  container.innerHTML = '';
+
+  genres.forEach((g, idx) => {
+    const correctFull = Math.floor(g.count / state.legendValue);
+    const correctHalf = (g.count % state.legendValue) >= (state.legendValue / 2) ? 1 : 0;
+
+    const row = document.createElement('div');
+    row.className = 'picto-row';
+    row.dataset.idx = idx;
+
+    row.innerHTML = `
+      <div class="picto-label">
+        <div class="genre-name" style="color:${g.color}">${g.name}</div>
+        <div class="genre-count">${g.count} תלמידים</div>
+        <div class="picto-controls" style="margin-top:8px;">
+          <button class="symbol-btn" onclick="addSymbol(${idx}, false)" title="הוסף אוזנייה">➕🎧</button>
+          ${state.legendValue > 1 ? `<button class="symbol-btn half-btn" onclick="addSymbol(${idx}, true)" title="הוסף חצי אוזנייה">➕🎧½</button>` : ''}
+        </div>
+        <div class="count-display" id="count-${idx}">0 / ${correctFull + (correctHalf ? 0.5 : 0)} 🎧</div>
+        <button class="check-btn" onclick="checkRow(${idx})">בדוק שורה ✓</button>
+        <div class="row-feedback" id="row-fb-${idx}"></div>
+      </div>
+      <div class="picto-drop-zone" id="zone-${idx}">
+        <span class="placeholder-text">לחץ ➕ להוספת סמלים</span>
+      </div>
+    `;
+    container.appendChild(row);
+  });
+}
+
+function addSymbol(idx, isHalf) {
+  const zone = document.getElementById(`zone-${idx}`);
+  // Remove placeholder
+  const ph = zone.querySelector('.placeholder-text');
+  if (ph) ph.remove();
+
+  const sym = document.createElement('span');
+  sym.className = 'symbol-in-zone';
+  sym.title = 'לחץ להסרה';
+  sym.dataset.half = isHalf ? '1' : '0';
+  sym.textContent = isHalf ? '🎧½' : '🎧';
+  sym.onclick = () => { sym.remove(); updateCount(idx); };
+  zone.appendChild(sym);
+  updateCount(idx);
+}
+
+function updateCount(idx) {
+  const zone = document.getElementById(`zone-${idx}`);
+  const syms = zone.querySelectorAll('.symbol-in-zone');
+  let total = 0;
+  syms.forEach(s => { total += s.dataset.half === '1' ? 0.5 : 1; });
+
+  const g = genres[idx];
+  const correctFull = Math.floor(g.count / state.legendValue);
+  const correctHalf = (g.count % state.legendValue) >= (state.legendValue / 2) ? 1 : 0;
+  const correctTotal = correctFull + correctHalf * 0.5;
+
+  document.getElementById(`count-${idx}`).textContent = `${total} / ${correctTotal} 🎧`;
+}
+
+function checkRow(idx) {
+  if (state.rowChecked[idx] && state.rowCorrect[idx]) return;
+
+  const zone = document.getElementById(`zone-${idx}`);
+  const syms = zone.querySelectorAll('.symbol-in-zone');
+  let fullCount = 0, halfCount = 0;
+  syms.forEach(s => {
+    if (s.dataset.half === '1') halfCount++;
+    else fullCount++;
+  });
+
+  const g = genres[idx];
+  const correctFull = Math.floor(g.count / state.legendValue);
+  const remStudents = g.count - correctFull * state.legendValue;
+  const correctHalf = remStudents >= state.legendValue / 2 ? 1 : 0;
+
+  const isCorrect = fullCount === correctFull && halfCount === correctHalf;
+  const fb = document.getElementById(`row-fb-${idx}`);
+
+  if (isCorrect) {
+    zone.classList.add('correct'); zone.classList.remove('wrong');
+    fb.className = 'row-feedback feedback-correct';
+    fb.textContent = '✅ מעולה! נכון!';
+    if (!state.rowCorrect[idx]) {
+      state.rowCorrect[idx] = true;
+      addScore(1);
+      showToast(`+1 נקודה! שורת ${g.name} נכונה! 🎉`);
+    }
+  } else {
+    zone.classList.add('wrong'); zone.classList.remove('correct');
+    fb.className = 'row-feedback feedback-wrong';
+    const expected = correctFull + (correctHalf ? ' + חצי' : '');
+    fb.textContent = `❌ לא מדויק. נסה שוב. (רמז: ${expected} אוזניות)`;
+  }
+  state.rowChecked[idx] = true;
+}
+
+function checkAllRows() {
+  genres.forEach((_, idx) => checkRow(idx));
+  const allCorrect = state.rowCorrect.every(Boolean);
+  if (allCorrect) {
+    setTimeout(() => {
+      showToast('🎉 כל השורות נכונות! עוברים לניתוח!');
+      setTimeout(() => showScreen('screen-analysis'), 1000);
+    }, 500);
+  } else {
+    showToast('חלק מהשורות עדיין לא נכונות. בדוק שוב!', true);
+  }
+}
+
+// ===== ANALYSIS QUESTIONS =====
+function checkQ1() {
+  if (state.analysisAnswered[0]) return;
+  const val = document.getElementById('q1-input').value;
+  if (!val) { showToast('בחר תשובה קודם', true); return; }
+
+  const isCorrect = val === 'hiphop';
+  markAnalysis(0, isCorrect,
+    isCorrect ? '✅ נכון! היפ-הופ הוא הז׳אנר השכיח ביותר עם 24 תלמידים.' :
+    '❌ לא נכון. השוו את השכיחויות: היפ-הופ=24, פופ=20, רוק=20, ים-תיכוני=16. מי גדול?');
+}
+
+function checkQ2() {
+  if (state.analysisAnswered[1]) return;
+  const num = parseInt(document.getElementById('q2-num').value);
+  const den = parseInt(document.getElementById('q2-den').value);
+
+  if (isNaN(num) || isNaN(den) || den === 0) {
+    showToast('הכנס מונה ומכנה תקינים', true); return;
+  }
+
+  // Correct: 16/80 = 1/5
+  const g = gcd(Math.abs(num), Math.abs(den));
+  const reducedNum = num / g;
+  const reducedDen = den / g;
+  // Accept 16/80 or 1/5 or 2/10 etc. — check if equivalent to 1/5
+  const isCorrect = (num / den) === (16 / 80) && reducedNum === 1 && reducedDen === 5;
+
+  markAnalysis(1, isCorrect,
+    isCorrect ? '✅ נכון! 16/80 = 1/5. כל 5 תלמיד אחד אוהב ים-תיכוני.' :
+    `❌ לא נכון. ים-תיכוני: 16 תלמידים מתוך 80. השבר הוא 16/80. צמצם: גרסם ב-16 → 1/5.`);
+}
+
+function checkQ3() {
+  if (state.analysisAnswered[2]) return;
+  const val = parseInt(document.getElementById('q3-input').value);
+  const isCorrect = val === 40;
+  markAnalysis(2, isCorrect,
+    isCorrect ? '✅ נכון! פופ (20) + רוק (20) = 40 תלמידים יחד.' :
+    '❌ לא נכון. שכיחות מצטברת: פופ=20, רוק=20. צרף אותם: 20+20=?');
+}
+
+function checkQ4() {
+  if (state.analysisAnswered[3]) return;
+  const val = parseFloat(document.getElementById('q4-input').value);
+  const isCorrect = Math.abs(val - 25) < 0.5;
+  markAnalysis(3, isCorrect,
+    isCorrect ? '✅ נכון! 20 מתוך 80 = 20÷80×100 = 25%.' :
+    '❌ לא נכון. פופ = 20 תלמידים, סה״כ = 80. חשב: (20÷80)×100 = ?%');
+}
+
+function markAnalysis(idx, isCorrect, message) {
+  state.analysisAnswered[idx] = true;
+  state.analysisCorrect[idx] = isCorrect;
+
+  const card = document.getElementById(`qcard-${idx+1}`);
+  card.classList.add(isCorrect ? 'answered-correct' : 'answered-wrong');
+
+  const fb = document.getElementById(`q${idx+1}-feedback`);
+  fb.textContent = message;
+  fb.className = `q-feedback show ${isCorrect ? 'correct' : 'wrong'}`;
+
+  const submitBtn = card.querySelector('.q-submit');
+  submitBtn.disabled = true;
+
+  if (isCorrect) {
+    addScore(1);
+    showToast('+1 נקודה! כל הכבוד! 🎵');
+  }
+
+  // Check if all answered
+  if (state.analysisAnswered.every(Boolean)) {
+    setTimeout(() => {
+      document.getElementById('analysis-next-btn').style.display = 'inline-block';
+    }, 800);
+  }
+}
+
+// ===== MULTIPLE CHOICE =====
+function selectMC(el, isCorrect) {
+  if (state.mcAnswered) return;
+  state.mcAnswered = true;
+  state.mcCorrect = isCorrect;
+
+  document.querySelectorAll('.mc-option').forEach(o => o.classList.add('disabled'));
+  document.getElementById('mc-b').classList.add('reveal-correct');
+
+  if (isCorrect) {
+    el.classList.add('selected-correct');
+  } else {
+    el.classList.add('selected-wrong');
+  }
+
+  const fb = document.getElementById('mc-feedback');
+  if (isCorrect) {
+    fb.textContent = '✅ מעולה! המקרא רק משנה את הגודל החזותי של הסמלים — הנתונים האמיתיים (כמה תלמידים בכל ז׳אנר) לא משתנים!';
+    fb.className = 'mc-feedback show correct';
+    addScore(1);
+    showToast('+1 נקודה! חשיבה מעולה! 🧠');
+  } else {
+    fb.textContent = '❌ לא נכון. התשובה הנכונה היא ב׳ — המקרא רק משנה את הייצוג הגרפי. הנתונים עצמם נשארים זהים, ולכן הז׳אנר השכיח לא ישתנה.';
+    fb.className = 'mc-feedback show wrong';
+  }
+
+  setTimeout(() => {
+    document.getElementById('mc-next-btn').style.display = 'inline-block';
+  }, 1000);
+}
+
+// ===== CERTIFICATE =====
+function showCertificate() {
+  const total = state.score;
+  document.getElementById('cert-score-num').textContent = total;
+
+  if (total >= 10) {
+    document.getElementById('cert-title-text').textContent = '🏆 תעודת עורך מצעד בכיר!';
+    document.getElementById('cert-emoji').textContent = '🥇';
+    document.getElementById('cert-rank-text').textContent = '★ ציון מושלם! אתה עורך מצעד בכיר! ★';
+    document.getElementById('cert-text').innerHTML = `
+      מוענקת בזאת לתלמיד/ה המצטיין/ת<br>
+      על השלמה <strong>מושלמת</strong> של מצעד השכבה<br>
+      בהצלחה יוצאת מן הכלל! 🎊
+    `;
+  } else if (total >= 7) {
+    document.getElementById('cert-title-text').textContent = '🎵 תעודת עורך מצעד מנוסה';
+    document.getElementById('cert-emoji').textContent = '🥈';
+    document.getElementById('cert-rank-text').textContent = 'כל הכבוד! עוד קצת ותגיע לשלמות!';
+  } else {
+    document.getElementById('cert-title-text').textContent = '🎧 תעודת השתתפות';
+    document.getElementById('cert-emoji').textContent = '🎵';
+    document.getElementById('cert-rank-text').textContent = 'המשך להתאמן — תצליח!';
+  }
+}
+
+function launchConfetti() {
+  const colors = ['#FF6B6B','#FFD93D','#6BCB77','#4D96FF','#FF2D78','#00F5FF','#FFD700'];
+  for (let i = 0; i < 60; i++) {
+    const c = document.createElement('div');
+    c.className = 'confetti-piece';
+    c.style.left = Math.random() * 100 + 'vw';
+    c.style.top = '-20px';
+    c.style.background = colors[Math.floor(Math.random() * colors.length)];
+    c.style.width = (Math.random() * 8 + 6) + 'px';
+    c.style.height = (Math.random() * 8 + 6) + 'px';
+    c.style.animationDelay = Math.random() * 2 + 's';
+    c.style.animationDuration = (Math.random() * 2 + 2) + 's';
+    document.body.appendChild(c);
+    setTimeout(() => c.remove(), 5000);
+  }
+}
+
+// Init
+showScreen('screen-intro');
+</script>
+</body>
+</html>
